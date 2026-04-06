@@ -1,38 +1,41 @@
-// src/features/board/boardSlice.ts
-//
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from "@reduxjs/toolkit";
 
-export type Point = [number, number];
+export type Element = {
+  type: String,
+  team: String
+}
+
+export type Cell = {
+  x: Number,
+  y: Number,
+  type: String,
+  contents: Element[]
+};
 
 interface BoardState {
-  points: Point[];
+  cells: Cell[];
 }
 
 const initialState: BoardState = {
-  points: [],
+  cells: [],
+  selectedCell: null
 };
 
 const boardSlice = createSlice({
   name: "board",
   initialState,
   reducers: {
-    setPoints(state, action: PayloadAction<Point[]>) {
-      state.points = action.payload;
+    setCells(state, action: PayloadAction<Cell[]>) {
+      state.cells = action.payload;
     },
-    addPoint(state, action: PayloadAction<Point>) {
-      state.points.push(action.payload);
-    },
-    removePoint(state, action: PayloadAction<number>) {
-      state.points.splice(action.payload, 1);
-    },
-    clearPoints(state) {
-      state.points = [];
-    },
+    setSelectedCell(state, action: PayloadAction<Cell>) {
+      state.selectedCell = action.payload;
+    }
   },
 });
 
-export const selectPoints = (state: RootState) => state.board.points;
+export const selectCells = (state: RootState) => state.board.cells;
 
-export const { setPoints, addPoint, removePoint, clearPoints } = boardSlice.actions;
+export const { setCells, addCell, removeCell, clearCells } = boardSlice.actions;
 export default boardSlice.reducer;
