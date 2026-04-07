@@ -100,9 +100,9 @@ export class BoardGenerator {
     let buildingSize = 2/3 * opts.radius;
     let originOffset = buildingSize / 2;
    
-    ctx.fillStyle = "black";
-    ctx.font = "20px serif";
-    ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
+    // ctx.fillStyle = "black";
+    // ctx.font = "20px serif";
+    // ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
 
     // let cellOrigin = this.gridToPixelOrigin(cell.x, cell.y, opts);
 
@@ -343,7 +343,7 @@ export class BoardGenerator {
     return newCells;
   }
 
-  static getRandomBoard(hexRadius, canvasWidth, canvasHeight, debugCellCount=2, playerCount=2) {
+  static getRandomBoard(hexRadius, canvasWidth, canvasHeight, debugCellCount=null, playerCount=2) {
 
     function getNeighborCell(cell) { 
       let changingIndex = randomItem([0, 1]);

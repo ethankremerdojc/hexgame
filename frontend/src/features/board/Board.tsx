@@ -39,7 +39,7 @@ export function Board() {
   useEffect(() => {
     if (cells.length === 0) {
       const newCells = BoardGenerator.getRandomBoard(
-        hexRadius, canvasWidth, canvasHeight, 10, 0
+        hexRadius, canvasWidth, canvasHeight
       );
       dispatch(setCells(newCells));
     }
@@ -51,6 +51,7 @@ export function Board() {
 
   const mouseIsDown = useRef(false);
   const isDraggingRef = useRef(false);
+  const firstMouseRef = useRef({ x: 0, y: 0 });
   const lastMouseRef = useRef({ x: 0, y: 0 });
 
   const handleWheel = (e) => {
@@ -93,6 +94,7 @@ export function Board() {
     const my = e.clientY - rect.top;
 
     lastMouseRef.current = { x: mx, y: my };
+    firstMouseRef.current = { x: mx, y: my };
   };
 
   const handleMouseMove = (e) => {
@@ -111,7 +113,12 @@ export function Board() {
     const dx = mx - lastMouseRef.current.x;
     const dy = my - lastMouseRef.current.y;
 
-    if (dx || dy) {
+    const fdx = mx - firstMouseRef.current.x;
+    const fdy = my - firstMouseRef.current.y;
+
+    const minDragAmount = 10;
+
+    if (fdx > minDragAmount || fdy > minDragAmount) {
       isDraggingRef.current = true;
     }
 
@@ -126,6 +133,11 @@ export function Board() {
   const handleMouseUp = (e) => {
     mouseIsDown.current = false;
 
+    let wasDragging = isDraggingRef.current;
+    isDraggingRef.current = false;
+
+    if (wasDragging) { return };
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -133,28 +145,24 @@ export function Board() {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    if (!isDraggingRef.current) {
-      let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, boardGen, cells);
+    let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, boardGen, cells);
 
-      if (potentialSelectedCell) {
+    if (potentialSelectedCell) {
 
-        let cellSetNull = false;
+      let cellSetNull = false;
 
-        if (selectedCell) {
-          if (potentialSelectedCell.x == selectedCell.x && potentialSelectedCell.y == selectedCell.y) {
-            dispatch(setSelectedCell(null));
-            cellSetNull = true;
-          }
-        }
-
-        if (!cellSetNull) {
-          dispatch(setSelectedCell(potentialSelectedCell));
+      if (selectedCell) {
+        if (potentialSelectedCell.x == selectedCell.x && potentialSelectedCell.y == selectedCell.y) {
+          dispatch(setSelectedCell(null));
+          cellSetNull = true;
         }
       }
-    }
-    
 
-    isDraggingRef.current = false;
+      if (!cellSetNull) {
+        dispatch(setSelectedCell(potentialSelectedCell));
+      }
+    }
+
   };
 
   const handleMouseLeave = () => {
@@ -165,7 +173,7 @@ export function Board() {
   // Canvas / hex size
   // ===========================
 
-  let hexRadius = 100;
+  let hexRadius = 50;
   let canvasWidth = 800;
   let canvasHeight = 800;
 
