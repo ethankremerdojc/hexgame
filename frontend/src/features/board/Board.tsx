@@ -1,49 +1,57 @@
 import React, { useEffect, useRef, useState  } from "react";
-import { selectCells, setCells } from "@/features/board/boardSlice";
+import {
+  selectCells, setCells,
+  getSelectedCell, setSelectedCell 
+} from "@/features/board/boardSlice";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { BoardGenerator } from "./boardGen.ts";
 import { randomItem } from "./utils.js";
 
-function drawBoard(canvas, cells, hexRadius, offsetX, offsetY, selectedCell) {
+function drawBoard(boardGen, canvas, cells) {
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const boardGen = new BoardGenerator({
-    radius: hexRadius,
-    inset: 2,
-    offsetX: offsetX,
-    offsetY: offsetY,
-    selectedCell: selectedCell
-  }, canvas.width, canvas.height);
-
   boardGen.drawHexes(ctx, cells);
+}
+
+function getSelectedCellFromMousePos(mx, my, boardGen, cells) {
+  let {x, y} = boardGen.pixelToGrid(mx, my);
+
+  for (var cell of cells) {
+    if (cell.x == x && cell.y == y) {
+      return cell
+    }
+  }
 }
 
 export function Board() {
   const dispatch = useAppDispatch();
+
+  // ===========================
+  // State Handling
+  // ===========================
+
   const cells = useAppSelector(selectCells);
-  const canvasRef = useRef(null);
+  const selectedCell = useAppSelector(getSelectedCell);
 
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (cells.length === 0) {
-      const newCells = BoardGenerator.getRandomBoard(hexRadius, canvasWidth, canvasHeight);
+      const newCells = BoardGenerator.getRandomBoard(
+        hexRadius, canvasWidth, canvasHeight, 10, 0
+      );
       dispatch(setCells(newCells));
     }
   }, [cells, dispatch]);
 
-  // draw to canvas
-  useEffect(() => {
-    if (cells.length === 0) return;
+  // ===========================
+  // Mouse things
+  // ===========================
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    drawBoard(canvas, cells, hexRadius*zoom, offset.x, offset.y, randomItem(cells));
-  }, [cells, zoom, offset]);
+  const mouseIsDown = useRef(false);
+  const isDraggingRef = useRef(false);
+  const lastMouseRef = useRef({ x: 0, y: 0 });
 
   const handleWheel = (e) => {
     const canvas = canvasRef.current;
@@ -75,26 +83,26 @@ export function Board() {
     });
   }
 
-  const isDraggingRef = useRef(false);
-  const lastMouseRef = useRef({ x: 0, y: 0 });
-
   const handleMouseDown = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    mouseIsDown.current = true;
 
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    isDraggingRef.current = true;
     lastMouseRef.current = { x: mx, y: my };
   };
 
   const handleMouseMove = (e) => {
-    if (!isDraggingRef.current) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    if (!mouseIsDown.current) {
+      return
+    }
 
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -103,15 +111,49 @@ export function Board() {
     const dx = mx - lastMouseRef.current.x;
     const dy = my - lastMouseRef.current.y;
 
+    if (dx || dy) {
+      isDraggingRef.current = true;
+    }
+
     setOffset((prev) => ({
       x: prev.x + dx,
       y: prev.y + dy,
     }));
-
+    
     lastMouseRef.current = { x: mx, y: my };
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
+    mouseIsDown.current = false;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if (!isDraggingRef.current) {
+      let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, boardGen, cells);
+
+      if (potentialSelectedCell) {
+
+        let cellSetNull = false;
+
+        if (selectedCell) {
+          if (potentialSelectedCell.x == selectedCell.x && potentialSelectedCell.y == selectedCell.y) {
+            dispatch(setSelectedCell(null));
+            cellSetNull = true;
+          }
+        }
+
+        if (!cellSetNull) {
+          dispatch(setSelectedCell(potentialSelectedCell));
+        }
+      }
+    }
+    
+
     isDraggingRef.current = false;
   };
 
@@ -119,9 +161,38 @@ export function Board() {
     isDraggingRef.current = false;
   };
 
-  let hexRadius = 50;
+  // ===========================
+  // Canvas / hex size
+  // ===========================
+
+  let hexRadius = 100;
   let canvasWidth = 800;
   let canvasHeight = 800;
+
+  const canvasRef = useRef(null);
+
+  const boardGen = new BoardGenerator({
+    radius: hexRadius*zoom,
+    offsetX: offset.x,
+    offsetY: offset.y,
+    selectedCell: selectedCell
+  }, canvasWidth, canvasHeight);
+
+  // draw to canvas
+  useEffect(() => {
+    if (cells.length === 0) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    drawBoard(boardGen, canvas, cells);
+  }, [cells, zoom, offset, selectedCell]);
+
+
+
+  // ===========================
+  // Render
+  // ===========================
 
   return (
     <canvas

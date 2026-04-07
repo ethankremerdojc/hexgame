@@ -36,6 +36,7 @@ const boardSlice = createSlice({
 });
 
 export const selectCells = (state: RootState) => state.board.cells;
+export const getSelectedCell = (state: RootState) => state.board.selectedCell;
 
-export const { setCells, addCell, removeCell, clearCells } = boardSlice.actions;
+export const { setCells, clearCells, setSelectedCell } = boardSlice.actions;
 export default boardSlice.reducer;
