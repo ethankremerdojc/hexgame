@@ -5,11 +5,11 @@ import type {
 } from "./boardSlice.ts";
 
 import {
-
   getSizeForElement,
 
   getCells, setCells,
   getSelectedCell, setSelectedCell,
+  getSelectedElement, setSelectedElement, getElementParentCell,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
 } from "./boardSlice.ts";
@@ -23,7 +23,6 @@ function drawBoard(boardGen, canvas, cells) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   boardGen.drawHexes(ctx, cells);
 }
-
 
 // below two should really be a part of board gen?
 
@@ -68,6 +67,7 @@ export function Board() {
 
   const cells = useAppSelector(getCells);
   const selectedCell = useAppSelector(getSelectedCell);
+  const selectedElement = useAppSelector(getSelectedElement);
   const zoom = useAppSelector(getBoardZoom);
   const offset = useAppSelector(getBoardOffset);
 
@@ -196,9 +196,32 @@ export function Board() {
       let potentialElement = getSelectedElementFromMousePos(mx, my, boardGen, cells);
 
       if (potentialElement) {
-        console.log(potentialElement, "SELECTED");
+        dispatch(setSelectedElement(potentialElement));
+        dispatch(setSelectedCell(null));
         return
+      } else {
+
+        if (selectedElement && selectedElement.type == "person") {
+          // check if one of the adjacent tiles has been selected
+
+          let elemParentCell = getElementParentCell(selectedElement, cells);
+          let adjacentCells = BoardGenerator.getAdjacentCells(cells, elemParentCell);
+
+          let newCells = null;
+          for (var ac of adjacentCells) {
+            if (ac.x == potentialSelectedCell.x && ac.y == potentialSelectedCell.y) {
+              newCells = BoardGenerator.moveElement(cells, selectedElement, ac);
+            }
+          }
+
+          if (newCells) {
+            dispatch(setCells(newCells));
+          }
+        }
+
+        dispatch(setSelectedElement(null));
       }
+
 
       let cellSetNull = false;
 
@@ -232,7 +255,8 @@ export function Board() {
     radius: hexRadius*zoom,
     offsetX: offset.x,
     offsetY: offset.y,
-    selectedCell: selectedCell
+    selectedCell: selectedCell,
+    selectedElement: selectedElement
   }, canvasWidth, canvasHeight);
 
   // draw to canvas
@@ -243,7 +267,7 @@ export function Board() {
     if (!canvas) return;
 
     drawBoard(boardGen, canvas, cells);
-  }, [cells, zoom, offset, selectedCell]);
+  }, [cells, zoom, offset, selectedCell, selectedElement]);
 
   // ===========================
   // Render

@@ -1,5 +1,5 @@
 import {
-  HexPosition
+  HexPosition, getElementParentCell
 } from "./boardSlice.ts";
 
 import type { 
@@ -63,7 +63,7 @@ function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordin
 
   const d1 = sign(P, A, B);
   const d2 = sign(P, B, C);
-  const d3 = sign(P, A, C);
+  const d3 = sign(P, C, A);
 
   const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
   const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
@@ -104,7 +104,12 @@ export class BoardGenerator {
 
     const hexPoints = this.createPoly(opts);
 
-    let adjacentCells = BoardGenerator.getAdjacentCells(cells, this.options.selectedCell);
+    let adjacentCells = [];
+
+    if (this.options.selectedElement && this.options.selectedElement.type == "person") {
+      let parentCell = getElementParentCell(this.options.selectedElement, cells);
+      adjacentCells = BoardGenerator.getAdjacentCells(cells, parentCell);
+    }
 
     for (var cell of cells) {
       let cellHighlighted = false;
@@ -167,6 +172,16 @@ export class BoardGenerator {
     }
   }
 
+  static getSizeForElement(elem: Element, radius: number): number {
+    let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(radius);
+    if (elem.type == "building") {
+      return buildingSize;
+    }
+    if (elem.type == "person") {
+      return objectSize
+    }
+  }
+
   static getElementPosition(element, origin, opts) {
     let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(opts.radius);
 
@@ -215,7 +230,7 @@ export class BoardGenerator {
       let elemPos = BoardGenerator.getElementPosition(element, origin, opts);
       let originOffset = null;
 
-      if (element.type == "capital") {
+      if (element.subType == "capital") {
         ctx.fillStyle = element.team;
         ctx.fillRect(
           elemPos.x, elemPos.y,
@@ -223,7 +238,7 @@ export class BoardGenerator {
         );
       }
 
-      if (["worker", "soldier", "archer"].includes(element.type)) {
+      if (element.type == "person") {
         drawSvgToCanvas(personSvg, ctx,
           elemPos.x, elemPos.y,
           objectSize, objectSize, 
@@ -231,7 +246,7 @@ export class BoardGenerator {
         );
       }
 
-      if (element.type == "worker") {
+      if (element.subType == "worker") {
         drawSvgToCanvas(forkSvg, ctx,
           elemPos.x + objectSize + halfToolSize, elemPos.y,
           toolSize, objectSize,
@@ -261,12 +276,14 @@ export class BoardGenerator {
         ctx.stroke();
         strokeSet = true;
       }
-      else if (cellHighlighted) {
-        ctx.strokeStyle = "yellow";
-        ctx.stroke();
-        strokeSet = true;
-      }
     }
+    if (cellHighlighted) {
+      ctx.strokeStyle = "yellow";
+      ctx.stroke();
+      strokeSet = true;
+    }
+
+    // this.drawBoundingBoxTriangles(ctx, cell, opts);
 
     if (!strokeSet) {
       if (opts.strokeStyle) ctx.stroke();
@@ -300,22 +317,18 @@ export class BoardGenerator {
 
     // Get the origin for whatever the system thinks we are on
     let initialOrigin = this.gridToPixelOrigin(newX, newY, this.options);
+
     let boundingBoxTriangles = this.getBoundingBoxCornerTriangles(initialOrigin);
     let boundingBoxCornerClicked = null;
 
     for (var triangle of boundingBoxTriangles) {
-      if (pointInTriangle(
-        {x: px, y: py},
-        triangle.points[0],
-        triangle.points[1],
-        triangle.points[2],
-      )) {
-        console.log("point was in triangle");
+      if (pointInTriangle({x: px, y: py}, triangle.points[0], triangle.points[1], triangle.points[2])) {
         boundingBoxCornerClicked = triangle.name;
       }
     }
 
     if (boundingBoxCornerClicked) {
+      let oldX = newX;
 
       if (boundingBoxCornerClicked.includes("left")) {
         newX -= 1;
@@ -323,12 +336,14 @@ export class BoardGenerator {
         newX += 1;
       }
 
-      if (boundingBoxCornerClicked.includes("top")) {
+      if (boundingBoxCornerClicked.includes("top")) { 
         if (newX % 2) {
           newY -= 1;
         }
-      } else {
-        newY += 1;
+      } else { // bottom
+        if (oldX % 2) {
+          newY += 1;
+        }
       }
     }
     return {
@@ -485,7 +500,7 @@ export class BoardGenerator {
     return adjacentCells
   }
 
-  static addCapitalToBoard(cells: Cell[], color: string): Cell[] {
+  static addRandomCapitalToBoard(cells: Cell[], color: string): Cell[] {
     let newCells = structuredClone(cells);
 
     let randomCell;
@@ -497,21 +512,40 @@ export class BoardGenerator {
       }
     }
 
-    randomCell.contents.push({type: "capital", team: color, position: HexPosition.Center});
+    randomCell.contents.push({type: "building", subType: "capital", team: color, position: HexPosition.Center});
+    randomCell.contents.push({type: "person", subType: "worker", team: color, position: 0});
     return newCells;
   }
 
-  static addWorkerToBoard(cells: Cell[], color: string): Cell[] {
-    let newCells = structuredClone(cells);
-    let randomCell = randomItem(newCells);
+  static moveElement(cells: Cell[], elem: Element, cellToMoveTo: Cell): Cell[] {
+    let newCells = [];
 
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.Top});
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.TopRight});
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.TopLeft});
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.Bottom});
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.BottomLeft});
-    randomCell.contents.push({type: "worker", team: color, position: HexPosition.BottomRight});
-    return newCells;
+    let elemParentCell = getElementParentCell(elem, cells);
+
+    for (var cell of cells) {
+      let newCell = {...cell};
+
+      if (cell.x == elemParentCell.x && cell.y == elemParentCell.y) {
+        let newContents = [];
+
+        for (var content of cell.contents) {
+          if (content.id == elem.id) {
+            continue
+          }
+          newContents.push(content);
+        }
+
+        newCell.contents = newContents;
+      }
+      else if (cell.x == cellToMoveTo.x && cell.y == cellToMoveTo.y) {
+        let newContents = [...cell.contents];
+        newContents.push(elem);
+        newCell.contents = newContents;
+      }
+      newCells.push(newCell);
+    }
+
+    return newCells
   }
 
   static getRandomBoard(hexRadius: number, canvasWidth: number, canvasHeight: number, debugCellCount: number|null=null, playerCount: number=2): Cell[] {
@@ -600,9 +634,8 @@ export class BoardGenerator {
     let newCells = cells;
 
     for (let i=0; i<playerCount; i++) {
-      newCells = BoardGenerator.addCapitalToBoard(newCells, TEAM_COLORS[i]);
+      newCells = BoardGenerator.addRandomCapitalToBoard(newCells, TEAM_COLORS[i]);
     }
-    newCells = BoardGenerator.addWorkerToBoard(newCells, TEAM_COLORS[0]);
 
     return newCells;
   }

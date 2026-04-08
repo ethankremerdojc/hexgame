@@ -3,10 +3,12 @@ import { useState } from 'react'
 import { Board } from '@/features/board/Board';
 
 import {
-  getCells, setCells,
-  getSelectedCell, setSelectedCell,
-  getBoardZoom, setBoardZoom,
-  getBoardOffset, setBoardOffset,
+  getCells,
+  getSelectedCell,
+  getSelectedElement,
+  getBoardZoom,
+  getBoardOffset,
+
 } from "@/features/board/boardSlice"
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -16,16 +18,19 @@ import './App.css'
 function App() {
   const cells = useAppSelector(getCells);
   const selectedCell = useAppSelector(getSelectedCell);
+  const selectedElement = useAppSelector(getSelectedElement);
   const zoom = useAppSelector(getBoardZoom);
   const offset = useAppSelector(getBoardOffset);
 
   let selectedCellString = "null";
   if (selectedCell) {
     selectedCellString = `\{x: ${selectedCell.x}, y: ${selectedCell.y}, type: ${selectedCell.type}, contents: [ ${selectedCell.contents.length} items `;
-    // selectedCell.contents.forEach(element => {
-    //   selectedCellString += `\{type: ${element.type}, team: ${element.team}\} `
-    // })
     selectedCellString += "]";
+  };
+ 
+  let selectedElemString = "null";
+  if (selectedElement) {
+    selectedElemString = `\{id: ${selectedElement.id}, type: ${selectedElement.type}, position: ${selectedElement.position}, team: ${selectedElement.team} \}`;
   }
 
   return (
@@ -34,6 +39,7 @@ function App() {
         <div className="debug-stats">
           <p>Cells Count: {cells.length}</p>
           <p>Selected Cell: {selectedCellString}</p>
+          <p>Selected Element: {selectedElemString}</p>
           <p>Zoom: {zoom}</p>
           <p>Offset: {`\{x: ${offset.x}, y: ${offset.y} \}`}</p>
         </div>
