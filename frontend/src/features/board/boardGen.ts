@@ -1,4 +1,14 @@
-import { randomItem } from "./utils.js";
+import {
+  HexPosition
+} from "./boardSlice.ts";
+
+import type { 
+  Cell, Coordinate, Element
+} from "./boardSlice.ts";
+
+import { randomItem, drawSvgToCanvas } from "./utils.js";
+import personSvg from "./elements/person.svg?raw";
+import forkSvg from "./elements/pitchfork.svg?raw";
 
 const TAU = 2 * Math.PI;
 
@@ -6,9 +16,15 @@ const TEAM_COLORS = [
   "white", "purple", "red", "yellow"
 ]
 
-export const CELL_MUTATION_RATE = 0.4;
+export const CELL_MUTATION_RATE: number = 0.4;
 
-export const CELL_TYPES = [
+interface CellType {
+  type: string,
+  color: string,
+  weight: number
+}
+
+export const CELL_TYPES: CellType[] = [
   {
     type: "field",
     color: "rgb(16 108 14)",
@@ -40,14 +56,14 @@ function getColorForType(t) {
 }
 
 
-function pointInTriangle(px, py, ax, ay, bx, by, cx, cy) {
-  function sign(px, py, ax, ay, bx, by) {
-    return (px - bx) * (ay - by) - (ax - bx) * (py - by);
+function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
+  function sign(p, a, b) {
+    return (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
   }
 
-  const d1 = sign(px, py, ax, ay, bx, by);
-  const d2 = sign(px, py, bx, by, cx, cy);
-  const d3 = sign(px, py, cx, cy, ax, ay);
+  const d1 = sign(P, A, B);
+  const d2 = sign(P, B, C);
+  const d3 = sign(P, A, C);
 
   const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
   const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
@@ -55,8 +71,17 @@ function pointInTriangle(px, py, ax, ay, bx, by, cx, cy) {
   return !(hasNeg && hasPos);
 }
 
+export function pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomRight: Coordinate): boolean {
+  let top = topLeft.y;
+  let bottom = bottomRight.y;
+  let left = topLeft.x;
+  let right = bottomRight.x;
+
+  return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom
+}
+
 export class BoardGenerator {
-  constructor(options={}, canvasWidth, canvasHeight) {
+  constructor(options: object={}, canvasWidth: number, canvasHeight: number) {
     const defaultGridOptions = {
       sides: 6,
       inset: 2,
@@ -73,13 +98,24 @@ export class BoardGenerator {
     this.options.diameter = this.options.radius * 2;
   }
 
-  drawHexes(ctx, cells) {
+  // PUBLIC FUNC
+  drawHexes(ctx: CanvasRenderingContext2D, cells: Cell[]): void {
     const opts = {...this.options};
 
     const hexPoints = this.createPoly(opts);
 
+    let adjacentCells = BoardGenerator.getAdjacentCells(cells, this.options.selectedCell);
+
     for (var cell of cells) {
-      this.drawPoly(ctx, this.gridToPixelOrigin(cell.x, cell.y, opts), hexPoints, opts, cell);
+      let cellHighlighted = false;
+
+      for (var a of adjacentCells) {
+        if (cell.x == a.x && cell.y == a.y) {
+          cellHighlighted = true;
+        }
+      }
+
+      this.drawHex(ctx, this.gridToPixelOrigin(cell.x, cell.y, opts), hexPoints, opts, cell, cellHighlighted);
     }
   }
 
@@ -95,41 +131,116 @@ export class BoardGenerator {
     return points;
   }
 
+  drawBoundingBoxTriangles(ctx, cell, opts) {
+    let cellOrigin = this.gridToPixelOrigin(cell.x, cell.y, opts);
+
+    let boundingBoxTriangles = this.getBoundingBoxCornerTriangles(cellOrigin);
+
+    for (var triangle of boundingBoxTriangles) {
+      ctx.beginPath();
+      ctx.moveTo(triangle.points[0].x, triangle.points[0].y);
+      ctx.lineTo(triangle.points[1].x, triangle.points[1].y);
+      ctx.lineTo(triangle.points[2].x, triangle.points[2].y);
+      ctx.closePath();
+      ctx.strokeStyle = "orange"; 
+      ctx.stroke();
+    }
+  }
+
+  drawTileCoords(ctx, cell, origin) {
+    ctx.fillStyle = "black";
+    ctx.font = "20px serif";
+    ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
+  }
+
+  static getElemSizes(radius) {
+    let halfRadius = radius/2;
+    let buildingSize = 0.5 * radius;
+    let objectSize = buildingSize * 0.5;
+    let toolSize = objectSize / 3;
+
+    return {
+      halfRadius: halfRadius,
+      buildingSize, buildingSize,
+      objectSize: objectSize,
+      toolSize: toolSize
+    }
+  }
+
+  static getElementPosition(element, origin, opts) {
+    let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(opts.radius);
+
+    let elemPos;
+    switch (element.position) {
+      case HexPosition.Top:
+        elemPos = {x: origin.x - (objectSize/2), y: origin.y - opts.radius*0.75};
+        break;
+      case HexPosition.TopLeft:
+        elemPos = {x: origin.x - (objectSize/2) - (opts.radius/2), y: origin.y - opts.radius*0.45};
+        break;
+      case HexPosition.TopRight:
+        elemPos = {x: origin.x - (objectSize/2) + (opts.radius/2), y: origin.y - opts.radius*0.45};
+        break;
+
+      case HexPosition.Bottom:
+        elemPos = {x: origin.x - (objectSize/2), y: origin.y + opts.radius*0.5};
+        break;
+      case HexPosition.BottomLeft:
+        elemPos = {x: origin.x - (objectSize/2) - (opts.radius/2), y: origin.y + opts.radius*0.2};
+        break;
+      case HexPosition.BottomRight:
+        elemPos = {x: origin.x - (objectSize/2) + (opts.radius/2), y: origin.y + opts.radius*0.2};
+        break;
+
+      case HexPosition.Center:
+        elemPos = {x: origin.x - (buildingSize/2), y: origin.y - (buildingSize/2)};
+        break;
+      default:
+        break;
+    }
+
+    if (["worker", "soldier", "archer"].includes(element.type)) {
+      elemPos.x -= toolSize;
+    }
+
+    return elemPos;
+  }
+
   drawElements(ctx, origin, cell, opts) {
-
-    let buildingSize = 2/3 * opts.radius;
-    let originOffset = buildingSize / 2;
-   
-    // ctx.fillStyle = "black";
-    // ctx.font = "20px serif";
-    // ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
-
-    // let cellOrigin = this.gridToPixelOrigin(cell.x, cell.y, opts);
-
-    // let boundingBoxTriangles = this.getBoundingBoxCornerTriangles(cellOrigin);
-    //
-    // for (var triangle of boundingBoxTriangles) {
-    //   ctx.beginPath();
-    //   ctx.moveTo(triangle.points[0].x, triangle.points[0].y);
-    //   ctx.lineTo(triangle.points[1].x, triangle.points[1].y);
-    //   ctx.lineTo(triangle.points[2].x, triangle.points[2].y);
-    //   ctx.closePath();
-    //   ctx.strokeStyle = "orange"; 
-    //   ctx.stroke();
-    // }
+    let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(opts.radius);
+    let halfToolSize = toolSize / 2;
 
     for (var element of cell.contents) {
+
+      let elemPos = BoardGenerator.getElementPosition(element, origin, opts);
+      let originOffset = null;
+
       if (element.type == "capital") {
         ctx.fillStyle = element.team;
         ctx.fillRect(
-          origin.x - originOffset, origin.y - originOffset,
+          elemPos.x, elemPos.y,
           buildingSize, buildingSize
+        );
+      }
+
+      if (["worker", "soldier", "archer"].includes(element.type)) {
+        drawSvgToCanvas(personSvg, ctx,
+          elemPos.x, elemPos.y,
+          objectSize, objectSize, 
+          element.team
+        );
+      }
+
+      if (element.type == "worker") {
+        drawSvgToCanvas(forkSvg, ctx,
+          elemPos.x + objectSize + halfToolSize, elemPos.y,
+          toolSize, objectSize,
         );
       }
     }
   }
 
-  drawPoly(ctx, origin, points, opts, cell) {
+  drawHex(ctx, origin, points, opts, cell, cellHighlighted) {
     ctx.strokeStyle = opts.strokeStyle;
     ctx.save();
     ctx.translate(origin.x, origin.y);
@@ -142,14 +253,22 @@ export class BoardGenerator {
 
     this.drawElements(ctx, origin, cell, opts);
 
+    let strokeSet = false;
+
     if (opts.selectedCell) {
       if (cell.x == opts.selectedCell.x && cell.y == opts.selectedCell.y) {
         ctx.strokeStyle = "white";
         ctx.stroke();
-      } else {
-        if (opts.strokeStyle) ctx.stroke();
+        strokeSet = true;
       }
-    } else {
+      else if (cellHighlighted) {
+        ctx.strokeStyle = "yellow";
+        ctx.stroke();
+        strokeSet = true;
+      }
+    }
+
+    if (!strokeSet) {
       if (opts.strokeStyle) ctx.stroke();
     }
 
@@ -173,7 +292,7 @@ export class BoardGenerator {
     );
   }
 
-  pixelToGrid(px, py) {
+  pixelToGrid(px: number, py: number): Coordinate {
     const m = this.gridMeasurements(this.options);
 
     let newX = Math.round((px - this.options.offsetX) / m.gridSpaceX);
@@ -186,11 +305,12 @@ export class BoardGenerator {
 
     for (var triangle of boundingBoxTriangles) {
       if (pointInTriangle(
-        px, py,
-        triangle.points[0].x, triangle.points[0].y,
-        triangle.points[1].x, triangle.points[1].y,
-        triangle.points[2].x, triangle.points[2].y,
+        {x: px, y: py},
+        triangle.points[0],
+        triangle.points[1],
+        triangle.points[2],
       )) {
+        console.log("point was in triangle");
         boundingBoxCornerClicked = triangle.name;
       }
     }
@@ -284,7 +404,7 @@ export class BoardGenerator {
 
   // Random Board Generator Funcs
 
-  static getNewCellType(oldType) {
+  static getNewCellType(oldType: CellType): CellType {
     let doMutation = Math.random() < CELL_MUTATION_RATE;
 
     if (!doMutation) {
@@ -294,7 +414,7 @@ export class BoardGenerator {
     return BoardGenerator.getRandomCellTypeByRates();
   }
   
-  static getRandomCellTypeByRates() {
+  static getRandomCellTypeByRates(): Cell {
     let rateTotal = 0;
 
     for (var ct of CELL_TYPES) {
@@ -312,7 +432,7 @@ export class BoardGenerator {
     }
   }
 
-  static getHexBoardSize(canvasWidth, canvasHeight, radius) {
+  static getHexBoardSize(canvasWidth: number, canvasHeight: number, radius: number): object {
     const hexWidth = radius * 2;
     const colStep = radius * 1.5;
     const rowStep = Math.sqrt(3) * radius;
@@ -327,7 +447,45 @@ export class BoardGenerator {
     };
   }
 
-  static addCapitalToBoard(cells, color) {
+
+  //TODO 
+  //Below 2 may need to have while removed.
+
+  static getAdjacentCells(cells: Cell[], cell: Cell): Cell[] {
+
+    if (!cell) {
+      return []
+    }
+
+    let potentials = [
+      {x: cell.x  , y: cell.y + 1},
+      {x: cell.x  , y: cell.y - 1},
+      {x: cell.x-1, y: cell.y},
+      {x: cell.x+1, y: cell.y},
+    ];
+
+    if (cell.x%2) {
+      potentials.push({x: cell.x-1, y: cell.y+1});
+      potentials.push({x: cell.x+1, y: cell.y+1});
+    } else {
+      potentials.push({x: cell.x-1, y: cell.y-1});
+      potentials.push({x: cell.x+1, y: cell.y-1});
+    }
+
+    let adjacentCells = [];
+
+    for (var p of potentials) {
+      for (var c of cells) {
+        if (p.x == c.x && p.y == c.y) {
+          adjacentCells.push(c);
+        }
+      }
+    }
+
+    return adjacentCells
+  }
+
+  static addCapitalToBoard(cells: Cell[], color: string): Cell[] {
     let newCells = structuredClone(cells);
 
     let randomCell;
@@ -339,11 +497,24 @@ export class BoardGenerator {
       }
     }
 
-    randomCell.contents.push({type: "capital", team: color});
+    randomCell.contents.push({type: "capital", team: color, position: HexPosition.Center});
     return newCells;
   }
 
-  static getRandomBoard(hexRadius, canvasWidth, canvasHeight, debugCellCount=null, playerCount=2) {
+  static addWorkerToBoard(cells: Cell[], color: string): Cell[] {
+    let newCells = structuredClone(cells);
+    let randomCell = randomItem(newCells);
+
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.Top});
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.TopRight});
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.TopLeft});
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.Bottom});
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.BottomLeft});
+    randomCell.contents.push({type: "worker", team: color, position: HexPosition.BottomRight});
+    return newCells;
+  }
+
+  static getRandomBoard(hexRadius: number, canvasWidth: number, canvasHeight: number, debugCellCount: number|null=null, playerCount: number=2): Cell[] {
 
     function getNeighborCell(cell) { 
       let changingIndex = randomItem([0, 1]);
@@ -406,8 +577,10 @@ export class BoardGenerator {
 
     let cells = [startCell];
 
+    let maxAddAttemptCount = 20;
+
     for (let i=0; i < cellCount - 1; i++) {
-      while (true) {
+      for (let j=0; j < maxAddAttemptCount; j++) {
         let newCell = getNeighborCell(randomItem(cells));
 
         let exists = false;
@@ -429,6 +602,7 @@ export class BoardGenerator {
     for (let i=0; i<playerCount; i++) {
       newCells = BoardGenerator.addCapitalToBoard(newCells, TEAM_COLORS[i]);
     }
+    newCells = BoardGenerator.addWorkerToBoard(newCells, TEAM_COLORS[0]);
 
     return newCells;
   }
