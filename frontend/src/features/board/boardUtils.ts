@@ -29,7 +29,7 @@ export function pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomR
 export class BoardUtils {
   static getElemSizes(radius) {
     let halfRadius = radius/2;
-    let buildingSize = 0.5 * radius;
+    let buildingSize = radius*0.35;
     let objectSize = buildingSize * 0.65;
     let toolSize = objectSize / 3;
     let itemSize = objectSize / 2.5;
@@ -71,19 +71,19 @@ export class BoardUtils {
         elemPos = {x: origin.x - halfObjectSize, y: origin.y - radius*0.75};
         break;
       case HexPosition.TopLeft:
-        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y - radius*0.5};
+        elemPos = {x: origin.x - halfObjectSize - halfRadius*0.8, y: origin.y - radius*0.5};
         break;
       case HexPosition.TopRight:
-        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y - radius*0.5};
+        elemPos = {x: origin.x - halfObjectSize + halfRadius*0.8, y: origin.y - radius*0.5};
         break;
 
       // case HexPosition.Bottom:
       //   break;
       case HexPosition.BottomLeft:
-        elemPos = {x: origin.x - halfObjectSize - halfRadius*1.1, y: origin.y};
+        elemPos = {x: origin.x - halfObjectSize - halfRadius*1.1, y: origin.y - halfRadius*0.25};
         break;
       case HexPosition.BottomRight:
-        elemPos = {x: origin.x - halfObjectSize + halfRadius*1.1, y: origin.y};
+        elemPos = {x: origin.x - halfObjectSize + halfRadius*1.1, y: origin.y - halfRadius*0.25};
         break;
 
       case HexPosition.Center:

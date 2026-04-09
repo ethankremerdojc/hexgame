@@ -56,6 +56,7 @@ function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells)
 
       let intersects = pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
       if (intersects) {
+        console.log("Selected", elem);
         return elem;
       }
     }

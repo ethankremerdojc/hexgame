@@ -69,7 +69,8 @@ export type Element = {
   team: TeamColor|void,
   position: HexPosition,
   id: string,
-  count: number|void
+  count: number|void,
+  heldElements: Element[]
 }
 
 export type Cell = {
@@ -159,6 +160,19 @@ const boardSlice = createSlice({
           }
 
           newElem.id = `${cell.x},${cell.y}|${newElem.position}`;
+
+          if (!newElem.heldElements) {
+            newElem.heldElements = [];
+          } else {
+            for (var he of newElem.heldElements) {
+              if (!he.count) {
+                he.count = 1;
+              }
+            }
+          }
+          if (!newElem.count) {
+            newElem.count = 1;
+          }
           newContents.push(newElem);
         }
 

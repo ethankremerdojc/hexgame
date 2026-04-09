@@ -176,6 +176,24 @@ export class BoardRenderer {
           elemColor
         );
 
+        for (let i=0; i<element.heldElements.length; i++) {
+          let heldElement = element.heldElements[i];
+          let heldElemSvg = getSvgForElement(heldElement);
+          let miniItemSize = itemSize * 0.75;
+
+          drawSvgToCanvas(heldElemSvg, ctx,
+            elemPos.x - miniItemSize*1.25, elemPos.y + miniItemSize*i*1.2+miniItemSize*0.5,
+            miniItemSize, miniItemSize,
+          );
+
+          ctx.fillStyle = "white";
+          ctx.font = `${miniItemSize}px serif`;
+          let countStr = heldElement.count.toString();
+          let digits = countStr.length;
+
+          ctx.fillText(heldElement.count, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
+        }
+
         if (element.subType == ElementSubType.Worker) {
           drawSvgToCanvas(forkSvg, ctx,
             elemPos.x + objectSize, elemPos.y,
@@ -225,7 +243,7 @@ export class BoardRenderer {
         itemSize, itemSize
       );
 
-      ctx.fillStyle = "black";
+      ctx.fillStyle = "white";
       ctx.font = `${itemSize}px serif`;
       let countStr = element.count.toString();
       let digits = countStr.length;
