@@ -71,19 +71,19 @@ export class BoardUtils {
         elemPos = {x: origin.x - halfObjectSize, y: origin.y - radius*0.75};
         break;
       case HexPosition.TopLeft:
-        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y - radius*0.45};
+        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y - radius*0.5};
         break;
       case HexPosition.TopRight:
-        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y - radius*0.45};
+        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y - radius*0.5};
         break;
 
       // case HexPosition.Bottom:
       //   break;
       case HexPosition.BottomLeft:
-        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y};
+        elemPos = {x: origin.x - halfObjectSize - halfRadius*1.1, y: origin.y};
         break;
       case HexPosition.BottomRight:
-        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y};
+        elemPos = {x: origin.x - halfObjectSize + halfRadius*1.1, y: origin.y};
         break;
 
       case HexPosition.Center:

@@ -178,7 +178,7 @@ export class BoardRenderer {
 
         if (element.subType == ElementSubType.Worker) {
           drawSvgToCanvas(forkSvg, ctx,
-            elemPos.x + objectSize + halfToolSize, elemPos.y,
+            elemPos.x + objectSize, elemPos.y,
             toolSize, objectSize,
           );
         }
