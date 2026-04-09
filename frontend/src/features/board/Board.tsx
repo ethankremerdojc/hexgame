@@ -5,29 +5,32 @@ import type {
 } from "./boardSlice.ts";
 
 import {
-  getSizeForElement,
-
+  ElementType,
   getCells, setCells,
   getSelectedCell, setSelectedCell,
-  getSelectedElement, setSelectedElement, getElementParentCell,
+  getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import { BoardGenerator, pointInRectangle } from "./boardGen.ts";
+
+import {
+  BoardRenderer
+} from "./boardRenderer.ts";
+
+import {
+  BoardGenerator
+} from "./boardGenerator.ts";
+
+import {
+  BoardUtils, pointInRectangle
+} from "./boardUtils.ts";
+
 import { randomItem } from "./utils.js";
 
-function drawBoard(boardGen, canvas, cells) {
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  boardGen.drawHexes(ctx, cells);
-}
-
-// below two should really be a part of board gen?
-
-function getSelectedCellFromMousePos(mx, my, boardGen, cells) {
-  let {x, y} = boardGen.pixelToGrid(mx, my);
+function getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells) {
+  let {x, y} = BoardUtils.pixelToGrid(mx, my, radius, offsetX, offsetY);
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
@@ -36,16 +39,17 @@ function getSelectedCellFromMousePos(mx, my, boardGen, cells) {
   }
 }
 
-function getSelectedElementFromMousePos(mx, my, boardGen, cells) {
-  let selectedCell = getSelectedCellFromMousePos(mx, my, boardGen, cells);
-  let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(boardGen.options);
+function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells) {
+  let selectedCell = getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells);
+  let { halfRadius, buildingSize, objectSize, toolSize } = BoardUtils.getElemSizes(radius);
 
   if (selectedCell) {
-    let cellOrigin = boardGen.gridToPixelOrigin(selectedCell.x, selectedCell.y, boardGen.options);
+
+    let cellOrigin = BoardUtils.gridToPixelOrigin(selectedCell.x, selectedCell.y, radius, offsetX, offsetY);
 
     for (var elem of selectedCell.contents) {
-      let elemPos = BoardGenerator.getElementPosition(elem, cellOrigin, boardGen.options);
-      let elemSize = getSizeForElement(elem, boardGen.options.radius)
+      let elemPos = BoardUtils.getElementPosition(elem, cellOrigin, radius);
+      let elemSize = BoardUtils.getSizeForElement(elem, radius);
 
       let topLeft = {x: elemPos.x, y: elemPos.y};
       let bottomRight = {x: elemPos.x + elemSize, y: elemPos.y + elemSize};
@@ -73,10 +77,11 @@ export function Board() {
 
   useEffect(() => {
     if (cells.length === 0) {
-      const newCells = BoardGenerator.getRandomBoard(
-        hexRadius, canvasWidth, canvasHeight
+      const BG = new BoardGenerator();
+      const newBoard = BG.generateBoard(
+        hexRadius, canvasWidth, canvasHeight, 1
       );
-      dispatch(setCells(newCells));
+      dispatch(setCells(newBoard));
     }
   }, [cells, dispatch]);
 
@@ -89,7 +94,8 @@ export function Board() {
   const firstMouseRef: Coordinate = useRef({ x: 0, y: 0 });
   const lastMouseRef: Coordinate = useRef({ x: 0, y: 0 });
 
-  let hexRadius = 50;
+  let initialRadius = 30;
+  let hexRadius = initialRadius*zoom;
   let canvasWidth = 800;
   let canvasHeight = 800;
 
@@ -190,10 +196,10 @@ export function Board() {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, boardGen, cells);
+    let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
     if (potentialSelectedCell) {
-      let potentialElement = getSelectedElementFromMousePos(mx, my, boardGen, cells);
+      let potentialElement = getSelectedElementFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
       if (potentialElement) {
         dispatch(setSelectedElement(potentialElement));
@@ -201,16 +207,16 @@ export function Board() {
         return
       } else {
 
-        if (selectedElement && selectedElement.type == "person") {
+        if (selectedElement && selectedElement.type == ElementType.Person) {
           // check if one of the adjacent tiles has been selected
 
-          let elemParentCell = getElementParentCell(selectedElement, cells);
-          let adjacentCells = BoardGenerator.getAdjacentCells(cells, elemParentCell);
+          let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+          let adjacentCells = BoardUtils.getAdjacentCells(cells, elemParentCell);
 
           let newCells = null;
           for (var ac of adjacentCells) {
             if (ac.x == potentialSelectedCell.x && ac.y == potentialSelectedCell.y) {
-              newCells = BoardGenerator.moveElement(cells, selectedElement, ac);
+              newCells = BoardUtils.moveElement(cells, selectedElement, ac);
             }
           }
 
@@ -251,27 +257,16 @@ export function Board() {
 
   const canvasRef = useRef(null);
 
-  const boardGen = new BoardGenerator({
-    radius: hexRadius*zoom,
-    offsetX: offset.x,
-    offsetY: offset.y,
-    selectedCell: selectedCell,
-    selectedElement: selectedElement
-  }, canvasWidth, canvasHeight);
-
-  // draw to canvas
   useEffect(() => {
     if (cells.length === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    drawBoard(boardGen, canvas, cells);
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    BoardRenderer.render(ctx, cells, selectedCell, selectedElement, hexRadius, offset.x, offset.y);
   }, [cells, zoom, offset, selectedCell, selectedElement]);
-
-  // ===========================
-  // Render
-  // ===========================
 
   return (
     <canvas

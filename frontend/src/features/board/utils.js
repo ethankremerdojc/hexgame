@@ -1,6 +1,21 @@
+export const randomInt = (min, max) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 export const randomItem = (arr) => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
+
+export function getRandomEnumValue(enumeration) {
+  const keys = Object.keys(enumeration);
+
+  // White, Purple, Red, 0, 1, 2
+
+  return randomInt(0, Math.floor(keys.length / 2));
+}
+
 
 function svgToPath2Ds(svgText, teamColor) {
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
@@ -19,6 +34,11 @@ function svgToPath2Ds(svgText, teamColor) {
       strokeColor = teamColor;
     }
 
+    let fillColor = el.getAttribute("fill");
+    if (fillColor == "$TEAMCOLOR$") {
+      fillColor = teamColor;
+    }
+
     const tag = el.tagName.toLowerCase();
     const path = new Path2D();
 
@@ -28,7 +48,7 @@ function svgToPath2Ds(svgText, teamColor) {
 
       items.push({
         path: new Path2D(d),
-        fill: el.getAttribute("fill"),
+        fill: fillColor,
         stroke: strokeColor,
       });
       continue;
@@ -43,7 +63,7 @@ function svgToPath2Ds(svgText, teamColor) {
 
       items.push({
         path,
-        fill: el.getAttribute("fill"),
+        fill: fillColor,
         stroke: strokeColor,
       });
       continue;
@@ -59,7 +79,7 @@ function svgToPath2Ds(svgText, teamColor) {
 
       items.push({
         path,
-        fill: el.getAttribute("fill"),
+        fill: fillColor,
         stroke: strokeColor,
       });
       continue;

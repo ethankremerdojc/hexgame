@@ -1,69 +1,101 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from "@reduxjs/toolkit";
-import { BoardGenerator } from "./boardGen";
 
 export enum HexPosition {
+  Center,
   Top,
   TopLeft,
   TopRight,
   Bottom,
   BottomLeft,
   BottomRight,
-  Center
+}
+
+export enum ElementType {
+  Building,
+  Person,
+  Item
+}
+
+export enum CellType {
+  Field,
+  Water,
+  Forest,
+  Mountain
+}
+
+export enum TeamColor {
+  White,
+  Purple,
+  Red,
+  Yellow,
+  Blue,
+  Green
+}
+
+export function colorForTeam(teamVal) {
+  return [
+    "white",
+    "purple",
+    "red",
+    "yellow",
+    "blue",
+    "green"
+  ][teamVal]
 }
 
 export type Element = {
-  type: String,
-  subType: String,
-  team: String,
+  type: ElementType,
+  subType: string,
+  team: TeamColor,
   position: HexPosition,
-  id: String
-}
-
-
-
-export function getSizeForElement(elem: Element, radius: number): number {
-  let { halfRadius, buildingSize, objectSize, toolSize } = BoardGenerator.getElemSizes(radius);
-
-  if (["worker", "soldier", "archer"].includes(elem.type)) {
-    return objectSize
-  }
-  if (["pitchfork", "sword", "bow"].includes(elem.type)) {
-    return toolSize
-  }
-  return buildingSize
+  id: string
 }
 
 export type Cell = {
-  x: Number,
-  y: Number,
-  type: String,
+  x: number,
+  y: number,
+  type: CellType,
   contents: Element[]
 };
 
-export type Coordinate = {
-  x: Number,
-  y: Number
+export const CELL_INFO_BY_TYPE = {
+  0: { // Field
+    color: "rgb(16 108 14)",
+    weight: 1
+  },
+  1: { // Water
+    color: "rgb(32 35 196)",
+    weight: 0.4
+  },
+  2: { // Forest
+    color: "rgb(91 41 10)",
+    weight: 0.5
+  },
+  3: { // Mountain
+    color: "rgb(75 69 66)",
+    weight: 0.3
+  }
 }
 
-function parseId(id) {
+export type Coordinate = {
+  x: number,
+  y: number
+}
+
+export function parseElementId(id) {
   const [coords, position] = id.split('|');
   const [x, y] = coords.split(',').map(Number);
 
   return { x, y, position };
 }
 
-export function getElementParentCell(elem: Element, cells: Cell[]) {
-  let { x, y } = parseId(elem.id);
-  for (var cell of cells) {
-    if (cell.x == x && cell.y == y) {
-      return cell
-    }
-  }
-}
-
 interface BoardState {
-  cells: Cell[];
+  cells: Cell[],
+  selectedCell: Cell,
+  selectedElement: Element,
+  offset: Coordinate,
+  zoom: number
 }
 
 const initialState: BoardState = {
@@ -86,16 +118,23 @@ const boardSlice = createSlice({
         let newCell = {...cell};
         let newContents = [];
 
-        let buildingsFound = 0;
+        let personElements = cell.contents.filter(e => e.type == ElementType.Person);
+        let buildingElements = cell.contents.filter(e => e.type == ElementType.Building);
+        
+        if (buildingElements.length > 0) {
+          let building = {...buildingElements[0]};
+          building.position = 0;
+          newContents.push(building);
+        }
 
-        for (let i=0; i < cell.contents.length; i++) {
-          let newElem = {...cell.contents[i]};
-          if (newElem.type == "building") {
-            newElem.position = HexPosition.Center;
-            buildingsFound += 1;
+        for (let i=0; i < personElements.length; i++) {
+          let newElem = {...personElements[i]};
+          if (buildingElements.length == 0) {
+            newElem.position = i;
           } else {
-            newElem.position = Math.min(i-buildingsFound, 5);
+            newElem.position = i + 1;
           }
+
           newElem.id = `${cell.x},${cell.y}|${newElem.position}`;
           newContents.push(newElem);
         }
