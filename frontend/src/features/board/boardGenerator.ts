@@ -1,10 +1,10 @@
 import {
-  HexPosition, ElementType, CellType, TeamColor,
+  HexPosition, ElementType, ElementSubType, CellType, TeamColor,
   CELL_INFO_BY_TYPE
 } from "./boardSlice.ts";
 
 import {
-  randomItem, getRandomEnumValue
+  randomItem, getEnumValueByIndex
 } from "./utils.js";
 
 import type { 
@@ -145,7 +145,7 @@ export class BoardGenerator {
     let newBoard = [...board];
 
     for (let i=0; i<playerCount; i++) {
-      newBoard = this.addRandomCapitalToBoard(newBoard, getRandomEnumValue(TeamColor));
+      newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColor, i));
     }
 
     return newBoard;
@@ -162,8 +162,13 @@ export class BoardGenerator {
 
     let randomCell = randomItem(emptyCells);
 
-    randomCell.contents.push({type: ElementType.Building, subType: "capital", team: color});
-    randomCell.contents.push({type: ElementType.Person, subType: "worker", team: color});
+    randomCell.contents.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
+    randomCell.contents.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color});
+
+    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 3});
+    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 5});
+    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Gold, count: 10});
+    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Food, count: 15});
     return newBoard;
   }
 }

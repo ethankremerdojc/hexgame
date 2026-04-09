@@ -8,11 +8,16 @@ export const randomItem = (arr) => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+
+// Below two have both the names and numbers if you do values, otherwise reversed
+// White, Purple, Red, 0, 1, 2
+export function getEnumValueByIndex(enumeration, index) {
+  const keys = Object.keys(enumeration);
+  return keys[index];
+}
+
 export function getRandomEnumValue(enumeration) {
   const keys = Object.keys(enumeration);
-
-  // White, Purple, Red, 0, 1, 2
-
   return randomInt(0, Math.floor(keys.length / 2));
 }
 

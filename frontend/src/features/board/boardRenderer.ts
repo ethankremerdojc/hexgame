@@ -2,6 +2,7 @@ import {
   HexPosition,
   CELL_INFO_BY_TYPE, colorForTeam,
   ElementType,
+  ElementSubType,
   parseElementId
 } from "./boardSlice.ts";
 
@@ -15,9 +16,61 @@ import type {
 
 import { randomItem, drawSvgToCanvas } from "./utils.js";
 
-import personSvg from "./elements/person.svg?raw";
+//buildings
 import capitalSvg from "./elements/capital.svg?raw";
+import villageSvg from "./elements/house.svg?raw";
+
+//persons
+import personSvg from "./elements/person.svg?raw";
 import forkSvg from "./elements/pitchfork.svg?raw";
+
+//items
+import foodSvg from "./elements/bread.svg?raw";
+import goldSvg from "./elements/coin.svg?raw";
+import woodSvg from "./elements/log.svg?raw";
+import oreSvg from "./elements/rock.svg?raw";
+
+function getSvgForElement(elem) {
+  switch (elem.subType) {
+    // buildings
+    case ElementSubType.Capital:
+      return capitalSvg;
+      break;
+    case ElementSubType.Village:
+      return capitalSvg;
+      break;
+    // case ElementSubType.Farm:
+    //   return capitalSvg;
+    //   break;
+    // case ElementSubType.Quarry:
+    //   return capitalSvg;
+    //   break;
+
+    // Persons
+    case ElementSubType.Worker:
+    case ElementSubType.Soldier:
+    case ElementSubType.Archer:
+      return personSvg;
+      break;
+
+    // items
+    case ElementSubType.Food:
+      return foodSvg;
+      break;
+    case ElementSubType.Gold:
+      return goldSvg;
+      break;
+    case ElementSubType.Wood:
+      return woodSvg;
+      break;
+    case ElementSubType.Ore:
+      return oreSvg;
+      break;
+    default:
+      throw new Error("unknown element subtype: ", elem.subType);
+      break;
+  }
+}
 
 const TAU = 2 * Math.PI;
 
@@ -94,18 +147,22 @@ export class BoardRenderer {
   }
 
   static drawElements(ctx, origin, cell, radius) {
-    let { halfRadius, buildingSize, objectSize, toolSize } = BoardUtils.getElemSizes(radius);
+    let { halfRadius, buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
     let halfToolSize = toolSize / 2;
 
-    for (var element of cell.contents) {
+    let nonItemElements = cell.contents.filter(e => e.type != ElementType.Item);
+    let itemElements = cell.contents.filter(e => e.type == ElementType.Item);
+
+    for (var element of nonItemElements) {
 
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
       let originOffset = null;
 
       let elemColor = colorForTeam(element.team);
+      let elemSvg = getSvgForElement(element);
 
-      if (element.subType == "capital") {
-        drawSvgToCanvas(capitalSvg, ctx,
+      if (element.type == ElementType.Building) {
+        drawSvgToCanvas(elemSvg, ctx,
           elemPos.x, elemPos.y,
           buildingSize, buildingSize,
           elemColor
@@ -113,19 +170,67 @@ export class BoardRenderer {
       }
 
       if (element.type == ElementType.Person) {
-        drawSvgToCanvas(personSvg, ctx,
+        drawSvgToCanvas(elemSvg, ctx,
           elemPos.x, elemPos.y,
           objectSize, objectSize,
           elemColor
         );
+
+        if (element.subType == ElementSubType.Worker) {
+          drawSvgToCanvas(forkSvg, ctx,
+            elemPos.x + objectSize + halfToolSize, elemPos.y,
+            toolSize, objectSize,
+          );
+        }
+      }
+    }
+
+    let itemElementsCount = itemElements.length;
+
+    let twoRows = itemElementsCount > 5;
+
+    for (let i=0; i < itemElementsCount; i++) {
+      let element = itemElements[i];
+      let elemPos = BoardUtils.getElementPosition(element, origin, radius);
+
+      let itemSpace = 0.8;
+
+      if (twoRows) {
+        if (i<=4) {
+          elemPos.y -= itemSize*0.8;
+        } else {
+          elemPos.y += itemSize*0.8;
+        }
       }
 
-      if (element.subType == "worker") {
-        drawSvgToCanvas(forkSvg, ctx,
-          elemPos.x + objectSize + halfToolSize, elemPos.y,
-          toolSize, objectSize,
-        );
+      let subI;
+
+      if (i <= 4) {
+        subI = i;
+      } else {
+        subI = i - 5;
       }
+
+      if (subI%2) {
+        elemPos.x = origin.x - subI*0.5*(1+itemSpace)*itemSize - (1+(itemSpace*0.5))*itemSize;
+      } else {
+        elemPos.x = origin.x + subI*0.5*(1+itemSpace)*itemSize - 0.5*itemSize;
+      }
+
+      let elemSvg = getSvgForElement(element);
+
+      drawSvgToCanvas(elemSvg, 
+        ctx,
+        elemPos.x, elemPos.y,
+        itemSize, itemSize
+      );
+
+      ctx.fillStyle = "black";
+      ctx.font = `${itemSize}px serif`;
+      let countStr = element.count.toString();
+      let digits = countStr.length;
+
+      ctx.fillText(element.count, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
     }
   }
 

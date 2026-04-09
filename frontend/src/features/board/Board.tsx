@@ -79,7 +79,7 @@ export function Board() {
     if (cells.length === 0) {
       const BG = new BoardGenerator();
       const newBoard = BG.generateBoard(
-        hexRadius, canvasWidth, canvasHeight, 1
+        hexRadius, canvasWidth, canvasHeight, 4
       );
       dispatch(setCells(newBoard));
     }
@@ -94,7 +94,7 @@ export function Board() {
   const firstMouseRef: Coordinate = useRef({ x: 0, y: 0 });
   const lastMouseRef: Coordinate = useRef({ x: 0, y: 0 });
 
-  let initialRadius = 30;
+  let initialRadius = 70;
   let hexRadius = initialRadius*zoom;
   let canvasWidth = 800;
   let canvasHeight = 800;

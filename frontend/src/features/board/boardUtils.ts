@@ -30,14 +30,16 @@ export class BoardUtils {
   static getElemSizes(radius) {
     let halfRadius = radius/2;
     let buildingSize = 0.5 * radius;
-    let objectSize = buildingSize * 0.5;
+    let objectSize = buildingSize * 0.65;
     let toolSize = objectSize / 3;
+    let itemSize = objectSize / 2.5;
 
     return {
       halfRadius: halfRadius,
       buildingSize, buildingSize,
       objectSize: objectSize,
-      toolSize: toolSize
+      toolSize: toolSize,
+      itemSize: itemSize
     }
   }
 
@@ -59,6 +61,10 @@ export class BoardUtils {
     let halfObjectSize = objectSize / 2;
     let halfRadius = radius / 2;
 
+    if (element.type == ElementType.Item) {
+      return {x: -1, y: origin.y + radius*0.5};
+    }
+
     let elemPos;
     switch (element.position) {
       case HexPosition.Top:
@@ -71,14 +77,13 @@ export class BoardUtils {
         elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y - radius*0.45};
         break;
 
-      case HexPosition.Bottom:
-        elemPos = {x: origin.x - halfObjectSize, y: origin.y + radius*0.5};
-        break;
+      // case HexPosition.Bottom:
+      //   break;
       case HexPosition.BottomLeft:
-        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y + radius*0.2};
+        elemPos = {x: origin.x - halfObjectSize - halfRadius, y: origin.y};
         break;
       case HexPosition.BottomRight:
-        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y + radius*0.2};
+        elemPos = {x: origin.x - halfObjectSize + halfRadius, y: origin.y};
         break;
 
       case HexPosition.Center:

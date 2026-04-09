@@ -6,7 +6,6 @@ export enum HexPosition {
   Top,
   TopLeft,
   TopRight,
-  Bottom,
   BottomLeft,
   BottomRight,
 }
@@ -15,6 +14,26 @@ export enum ElementType {
   Building,
   Person,
   Item
+}
+
+export enum ElementSubType {
+
+  // buildings 
+  Capital,
+  Village,
+  Farm,
+  Quarry,
+
+  // persons
+  Worker,
+  Soldier,
+  Archer,
+
+  // items
+  Food,
+  Wood,
+  Ore,
+  Gold
 }
 
 export enum CellType {
@@ -46,10 +65,11 @@ export function colorForTeam(teamVal) {
 
 export type Element = {
   type: ElementType,
-  subType: string,
-  team: TeamColor,
+  subType: ElementSubType,
+  team: TeamColor|void,
   position: HexPosition,
-  id: string
+  id: string,
+  count: number|void
 }
 
 export type Cell = {
@@ -118,8 +138,11 @@ const boardSlice = createSlice({
         let newCell = {...cell};
         let newContents = [];
 
+        //TODO 
+        // instead of 3 filters, loop through all and populate
         let personElements = cell.contents.filter(e => e.type == ElementType.Person);
         let buildingElements = cell.contents.filter(e => e.type == ElementType.Building);
+        let itemElements = cell.contents.filter(e => e.type == ElementType.Item);
         
         if (buildingElements.length > 0) {
           let building = {...buildingElements[0]};
@@ -137,6 +160,10 @@ const boardSlice = createSlice({
 
           newElem.id = `${cell.x},${cell.y}|${newElem.position}`;
           newContents.push(newElem);
+        }
+
+        for (var ie of itemElements) {
+          newContents.push(ie);
         }
 
         newCell.contents = newContents;
@@ -164,7 +191,6 @@ export const getSelectedCell = (state: RootState) => state.board.selectedCell;
 export const getSelectedElement = (state: RootState) => state.board.selectedElement;
 export const getBoardZoom = (state: RootState) => state.board.zoom;
 export const getBoardOffset = (state: RootState) => state.board.offset;
-
 
 export const { 
   setCells,
