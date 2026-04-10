@@ -56,7 +56,6 @@ function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells)
 
       let intersects = pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
       if (intersects) {
-        console.log("Selected", elem);
         return elem;
       }
     }
@@ -64,17 +63,31 @@ function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells)
 }
 
 export function Board() {
+
   const dispatch = useAppDispatch();
 
-  // ===========================
-  // State Handling
-  // ===========================
+  const [renderCount, setRenderCount] = useState(1);
+  const incrementRenderCount = () => { setRenderCount(renderCount + 1) };
 
-  const cells = useAppSelector(getCells);
-  const selectedCell = useAppSelector(getSelectedCell);
-  const selectedElement = useAppSelector(getSelectedElement);
-  const zoom = useAppSelector(getBoardZoom);
-  const offset = useAppSelector(getBoardOffset);
+  const cells =             useAppSelector(getCells);
+  const selectedCell =      useAppSelector(getSelectedCell);
+  const selectedElement =   useAppSelector(getSelectedElement);
+  const zoom =              useAppSelector(getBoardZoom);
+  const offset =            useAppSelector(getBoardOffset);
+
+  let initialRadius =   70;
+  let canvasWidth =     800;
+  let canvasHeight =    800;
+
+  let hexRadius = initialRadius*zoom;
+  let qcw = canvasWidth / 4;
+  let qch = canvasHeight / 4;
+
+  let minOffsetX = (-0.5*hexRadius)+(canvasWidth - canvasWidth*zoom)-qcw;
+  let maxOffsetX = 0.5*hexRadius + qcw;
+
+  let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qcw;
+  let maxOffsetY = 0.5*hexRadius+qcw;
 
   useEffect(() => {
     if (cells.length === 0) {
@@ -86,28 +99,40 @@ export function Board() {
     }
   }, [cells, dispatch]);
 
+
+  useEffect(() => {
+    if (cells.length === 0) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // console.log("Renders: ", renderCount);
+
+    BoardRenderer.render(
+      ctx,
+      cells,
+      selectedCell,
+      selectedElement,
+      hexRadius,
+      offset.x,
+      offset.y
+    );
+
+    incrementRenderCount();
+
+  }, [cells, zoom, offset, selectedCell, selectedElement]);
+
   // ===========================
   // Mouse things
   // ===========================
 
+  const canvasRef = useRef(null);
   const mouseIsDown: boolean = useRef(false);
   const isDraggingRef: boolean = useRef(false);
   const firstMouseRef: Coordinate = useRef({ x: 0, y: 0 });
   const lastMouseRef: Coordinate = useRef({ x: 0, y: 0 });
-
-  let initialRadius = 70;
-  let hexRadius = initialRadius*zoom;
-  let canvasWidth = 800;
-  let canvasHeight = 800;
-
-  let qcw = canvasWidth / 4;
-  let qch = canvasHeight / 4;
-
-  let minOffsetX = (-0.5*hexRadius)+(canvasWidth - canvasWidth*zoom)-qcw;
-  let maxOffsetX = 0.5*hexRadius + qcw;
-
-  let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qcw;
-  let maxOffsetY = 0.5*hexRadius+qcw;
 
   const handleWheel = (e) => {
     const canvas = canvasRef.current; if (!canvas) return;
@@ -251,23 +276,6 @@ export function Board() {
     mouseIsDown.current = false;
     firstMouseRef.current = { x: 0, y: 0 };
   };
-
-  // ===========================
-  // Canvas / hex size
-  // ===========================
-
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    if (cells.length === 0) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    BoardRenderer.render(ctx, cells, selectedCell, selectedElement, hexRadius, offset.x, offset.y);
-  }, [cells, zoom, offset, selectedCell, selectedElement]);
 
   return (
     <canvas

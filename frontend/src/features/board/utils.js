@@ -21,18 +21,42 @@ export function getRandomEnumValue(enumeration) {
   return randomInt(0, Math.floor(keys.length / 2));
 }
 
+function applyElementTransform(el, path) {
+  const transformList = el.transform?.baseVal;
 
-function svgToPath2Ds(svgText, teamColor) {
-  const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
-  const svg = doc.querySelector("svg");
-
-  if (!svg) {
-    throw new Error("Invalid SVG: no <svg> root found");
+  if (!transformList || transformList.numberOfItems === 0) {
+    return path;
   }
 
-  const items = [];
+  const consolidated = transformList.consolidate();
+  if (!consolidated) {
+    return path;
+  }
 
-  for (const el of svg.children) {
+  const m = consolidated.matrix;
+
+  const matrix = new DOMMatrix([
+    m.a, m.b,
+    m.c, m.d,
+    m.e, m.f,
+  ]);
+
+  const transformedPath = new Path2D();
+  transformedPath.addPath(path, matrix);
+  return transformedPath;
+}
+
+function getChildItems(parent, teamColor) {
+
+  let items = [];
+
+  for (const el of parent.children) {
+    const tag = el.tagName.toLowerCase();
+
+    if (tag == "g") { // group
+      items = [...items, ...getChildItems(el, teamColor)];
+      continue
+    }
 
     let strokeColor = el.getAttribute("stroke");
     if (strokeColor == "$TEAMCOLOR$") {
@@ -44,19 +68,19 @@ function svgToPath2Ds(svgText, teamColor) {
       fillColor = teamColor;
     }
 
-    const tag = el.tagName.toLowerCase();
-    const path = new Path2D();
+    let path = new Path2D();
 
     if (tag === "path") {
       const d = el.getAttribute("d");
       if (!d) continue;
+      path = new Path2D(d),
+      path = applyElementTransform(el, path);
 
       items.push({
-        path: new Path2D(d),
+        path,
         fill: fillColor,
         stroke: strokeColor,
       });
-      continue;
     }
 
     if (tag === "circle") {
@@ -65,13 +89,13 @@ function svgToPath2Ds(svgText, teamColor) {
       const r = Number(el.getAttribute("r") || 0);
 
       path.arc(cx, cy, r, 0, Math.PI * 2);
+      path = applyElementTransform(el, path);
 
       items.push({
         path,
         fill: fillColor,
         stroke: strokeColor,
       });
-      continue;
     }
 
     if (tag === "rect") {
@@ -81,15 +105,28 @@ function svgToPath2Ds(svgText, teamColor) {
       const height = Number(el.getAttribute("height") || 0);
 
       path.rect(x, y, width, height);
+      path = applyElementTransform(el, path);
 
       items.push({
         path,
         fill: fillColor,
         stroke: strokeColor,
       });
-      continue;
     }
   }
+
+  return items
+}
+
+function svgToPath2Ds(svgText, teamColor) {
+  const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  var svg = doc.querySelector("svg");
+
+  if (!svg) {
+    throw new Error("Invalid SVG: no <svg> root found");
+  }
+
+  const items = getChildItems(svg, teamColor);
 
   return {
     viewBox: svg.getAttribute("viewBox"),

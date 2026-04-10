@@ -1,5 +1,5 @@
 import {
-  HexPosition,
+  HexPosition, CellType,
   CELL_INFO_BY_TYPE, colorForTeam,
   ElementType,
   ElementSubType,
@@ -14,21 +14,22 @@ import type {
   Cell, Coordinate, Element
 } from "./boardSlice.ts";
 
+import { getGrassCanvas, getForestCanvas } from "./canvasPatterns.ts";
 import { randomItem, drawSvgToCanvas } from "./utils.js";
 
 //buildings
-import capitalSvg from "./elements/capital.svg?raw";
-import villageSvg from "./elements/house.svg?raw";
+import capitalSvg from "./svg/capital.svg?raw";
+import villageSvg from "./svg/house.svg?raw";
 
 //persons
-import personSvg from "./elements/person.svg?raw";
-import forkSvg from "./elements/pitchfork.svg?raw";
+import personSvg from "./svg/person.svg?raw";
+import forkSvg from "./svg/pitchfork.svg?raw";
 
 //items
-import foodSvg from "./elements/bread.svg?raw";
-import goldSvg from "./elements/coin.svg?raw";
-import woodSvg from "./elements/log.svg?raw";
-import oreSvg from "./elements/rock.svg?raw";
+import foodSvg from "./svg/bread.svg?raw";
+import goldSvg from "./svg/coin.svg?raw";
+import woodSvg from "./svg/log.svg?raw";
+import oreSvg from "./svg/rock.svg?raw";
 
 function getSvgForElement(elem) {
   switch (elem.subType) {
@@ -71,6 +72,7 @@ function getSvgForElement(elem) {
       break;
   }
 }
+
 
 const TAU = 2 * Math.PI;
 
@@ -115,21 +117,18 @@ export class BoardRenderer {
       BoardRenderer.drawHex(
         ctx, radius, pixelOrigin,
         hexPoints, cell,
-        cellHighlighted, selectedCell
+        cellHighlighted, selectedCell, offsetX, offsetY
       );
     }
   }
 
-  static drawHex(ctx, radius, origin, points, cell, cellHighlighted, selectedCell) {
+  static drawHex(ctx, radius, origin, points, cell, cellHighlighted, selectedCell, offsetX, offsetY) {
     ctx.save();
     ctx.translate(origin.x, origin.y);
     BoardRenderer.polyPath3(ctx, points);
     ctx.restore();
 
-    let cellColor = getColorForType(cell.type);
-    ctx.fillStyle = cellColor;
-    ctx.fill();
-
+    BoardRenderer.fillCell(ctx, cell.type, radius, offsetX, offsetY);
     BoardRenderer.drawElements(ctx, origin, cell, radius);
 
     if (selectedCell) {
@@ -144,6 +143,36 @@ export class BoardRenderer {
     }
 
     // this.drawBoundingBoxTriangles(ctx, cell, opts);
+  }
+
+  static fillCell(ctx, cellType, radius, offsetX, offsetY) {
+    let pattern;
+
+    console.log("Cell type", cellType);
+
+    switch (Number(cellType)) {
+      case CellType.Field:
+        pattern = ctx.createPattern(getGrassCanvas(radius), "repeat");
+        break;
+      case CellType.Forest:
+        pattern = ctx.createPattern(getForestCanvas(radius), "repeat");
+        break;
+      default:
+        pattern = getColorForType(cellType);
+        break;
+    }
+
+    if (typeof(pattern) != "string") {
+      pattern.setTransform(
+        new DOMMatrix().translate(
+          offsetX,
+          offsetY
+        )
+      );
+    }
+
+    ctx.fillStyle = pattern;
+    ctx.fill();
   }
 
   static drawElements(ctx, origin, cell, radius) {
