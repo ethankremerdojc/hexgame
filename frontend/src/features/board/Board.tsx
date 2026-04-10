@@ -287,7 +287,7 @@ export function Board() {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      style={{ border: "1px solid #ccc" }}
+      style={{ border: "1px solid #ccc", background: "#898989" }}
     />
   );
 }

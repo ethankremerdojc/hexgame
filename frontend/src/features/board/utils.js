@@ -123,7 +123,7 @@ function getChildItems(parent, teamColor) {
   return items
 }
 
-function svgToPath2Ds(svgText, teamColor) {
+function svgToPath2Ds(svgText, teamColor, ) {
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   var svg = doc.querySelector("svg");
 
@@ -157,10 +157,6 @@ function drawSvgPath2Ds(ctx, svgData, x, y, width, height) {
 
     if (item.stroke && item.stroke !== "none") {
       ctx.strokeStyle = item.stroke;
-      ctx.lineWidth = item.strokeWidth;
-      if (item.strokeWidth) {
-        console.log(item.strokeWidth);
-      }
       ctx.stroke(item.path);
     }
   }

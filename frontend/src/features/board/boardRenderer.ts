@@ -97,7 +97,7 @@ export class BoardRenderer {
     radius: number,
     offsetX: number,
     offsetY: number,
-    inset: number=2,
+    inset: number=1,
   ): void {
     const hexPoints = BoardRenderer.createPoly(radius, inset);
 
@@ -120,7 +120,8 @@ export class BoardRenderer {
       let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius, offsetX, offsetY);
 
       BoardRenderer.drawHex(
-        ctx, radius, pixelOrigin,
+        ctx, radius,
+        pixelOrigin,
         hexPoints, cell,
         cellHighlighted, selectedCell, offsetX, offsetY
       );
@@ -136,23 +137,23 @@ export class BoardRenderer {
     BoardRenderer.fillCell(ctx, cell.type, radius, offsetX, offsetY);
     BoardRenderer.drawElements(ctx, origin, cell, radius);
 
-    if (selectedCell) {
-      if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
-        ctx.strokeStyle = "white";
-        ctx.stroke();
-      }
-    }
-    if (cellHighlighted) {
+
+    ctx.lineWidth = 4;
+
+    if (selectedCell && cell.x == selectedCell.x && cell.y == selectedCell.y) {
+      ctx.strokeStyle = "purple";
+      ctx.stroke();
+    } else if (cellHighlighted) {
       ctx.strokeStyle = "yellow";
       ctx.stroke();
     }
 
+    ctx.lineWidth = null;
     // this.drawBoundingBoxTriangles(ctx, cell, opts);
   }
 
   static fillCell(ctx, cellType, radius, offsetX, offsetY) {
     let pattern;
-
 
     switch (Number(cellType)) {
       case CellType.Field:
