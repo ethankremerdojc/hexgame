@@ -63,6 +63,8 @@ function getChildItems(parent, teamColor) {
       strokeColor = teamColor;
     }
 
+    let strokeWidth = el.getAttribute("strokewidth");
+
     let fillColor = el.getAttribute("fill");
     if (fillColor == "$TEAMCOLOR$") {
       fillColor = teamColor;
@@ -80,6 +82,7 @@ function getChildItems(parent, teamColor) {
         path,
         fill: fillColor,
         stroke: strokeColor,
+        srokeWidth: strokeWidth
       });
     }
 
@@ -95,6 +98,7 @@ function getChildItems(parent, teamColor) {
         path,
         fill: fillColor,
         stroke: strokeColor,
+        srokeWidth: strokeWidth
       });
     }
 
@@ -111,6 +115,7 @@ function getChildItems(parent, teamColor) {
         path,
         fill: fillColor,
         stroke: strokeColor,
+        srokeWidth: strokeWidth
       });
     }
   }
@@ -152,6 +157,10 @@ function drawSvgPath2Ds(ctx, svgData, x, y, width, height) {
 
     if (item.stroke && item.stroke !== "none") {
       ctx.strokeStyle = item.stroke;
+      ctx.lineWidth = item.strokeWidth;
+      if (item.strokeWidth) {
+        console.log(item.strokeWidth);
+      }
       ctx.stroke(item.path);
     }
   }

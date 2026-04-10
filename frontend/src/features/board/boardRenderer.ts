@@ -14,7 +14,12 @@ import type {
   Cell, Coordinate, Element
 } from "./boardSlice.ts";
 
-import { getGrassCanvas, getForestCanvas } from "./canvasPatterns.ts";
+import { 
+  getGrassCanvas,
+  getForestCanvas,
+  getMountainCanvas,
+  getWaterCanvas
+} from "./canvasPatterns.ts";
 import { randomItem, drawSvgToCanvas } from "./utils.js";
 
 //buildings
@@ -148,7 +153,6 @@ export class BoardRenderer {
   static fillCell(ctx, cellType, radius, offsetX, offsetY) {
     let pattern;
 
-    console.log("Cell type", cellType);
 
     switch (Number(cellType)) {
       case CellType.Field:
@@ -156,6 +160,12 @@ export class BoardRenderer {
         break;
       case CellType.Forest:
         pattern = ctx.createPattern(getForestCanvas(radius), "repeat");
+        break;
+      case CellType.Mountain:
+        pattern = ctx.createPattern(getMountainCanvas(radius), "repeat");
+        break;
+      case CellType.Water:
+        pattern = ctx.createPattern(getWaterCanvas(radius), "repeat");
         break;
       default:
         pattern = getColorForType(cellType);
