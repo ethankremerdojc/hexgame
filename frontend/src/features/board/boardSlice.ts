@@ -53,6 +53,17 @@ export enum TeamColor {
   Green
 }
 
+export function nameForTeamColor(color: TeamColor): string {
+  return [
+    "White",
+    "Purple",
+    "Red",
+    "Yellow",
+    "Blue",
+    "Green"
+  ][color]
+}
+
 export function nameForElementSubType(elemSubType: ElementType): string {
   return [
     "Capital",
@@ -308,7 +319,8 @@ export interface BoardState {
   selectedElement: Element|null,
   offset: Coordinate,
   zoom: number,
-  showMoveInfo: boolean
+  showMoveInfo: boolean,
+  playerTurn: TeamColor
 }
 
 const initialState: BoardState = {
@@ -317,7 +329,8 @@ const initialState: BoardState = {
   selectedElement: null,
   offset: {x: 0, y: 0},
   zoom: 1.0,
-  showMoveInfo: false
+  showMoveInfo: false,
+  playerTurn: TeamColor.White
 };
 
 const boardSlice = createSlice({
@@ -343,6 +356,9 @@ const boardSlice = createSlice({
     },
     setShowMoveInfo(state, action: PayloadAction<boolean>) {
       state.showMoveInfo = action.payload;
+    },
+    setPlayerTurn(state, action: PayloadAction<TeamColor>) {
+      state.playerTurn = action.payload;
     }
   },
 });
@@ -353,6 +369,7 @@ export const getSelectedElement = (state: RootState): Element|null => state.boar
 export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
+export const getPlayerTurn = (state: RootState): TeamColor => state.board.playerTurn;
 
 export const { 
   setCells,

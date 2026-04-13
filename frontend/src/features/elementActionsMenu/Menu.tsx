@@ -12,6 +12,7 @@ import {
   getSelectedElement, setSelectedElement,
 
   getShowMoveInfo, setShowMoveInfo,
+  getPlayerTurn, nameForTeamColor,
 
   ElementAction
 } from "../board/boardSlice.ts";
@@ -26,6 +27,7 @@ export function ElementActionsMenu() {
   const selectedCell =      useAppSelector(getSelectedCell);
   const selectedElement =   useAppSelector(getSelectedElement);
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
+  const playerTurn =      useAppSelector(getPlayerTurn);
 
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
@@ -93,6 +95,7 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu">
+      <h1>Color: {nameForTeamColor(playerTurn)}</h1>
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
           <button onClick={getActionHandler(aai.title)}>{aai.title}</button>

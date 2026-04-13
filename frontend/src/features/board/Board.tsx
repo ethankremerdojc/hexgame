@@ -11,7 +11,8 @@ import {
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
-  getShowMoveInfo, setShowMoveInfo
+  getShowMoveInfo, setShowMoveInfo,
+  getPlayerTurn
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -85,6 +86,7 @@ export function Board() {
   const zoom =              useAppSelector(getBoardZoom);
   const offset =            useAppSelector(getBoardOffset);
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
+  const playerTurn =        useAppSelector(getPlayerTurn);
 
   let initialRadius =   40;
   let canvasWidth =     600;
@@ -239,7 +241,7 @@ export function Board() {
     if (potentialSelectedCell) {
       let potentialElement: Element|null = getSelectedElementFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
-      if (potentialElement) {
+      if (potentialElement && potentialElement.team == playerTurn) {
         dispatch(setSelectedElement(potentialElement));
         dispatch(setSelectedCell(null));
         return
