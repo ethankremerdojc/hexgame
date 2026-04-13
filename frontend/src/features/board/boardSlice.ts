@@ -37,15 +37,6 @@ export enum ElementSubType {
   Gold
 }
 
-export enum ElementAction {
-  Move,
-  Take,
-  Drop,
-  Fight,
-  Build,
-  Destroy
-}
-
 export enum CellType {
   Field,
   Water,
@@ -62,7 +53,21 @@ export enum TeamColor {
   Green
 }
 
-
+export function nameForElementSubType(elemSubType: ElementType): string {
+  return [
+    "Capital",
+    "Village",
+    "Farm",
+    "Quarry",
+    "Worker",
+    "Soldier",
+    "Archer",
+    "Food",
+    "Wood",
+    "Ore",
+    "Gold"
+  ][elemSubType]
+}
 
 export type Element = {
   type: ElementType,
@@ -71,8 +76,12 @@ export type Element = {
   position: HexPosition|null,
   id: string,
   count: number|null,
-  heldElements: Element[]
+  heldElements: Element[],
+  weight: number|null,
+  hasActionAvailable: boolean|null
 }
+
+export const PERSON_MAX_CARRY_WEIGHT = 3;
 
 // maybe make this hve a coordinate inside? 
 export type Cell = {
@@ -85,6 +94,59 @@ export type Cell = {
 export type Coordinate = {
   x: number,
   y: number
+}
+
+
+export enum ElementAction {
+  Move,
+  Take,
+  Drop,
+  Fight,
+  Build,
+  Destroy
+}
+
+interface ActionDetails {
+  title: string,
+  depletesAction: boolean,
+  helpText: string,
+}
+
+const ELEMENT_ACTION_DETAILS: ActionDetails[] = [
+  { // Move
+    title: "move",
+    depletesAction: true,
+    helpText: "Move to an adjacent tile.",
+  },
+  { // Take
+    title: "take",
+    depletesAction: false,
+    helpText: "Pickup an item at the current cell position.",
+  },
+  { // Drop
+    title: "drop",
+    depletesAction: false,
+    helpText: "Drop an item at the current cell position.",
+  },
+  { // Fight
+    title: "fight",
+    depletesAction: true,
+    helpText: "Do damage to another team's person."
+  },
+  { // Build
+    title: "build",
+    depletesAction: true,
+    helpText: "Build a structure with the resources at the current tile."
+  },
+  { // Destroy
+    title: "destroy",
+    depletesAction: true,
+    helpText: "Destroy a structure at the current tile."
+  }
+]
+
+export function getActionDetails(actionType: number): ActionDetails {
+  return ELEMENT_ACTION_DETAILS[actionType]
 }
 
 export function colorForTeam(teamVal: TeamColor|null): string {
@@ -123,28 +185,38 @@ export const CELL_INFO_BY_TYPE = {
 }
 
 export function parseElementId(id: string): any {
-  const [coords, position] = id.split('|');
+  const [coords, heldElementIndex, position, type, subType, count] = id.split('|');
   const [x, y] = coords.split(',').map(Number);
 
-  return { x, y, position };
+  return { x, y, heldElementIndex, position, type, subType, count };
 }
 
 function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
-  newElem.id = `${cell.x},${cell.y}|${newElem.position}`; 
+  newElem.id = `${cell.x},${cell.y}|null|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`; 
 
   if (newElem.type == ElementType.Person) {
     if (!newElem.heldElements) {
       newElem.heldElements = [];
     } else {
-      for (var he of newElem.heldElements) {
+      let newHeldElements = [];
+      for (let h = 0; h < newElem.heldElements.length; h++) {
+        let he = structuredClone(newElem.heldElements[h]);
         if (!he.count) {
           he.count = 1;
         }
+
+        he.id = `${cell.x},${cell.y}|${h}|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`;
+        newHeldElements.push(he);
       }
+      newElem.heldElements = newHeldElements;
     }
     if (!newElem.count) {
       newElem.count = 1;
+    }
+
+    if (newElem.hasActionAvailable === null || newElem.hasActionAvailable === undefined) {
+      newElem.hasActionAvailable = true;
     }
   }
 
@@ -182,9 +254,10 @@ function updateCellElementPositions(elements: Element[]): Element[] {
     } else {
       newElem.position = i + 1;
     }
+    newElements.push(newElem);
   }
 
-  return newElements
+  return [...newElements, ...itemElements];
 }
 
 function updateCellElements(cell: Cell): Element[] {
@@ -192,11 +265,13 @@ function updateCellElements(cell: Cell): Element[] {
   let newElements = [...cell.elements];
   newElements = updateCellElementPositions(newElements);
 
+  let result = [];
+
   for (var elem of newElements) {
-    newElements.push(updateElemAttributes(elem, cell));
+    result.push(updateElemAttributes(elem, cell));
   }
 
-  return newElements;
+  return result;
 }
 
 function prepareCellsForStateSave(cells: Cell[]): Cell[] {
@@ -234,7 +309,6 @@ const boardSlice = createSlice({
   reducers: {
     setCells(state, action: PayloadAction<Cell[]>) {
       let cells = action.payload;
-      // state.cells = cells;
       let newCells = prepareCellsForStateSave(cells);
       state.cells = newCells;
     },

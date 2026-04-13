@@ -153,7 +153,7 @@ export function Board() {
 
     const scaleFactor = e.deltaY < 0 ? 1.1 : 0.9;
 
-    let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 3);
+    let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 5);
     newZoom = Math.round(newZoom * 10) / 10;
 
     let zoomDif = Math.round((newZoom - zoom) * 10) / 10;

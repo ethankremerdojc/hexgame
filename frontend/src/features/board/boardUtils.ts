@@ -3,7 +3,8 @@ import type {
 } from "./boardSlice"
 
 import {
-  HexPosition, ElementType, parseElementId
+  HexPosition, ElementType, ElementAction, parseElementId,
+  PERSON_MAX_CARRY_WEIGHT
 } from "./boardSlice"
 
 export function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
@@ -67,6 +68,7 @@ export class BoardUtils {
     let halfObjectSize = objectSize / 2;
     let halfRadius = radius / 2;
 
+
     if (element.type == ElementType.Item) {
       return {x: -1, y: origin.y + radius*0.5};
     }
@@ -99,17 +101,17 @@ export class BoardUtils {
       default:
 
         if (element.position === undefined || element.position === null) {
-          throw new Error(`No element.position found for element.`);
+          throw new Error(`No element.position found for element`);
         }
 
         throw new Error(`Unknown Hex position: ${element.position}`);
         break;
     }
 
-    if (element.type == ElementType.Person) {
-      let toolSize = objectSize / 3;
-      elemPos.x -= toolSize;
-    }
+    // if (element.type == ElementType.Person) {
+    //   let toolSize = objectSize / 3;
+    //   elemPos.x -= toolSize;
+    // }
 
     return elemPos;
   }
@@ -295,6 +297,58 @@ export class BoardUtils {
     return newCells
   }
 
+  static dropItem(personElem: Element, droppedItemId: string, cells: Cell[]): Cell[] {
+    let _elemParentCell = BoardUtils.getElementParentCell(personElem, cells);
+
+    let newCells = structuredClone(cells);
+    let elemParentCell = null;
+    let newPersonElem = null;
+
+    for (var cell of newCells) {
+      if (_elemParentCell.x == cell.x && _elemParentCell.y == cell.y) {
+        elemParentCell = cell; 
+      }
+    }
+
+    for (var elem of elemParentCell.elements) {
+      if (elem.id == personElem.id) {
+        newPersonElem = elem;
+      }
+    }
+
+    let elementToDrop = newPersonElem.heldElements.filter(e => e.id == droppedItemId)[0];
+    newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != droppedItemId);
+    elemParentCell.elements.push(elementToDrop);
+    return newCells
+  }
+
+  static takeItem(personElem: Element, takenItemId: string, cells: Cell[]): Cell[] {
+    let _elemParentCell = BoardUtils.getElementParentCell(personElem, cells);
+
+    let newCells = structuredClone(cells);
+    let elemParentCell = null;
+    let newPersonElem = null;
+
+    for (var cell of newCells) {
+      if (_elemParentCell.x == cell.x && _elemParentCell.y == cell.y) {
+        elemParentCell = cell; 
+      }
+    }
+
+    for (var elem of elemParentCell.elements) {
+      if (elem.id == personElem.id) {
+        newPersonElem = elem;
+      }
+    }
+
+    console.log(elemParentCell.elements, takenItemId);
+
+    let elementToTake = elemParentCell.elements.filter(e => e.id == takenItemId)[0];
+    newPersonElem.heldElements.push(elementToTake);
+    elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+    return newCells
+  }
+
   static getElementParentCell(elem: Element, cells: Cell[]): Cell {
     let { x, y } = parseElementId(elem.id);
     for (var cell of cells) {
@@ -303,5 +357,73 @@ export class BoardUtils {
       }
     }
     throw new Error("unable to find element parent.")
+  }
+
+  static getPersonCarryingWeight(elem: Element): number {
+    let result = 0;
+    elem.heldElements.forEach(he => {
+      if (he.weight) {
+        result += he.weight;
+      } else {
+        result += 1;
+      }
+    })
+    return result
+  }
+
+  static enemyExistsOnCell(personElem: Element, parentCell: Cell): boolean {
+    let enemyExists = false;
+
+    parentCell.elements.forEach(elem => {
+      if (elem.type == ElementType.Person && elem.team != personElem.team) {
+        enemyExists = true;
+      }
+    })
+
+    return enemyExists;
+  }
+
+  static getAvailableActions(personElem: Element, cells: Cell[]): ElementAction[] {
+
+    if (personElem.type !== ElementType.Person) {
+      throw new Error("Non-person elements do not have actions.")
+    }
+
+    const elementParent = BoardUtils.getElementParentCell(personElem, cells);
+    let personElements = [], buildingElements = [], itemElements = [];
+
+    for (var elem of elementParent.elements) {
+      if (elem.type == ElementType.Person) {
+        personElements.push(elem);
+      }
+      if (elem.type == ElementType.Building) {
+        buildingElements.push(elem);
+      }
+      if (elem.type == ElementType.Item) {
+        itemElements.push(elem);
+      }
+    }
+
+    let result = [ElementAction.Move];
+
+    if (buildingElements.length === 0) {
+      result.push(ElementAction.Build);
+    } else {
+      result.push(ElementAction.Destroy);
+    }
+
+    let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);
+    if (currentCarryWeight > 0) {
+      result.push(ElementAction.Drop)
+    }
+    if (currentCarryWeight != PERSON_MAX_CARRY_WEIGHT && itemElements.length > 0) {
+      result.push(ElementAction.Take)
+    }
+
+    if (BoardUtils.enemyExistsOnCell(personElem, elementParent)) {
+      result.push(ElementAction.Fight)
+    }
+
+    return result
   }
 }
