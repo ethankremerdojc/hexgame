@@ -11,6 +11,8 @@ import {
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
 
+  getShowMoveInfo, setShowMoveInfo,
+
   ElementAction
 } from "../board/boardSlice.ts";
 
@@ -23,6 +25,7 @@ export function ElementActionsMenu() {
   const cells =             useAppSelector(getCells);
   const selectedCell =      useAppSelector(getSelectedCell);
   const selectedElement =   useAppSelector(getSelectedElement);
+  const showMoveInfo =      useAppSelector(getShowMoveInfo);
 
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
@@ -72,7 +75,7 @@ export function ElementActionsMenu() {
   }
 
   const moveHandler = () => {
-    console.log("moving to cell");
+    dispatch(setShowMoveInfo(true));
   }
 
   const getActionHandler = (title) => {

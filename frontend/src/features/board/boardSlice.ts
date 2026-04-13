@@ -292,7 +292,8 @@ export interface BoardState {
   selectedCell: Cell|null,
   selectedElement: Element|null,
   offset: Coordinate,
-  zoom: number
+  zoom: number,
+  showMoveInfo: boolean
 }
 
 const initialState: BoardState = {
@@ -300,7 +301,8 @@ const initialState: BoardState = {
   selectedCell: null,
   selectedElement: null,
   offset: {x: 0, y: 0},
-  zoom: 1.0
+  zoom: 1.0,
+  showMoveInfo: false
 };
 
 const boardSlice = createSlice({
@@ -323,6 +325,9 @@ const boardSlice = createSlice({
     },
     setSelectedElement(state, action: PayloadAction<Element|null>) {
       state.selectedElement = action.payload;
+    },
+    setShowMoveInfo(state, action: PayloadAction<boolean>) {
+      state.showMoveInfo = action.payload;
     }
   },
 });
@@ -332,13 +337,15 @@ export const getSelectedCell = (state: RootState): Cell|null => state.board.sele
 export const getSelectedElement = (state: RootState): Element|null => state.board.selectedElement;
 export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
+export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
 
 export const { 
   setCells,
   setSelectedCell,
   setSelectedElement,
   setBoardOffset,
-  setBoardZoom
+  setBoardZoom,
+  setShowMoveInfo
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

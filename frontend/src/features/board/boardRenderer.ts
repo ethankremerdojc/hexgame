@@ -86,6 +86,7 @@ export class BoardRenderer {
     cells: Cell[],
     selectedCell: Cell|null,
     selectedElement: Element|null,
+    showMoveInfo: boolean, 
     radius: number,
     offsetX: number,
     offsetY: number,
@@ -95,7 +96,7 @@ export class BoardRenderer {
 
     let adjacentCells: Cell[] = [];
 
-    if (selectedElement && selectedElement.type == ElementType.Person) {
+    if (showMoveInfo && selectedElement && selectedElement.type == ElementType.Person) {
       let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
       adjacentCells = BoardUtils.getAdjacentCells(cells, parentCell);
     }
@@ -122,7 +123,7 @@ export class BoardRenderer {
 
   static drawHex(
     ctx: CanvasRenderingContext2D, radius: number, origin: Coordinate, points: any, 
-    cell: Cell, cellHighlighted: boolean, selectedCell: Cell|null, 
+    cell: Cell, cellHighlighted: boolean, selectedCell: Cell|null,
     offsetX: number, offsetY: number
   ) {
     ctx.save();

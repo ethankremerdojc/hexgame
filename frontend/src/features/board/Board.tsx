@@ -11,6 +11,7 @@ import {
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
+  getShowMoveInfo, setShowMoveInfo
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -83,6 +84,7 @@ export function Board() {
   const selectedElement =   useAppSelector(getSelectedElement);
   const zoom =              useAppSelector(getBoardZoom);
   const offset =            useAppSelector(getBoardOffset);
+  const showMoveInfo =      useAppSelector(getShowMoveInfo);
 
   let initialRadius =   40;
   let canvasWidth =     600;
@@ -125,6 +127,7 @@ export function Board() {
       cells,
       selectedCell,
       selectedElement,
+      showMoveInfo,
       hexRadius,
       offset.x,
       offset.y
@@ -132,7 +135,7 @@ export function Board() {
 
     incrementRenderCount();
 
-  }, [cells, zoom, offset, selectedCell, selectedElement]);
+  }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo]);
 
   // ===========================
   // Mouse things
@@ -242,7 +245,7 @@ export function Board() {
         return
       } else {
 
-        if (selectedElement && selectedElement.type == ElementType.Person) {
+        if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 
           let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);
@@ -252,6 +255,7 @@ export function Board() {
           for (var ac of adjacentCells) {
             if (ac.x == potentialSelectedCell.x && ac.y == potentialSelectedCell.y) {
               newCells = BoardUtils.moveElement(cells, selectedElement, ac);
+              dispatch(setShowMoveInfo(false));
             }
           }
 
