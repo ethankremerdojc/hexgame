@@ -221,6 +221,7 @@ export class BoardRenderer {
           elemColor
         );
 
+        // held elements
         for (let i=0; i<element.heldElements.length; i++) {
           let heldElement = element.heldElements[i];
           let heldElemSvg = getSvgForElement(heldElement);
@@ -238,11 +239,21 @@ export class BoardRenderer {
           ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
         }
 
+
         if (element.subType == ElementSubType.Worker) {
           drawSvgToCanvas(forkSvg, ctx,
             elemPos.x + objectSize, elemPos.y,
             toolSize, objectSize,
           );
+        }
+
+
+        //todo determine better 'has actions'
+        if (!element.hasActionAvailable) {
+          ctx.fillStyle = "black";
+          ctx.font = `${objectSize}px serif`;
+
+          ctx.fillText("X", elemPos.x, elemPos.y+objectSize)
         }
       }
     }

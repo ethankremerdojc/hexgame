@@ -209,7 +209,7 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
         he.id = `${cell.x},${cell.y}|${h}|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`;
         newHeldElements.push(he);
       }
-      newElem.heldElements = newHeldElements;
+      newElem.heldElements = mergeItemElements(newHeldElements);
     }
     if (!newElem.count) {
       newElem.count = 1;
@@ -221,6 +221,21 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
   }
 
   return newElem;
+}
+
+function mergeItemElements(itemElements: Element[]): Element[] {
+  let result = [];
+
+  itemElements.forEach(ie => {
+    let matchingElems = result.filter(re => re.subType == ie.subType);
+    if (matchingElems[0]) {
+      matchingElems[0].count += ie.count;
+    } else{
+      result.push(structuredClone(ie));
+    }
+  })
+
+  return result
 }
 
 function updateCellElementPositions(elements: Element[]): Element[] {
@@ -257,7 +272,7 @@ function updateCellElementPositions(elements: Element[]): Element[] {
     newElements.push(newElem);
   }
 
-  return [...newElements, ...itemElements];
+  return [...newElements, ...mergeItemElements(itemElements)];
 }
 
 function updateCellElements(cell: Cell): Element[] {

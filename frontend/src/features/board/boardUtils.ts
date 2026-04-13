@@ -288,7 +288,9 @@ export class BoardUtils {
       }
       else if (cell.x == cellToMoveTo.x && cell.y == cellToMoveTo.y) {
         let newElements = [...cell.elements];
-        newElements.push(elem);
+        let newElem = structuredClone(elem);
+        newElem.hasActionAvailable = false;
+        newElements.push(newElem);
         newCell.elements = newElements;
       }
       newCells.push(newCell);
@@ -341,8 +343,6 @@ export class BoardUtils {
       }
     }
 
-    console.log(elemParentCell.elements, takenItemId);
-
     let elementToTake = elemParentCell.elements.filter(e => e.id == takenItemId)[0];
     newPersonElem.heldElements.push(elementToTake);
     elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
@@ -362,11 +362,13 @@ export class BoardUtils {
   static getPersonCarryingWeight(elem: Element): number {
     let result = 0;
     elem.heldElements.forEach(he => {
+      let itemWeight;
       if (he.weight) {
-        result += he.weight;
+        itemWeight = he.weight;
       } else {
-        result += 1;
+        itemWeight = 1;
       }
+      result += itemWeight * he.count;
     })
     return result
   }
@@ -415,8 +417,10 @@ export class BoardUtils {
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);
     if (currentCarryWeight > 0) {
       result.push(ElementAction.Drop)
-    }
-    if (currentCarryWeight != PERSON_MAX_CARRY_WEIGHT && itemElements.length > 0) {
+    };
+
+    // also if itemElements are not too much weight
+    if (currentCarryWeight < PERSON_MAX_CARRY_WEIGHT && itemElements.length > 0) {
       result.push(ElementAction.Take)
     }
 
