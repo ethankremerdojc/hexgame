@@ -1,9 +1,8 @@
 import {
-  HexPosition, CellType,
-  CELL_INFO_BY_TYPE, colorForTeam,
+  CellType,
+  colorForTeam,
   ElementType,
   ElementSubType,
-  parseElementId
 } from "./boardSlice.ts";
 
 import {
@@ -20,11 +19,11 @@ import {
   getMountainCanvas,
   getWaterCanvas
 } from "./canvasPatterns.ts";
-import { randomItem, drawSvgToCanvas } from "./utils.js";
+import { drawSvgToCanvas } from "./utils.js";
 
 //buildings
 import capitalSvg from "./svg/capital.svg?raw";
-import villageSvg from "./svg/house.svg?raw";
+// import villageSvg from "./svg/house.svg?raw";
 
 //persons
 import personSvg from "./svg/person.svg?raw";
@@ -36,7 +35,7 @@ import goldSvg from "./svg/coin.svg?raw";
 import woodSvg from "./svg/log.svg?raw";
 import oreSvg from "./svg/rock.svg?raw";
 
-function getSvgForElement(elem) {
+function getSvgForElement(elem: Element) {
   switch (elem.subType) {
     // buildings
     case ElementSubType.Capital:
@@ -73,7 +72,7 @@ function getSvgForElement(elem) {
       return oreSvg;
       break;
     default:
-      throw new Error("unknown element subtype: ", elem.subType);
+      throw new Error(`unknown element subtype: ${elem.subType}`);
       break;
   }
 }
@@ -81,19 +80,12 @@ function getSvgForElement(elem) {
 
 const TAU = 2 * Math.PI;
 
-//TODO
-// move this to import
-function getColorForType(t) {
-  let info = CELL_INFO_BY_TYPE[t];
-  return info.color;
-}
-
 export class BoardRenderer {
   static render(
     ctx: CanvasRenderingContext2D,
     cells: Cell[],
     selectedCell: Cell|null,
-    selectedElement: Cell|null,
+    selectedElement: Element|null,
     radius: number,
     offsetX: number,
     offsetY: number,
@@ -101,7 +93,7 @@ export class BoardRenderer {
   ): void {
     const hexPoints = BoardRenderer.createPoly(radius, inset);
 
-    let adjacentCells = [];
+    let adjacentCells: Cell[] = [];
 
     if (selectedElement && selectedElement.type == ElementType.Person) {
       let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
@@ -128,7 +120,11 @@ export class BoardRenderer {
     }
   }
 
-  static drawHex(ctx, radius, origin, points, cell, cellHighlighted, selectedCell, offsetX, offsetY) {
+  static drawHex(
+    ctx: CanvasRenderingContext2D, radius: number, origin: Coordinate, points: any, 
+    cell: Cell, cellHighlighted: boolean, selectedCell: Cell|null, 
+    offsetX: number, offsetY: number
+  ) {
     ctx.save();
     ctx.translate(origin.x, origin.y);
     BoardRenderer.polyPath3(ctx, points);
@@ -137,6 +133,8 @@ export class BoardRenderer {
     BoardRenderer.fillCell(ctx, cell.type, radius, offsetX, offsetY);
     BoardRenderer.drawElements(ctx, origin, cell, radius);
 
+    // we should be able to add a linewidth to all hexes as long as we draw the 
+    // highlighted and selected cells last, reordering them or whatever
 
     ctx.lineWidth = 4;
 
@@ -148,29 +146,34 @@ export class BoardRenderer {
       ctx.stroke();
     }
 
-    ctx.lineWidth = null;
-    // this.drawBoundingBoxTriangles(ctx, cell, opts);
+    ctx.lineWidth = 1;
   }
 
-  static fillCell(ctx, cellType, radius, offsetX, offsetY) {
-    let pattern;
+  static fillCell(ctx: CanvasRenderingContext2D, cellType: CellType, radius: number, offsetX: number, offsetY: number) {
+    let canvasEl: HTMLCanvasElement;
 
     switch (Number(cellType)) {
       case CellType.Field:
-        pattern = ctx.createPattern(getGrassCanvas(radius), "repeat");
+        canvasEl = getGrassCanvas(radius);
         break;
       case CellType.Forest:
-        pattern = ctx.createPattern(getForestCanvas(radius), "repeat");
+        canvasEl = getForestCanvas(radius);
         break;
       case CellType.Mountain:
-        pattern = ctx.createPattern(getMountainCanvas(radius), "repeat");
+        canvasEl = getMountainCanvas(radius);
         break;
       case CellType.Water:
-        pattern = ctx.createPattern(getWaterCanvas(radius), "repeat");
+        canvasEl = getWaterCanvas(radius);
         break;
       default:
-        pattern = getColorForType(cellType);
+        throw new Error(`Can't fill cell by cell type ${cellType}`);
         break;
+    }
+
+    let pattern: CanvasPattern|null = ctx.createPattern(canvasEl, "repeat");
+
+    if (!pattern) {
+      throw new Error("Unable to create canvas pattern obj.");
     }
 
     if (typeof(pattern) != "string") {
@@ -186,17 +189,18 @@ export class BoardRenderer {
     ctx.fill();
   }
 
-  static drawElements(ctx, origin, cell, radius) {
-    let { halfRadius, buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
-    let halfToolSize = toolSize / 2;
+  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number) {
 
-    let nonItemElements = cell.contents.filter(e => e.type != ElementType.Item);
-    let itemElements = cell.contents.filter(e => e.type == ElementType.Item);
+    //TODO
+    //Refactor
+
+    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
+    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
+    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
 
     for (var element of nonItemElements) {
-
+        
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
-      let originOffset = null;
 
       let elemColor = colorForTeam(element.team);
       let elemSvg = getSvgForElement(element);
@@ -228,10 +232,9 @@ export class BoardRenderer {
 
           ctx.fillStyle = "white";
           ctx.font = `${miniItemSize}px serif`;
-          let countStr = heldElement.count.toString();
-          let digits = countStr.length;
+          let countStr = heldElement.count ? heldElement.count.toString() : "";
 
-          ctx.fillText(heldElement.count, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
+          ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
         }
 
         if (element.subType == ElementSubType.Worker) {
@@ -285,15 +288,15 @@ export class BoardRenderer {
 
       ctx.fillStyle = "white";
       ctx.font = `${itemSize}px serif`;
-      let countStr = element.count.toString();
+      let countStr = element.count ? element.count.toString() : "";
       let digits = countStr.length;
 
-      ctx.fillText(element.count, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
+      ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
     }
   }
 
-  static drawBoundingBoxTriangles(ctx, cell, radius) {
-    let cellOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius);
+  static drawBoundingBoxTriangles(ctx: CanvasRenderingContext2D, cell: Cell, radius: number) {
+    let cellOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius, 0, 0);
 
     let boundingBoxTriangles = BoardUtils.getBoundingBoxCornerTriangles(radius, cellOrigin);
 
@@ -308,13 +311,13 @@ export class BoardRenderer {
     }
   }
 
-  static drawTileCoords(ctx, cell, origin) {
-    ctx.fillStyle = "black";
-    ctx.font = "20px serif";
-    ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
-  }
+  // static drawTileCoords(ctx: CanvasRenderingContext2D, cell: Cell, origin: Coordinate) {
+  //   ctx.fillStyle = "black";
+  //   ctx.font = "20px serif";
+  //   ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
+  // }
 
-  static createPoly(radius, inset) {
+  static createPoly(radius: number, inset: number) {
     const
       size = radius - inset,
       step = TAU / 6;
@@ -327,11 +330,11 @@ export class BoardRenderer {
     return points;
   }
 
-  static polyPath3(ctx, points = []) {
+  static polyPath3(ctx: CanvasRenderingContext2D, points: any = []) {
     const [{ x: startX, y: startY }] = points;
     ctx.beginPath();
     ctx.moveTo(startX, startY);
-    points.forEach(({ x, y }) => { ctx.lineTo(x, y); });
+    points.forEach(({ x, y }: Coordinate) => { ctx.lineTo(x, y); });
     ctx.closePath();
   }
 }

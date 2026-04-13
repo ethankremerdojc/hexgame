@@ -27,9 +27,11 @@ import {
   BoardUtils, pointInRectangle
 } from "./boardUtils.ts";
 
-import { randomItem } from "./utils.js";
-
-function getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells) {
+function getSelectedCellFromMousePos(
+  mx: number, my: number, 
+  radius: number, offsetX: number, offsetY: number, 
+  cells: Cell[]
+): Cell|null {
   let {x, y} = BoardUtils.pixelToGrid(mx, my, radius, offsetX, offsetY);
 
   for (var cell of cells) {
@@ -37,17 +39,22 @@ function getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells) {
       return cell
     }
   }
+
+  return null
 }
 
-function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells) {
-  let selectedCell = getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells);
-  let { halfRadius, buildingSize, objectSize, toolSize } = BoardUtils.getElemSizes(radius);
+function getSelectedElementFromMousePos(
+  mx: number, my: number, 
+  radius: number, offsetX: number, offsetY: number, 
+  cells: Cell[]
+): Element|null {
+  let selectedCell: Cell|null = getSelectedCellFromMousePos(mx, my, radius, offsetX, offsetY, cells);
 
   if (selectedCell) {
 
     let cellOrigin = BoardUtils.gridToPixelOrigin(selectedCell.x, selectedCell.y, radius, offsetX, offsetY);
 
-    for (var elem of selectedCell.contents) {
+    for (var elem of selectedCell.elements) {
       let elemPos = BoardUtils.getElementPosition(elem, cellOrigin, radius);
       let elemSize = BoardUtils.getSizeForElement(elem, radius);
 
@@ -60,6 +67,8 @@ function getSelectedElementFromMousePos(mx, my, radius, offsetX, offsetY, cells)
       }
     }
   }
+
+  return null
 }
 
 export function Board() {
@@ -75,9 +84,9 @@ export function Board() {
   const zoom =              useAppSelector(getBoardZoom);
   const offset =            useAppSelector(getBoardOffset);
 
-  let initialRadius =   70;
-  let canvasWidth =     800;
-  let canvasHeight =    800;
+  let initialRadius =   40;
+  let canvasWidth =     600;
+  let canvasHeight =    600;
 
   let hexRadius = initialRadius*zoom;
   let qcw = canvasWidth / 4;
@@ -86,8 +95,8 @@ export function Board() {
   let minOffsetX = (-0.5*hexRadius)+(canvasWidth - canvasWidth*zoom)-qcw;
   let maxOffsetX = 0.5*hexRadius + qcw;
 
-  let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qcw;
-  let maxOffsetY = 0.5*hexRadius+qcw;
+  let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
+  let maxOffsetY = 0.5*hexRadius+qch;
 
   useEffect(() => {
     if (cells.length === 0) {
@@ -107,8 +116,9 @@ export function Board() {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // console.log("Renders: ", renderCount);
 
     BoardRenderer.render(
       ctx,
@@ -128,13 +138,13 @@ export function Board() {
   // Mouse things
   // ===========================
 
-  const canvasRef = useRef(null);
-  const mouseIsDown: boolean = useRef(false);
-  const isDraggingRef: boolean = useRef(false);
-  const firstMouseRef: Coordinate = useRef({ x: 0, y: 0 });
-  const lastMouseRef: Coordinate = useRef({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouseIsDown = useRef<boolean>(false);
+  const isDraggingRef = useRef<boolean>(false);
+  const firstMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
+  const lastMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
 
-  const handleWheel = (e) => {
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current; if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -142,7 +152,6 @@ export function Board() {
     const my = e.clientY - rect.top;
 
     const scaleFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    let zoomingOut = scaleFactor === 0.9;
 
     let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 3);
     newZoom = Math.round(newZoom * 10) / 10;
@@ -158,7 +167,7 @@ export function Board() {
     dispatch(setBoardZoom(newZoom))
   }
   
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -194,7 +203,7 @@ export function Board() {
     lastMouseRef.current = { x: mx, y: my };
   };
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     mouseIsDown.current = true;
@@ -207,7 +216,7 @@ export function Board() {
     firstMouseRef.current = { x: mx, y: my };
   };
 
-  const handleMouseUp = (e) => {
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
     mouseIsDown.current = false;
 
     let wasDragging = isDraggingRef.current;
@@ -222,10 +231,10 @@ export function Board() {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    let potentialSelectedCell = getSelectedCellFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
+    let potentialSelectedCell: Cell|null = getSelectedCellFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
     if (potentialSelectedCell) {
-      let potentialElement = getSelectedElementFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
+      let potentialElement: Element|null = getSelectedElementFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
       if (potentialElement) {
         dispatch(setSelectedElement(potentialElement));

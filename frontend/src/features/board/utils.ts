@@ -1,27 +1,27 @@
-export const randomInt = (min, max) => {
+export const randomInt = (min: number, max: number): number => {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-export const randomItem = (arr) => {
+export const randomItem = (arr: any[]): any => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
 
 // Below two have both the names and numbers if you do values, otherwise reversed
 // White, Purple, Red, 0, 1, 2
-export function getEnumValueByIndex(enumeration, index) {
+export function getEnumValueByIndex(enumeration: any, index: number): any {
   const keys = Object.keys(enumeration);
   return keys[index];
 }
 
-export function getRandomEnumValue(enumeration) {
+export function getRandomEnumValue(enumeration: any): number {
   const keys = Object.keys(enumeration);
   return randomInt(0, Math.floor(keys.length / 2));
 }
 
-function applyElementTransform(el, path) {
+function applyElementTransform(el: any, path:any) {
   const transformList = el.transform?.baseVal;
 
   if (!transformList || transformList.numberOfItems === 0) {
@@ -46,9 +46,9 @@ function applyElementTransform(el, path) {
   return transformedPath;
 }
 
-function getChildItems(parent, teamColor) {
+function getChildItems(parent: any, teamColor: string|void): any[] {
 
-  let items = [];
+  let items: any[] = [];
 
   for (const el of parent.children) {
     const tag = el.tagName.toLowerCase();
@@ -123,7 +123,7 @@ function getChildItems(parent, teamColor) {
   return items
 }
 
-function svgToPath2Ds(svgText, teamColor, ) {
+function svgToPath2Ds(svgText: string, teamColor:string|void) {
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   var svg = doc.querySelector("svg");
 
@@ -139,7 +139,7 @@ function svgToPath2Ds(svgText, teamColor, ) {
   };
 }
 
-function drawSvgPath2Ds(ctx, svgData, x, y, width, height) {
+function drawSvgPath2Ds(ctx: CanvasRenderingContext2D, svgData: any, x: number, y: number, width: number, height: number) {
   const [minX, minY, vbWidth, vbHeight] = svgData.viewBox
     .split(/\s+/)
     .map(Number);
@@ -164,7 +164,7 @@ function drawSvgPath2Ds(ctx, svgData, x, y, width, height) {
   ctx.restore();
 }
 
-export function drawSvgToCanvas(svgData, ctx, x, y, width, height, teamColor) {
+export function drawSvgToCanvas(svgData: any, ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, teamColor: string|void=undefined) {
   let svgImageData = svgToPath2Ds(svgData, teamColor);
   drawSvgPath2Ds(ctx, svgImageData, x, y, width, height);
 }

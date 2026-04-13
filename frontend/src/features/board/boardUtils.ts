@@ -1,9 +1,13 @@
+import type {
+  Cell, Element, Coordinate
+} from "./boardSlice"
+
 import {
   HexPosition, ElementType, parseElementId
 } from "./boardSlice"
 
 export function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
-  function sign(p, a, b) {
+  function sign(p: Coordinate, a: Coordinate, b: Coordinate) {
     return (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
   }
 
@@ -27,7 +31,7 @@ export function pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomR
 }
 
 export class BoardUtils {
-  static getElemSizes(radius) {
+  static getElemSizes(radius: number): any {
     let halfRadius = radius/2;
     let buildingSize = radius*0.35;
     let objectSize = buildingSize * 0.65;
@@ -36,7 +40,7 @@ export class BoardUtils {
 
     return {
       halfRadius: halfRadius,
-      buildingSize, buildingSize,
+      buildingSize: buildingSize,
       objectSize: objectSize,
       toolSize: toolSize,
       itemSize: itemSize
@@ -54,9 +58,11 @@ export class BoardUtils {
     if (elem.type == ElementType.Building) {
       return buildingSize
     }
+
+    throw new Error(`Unknown element type: ${elem.type}`);
   }
 
-  static getElementPosition(element, origin, radius) {
+  static getElementPosition(element: Element, origin: Coordinate, radius: number): Coordinate {
     let objectSize = BoardUtils.getSizeForElement(element, radius);
     let halfObjectSize = objectSize / 2;
     let halfRadius = radius / 2;
@@ -66,6 +72,7 @@ export class BoardUtils {
     }
 
     let elemPos;
+
     switch (element.position) {
       case HexPosition.Top:
         elemPos = {x: origin.x - halfObjectSize, y: origin.y - radius*0.75};
@@ -90,10 +97,16 @@ export class BoardUtils {
         elemPos = {x: origin.x - halfObjectSize, y: origin.y - halfObjectSize};
         break;
       default:
+
+        if (element.position === undefined || element.position === null) {
+          throw new Error(`No element.position found for element.`);
+        }
+
+        throw new Error(`Unknown Hex position: ${element.position}`);
         break;
     }
 
-    if (["worker", "soldier", "archer"].includes(element.type)) {
+    if (element.type == ElementType.Person) {
       let toolSize = objectSize / 3;
       elemPos.x -= toolSize;
     }
@@ -101,7 +114,7 @@ export class BoardUtils {
     return elemPos;
   }
 
-  static gridMeasurements(radius) {
+  static gridMeasurements(radius: number): any {
     const diameter = radius*2;
     const edgeLength = Math.sin(Math.PI / 6) * diameter,
           gridSpaceX = diameter - edgeLength / 2,
@@ -117,23 +130,22 @@ export class BoardUtils {
     };
   }
 
-  static toPoint(x, y) { return ({ x, y }) }
+  static toPoint(x: number, y: number): any { return ({ x, y }) }
 
-  static toPolarCoordinate(centerX, centerY, radius, angle) {
+  static toPolarCoordinate(centerX: number, centerY: number, radius: number, angle: number): any {
     return {
       x: centerX + radius * Math.cos(angle),
       y: centerY + radius * Math.sin(angle)
     }
   }
 
-  static getBoundingBoxCornerTriangles(radius, origin) {
+  static getBoundingBoxCornerTriangles(radius: number, origin: Coordinate): any[] {
     const m = BoardUtils.gridMeasurements(radius);
 
     let halfSideLength = m.edgeLength / 2;
     let halfHexHeight = (Math.sqrt(3) / 2) * radius;
     let quarterHexHeight = halfHexHeight / 2;
     let cornerWidth = (radius - halfSideLength) / 2;
-    let cornerHeight = halfHexHeight / 2;
 
     // point stuff
 
@@ -147,7 +159,7 @@ export class BoardUtils {
     let bottomY = origin.y + halfHexHeight;
     let innerBottomY = origin.y + quarterHexHeight;
 
-    const makeTriangle = (x1, y1, x2, y2, x3, y3, name) => {
+    const makeTriangle = (x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, name: string): any => {
       return {
         points: [
           { x: Math.floor(x1), y: Math.floor(y1) },
@@ -261,21 +273,21 @@ export class BoardUtils {
       let newCell = {...cell};
 
       if (cell.x == elemParentCell.x && cell.y == elemParentCell.y) {
-        let newContents = [];
+        let newElements = [];
 
-        for (var content of cell.contents) {
-          if (content.id == elem.id) {
+        for (var oldElem of cell.elements) {
+          if (oldElem.id == elem.id) {
             continue
           }
-          newContents.push(content);
+          newElements.push(oldElem);
         }
 
-        newCell.contents = newContents;
+        newCell.elements = newElements;
       }
       else if (cell.x == cellToMoveTo.x && cell.y == cellToMoveTo.y) {
-        let newContents = [...cell.contents];
-        newContents.push(elem);
-        newCell.contents = newContents;
+        let newElements = [...cell.elements];
+        newElements.push(elem);
+        newCell.elements = newElements;
       }
       newCells.push(newCell);
     }
@@ -283,12 +295,13 @@ export class BoardUtils {
     return newCells
   }
 
-  static getElementParentCell(elem: Element, cells: Cell[]) {
+  static getElementParentCell(elem: Element, cells: Cell[]): Cell {
     let { x, y } = parseElementId(elem.id);
     for (var cell of cells) {
       if (cell.x == x && cell.y == y) {
         return cell
       }
     }
+    throw new Error("unable to find element parent.")
   }
 }

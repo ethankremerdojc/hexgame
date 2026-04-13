@@ -1,5 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
-import { createSlice } from "@reduxjs/toolkit";
+import type { RootState } from '@/app/store'
+import { createSlice } from "@reduxjs/toolkit"
 
 export enum HexPosition {
   Center,
@@ -36,6 +37,15 @@ export enum ElementSubType {
   Gold
 }
 
+export enum ElementAction {
+  Move,
+  Take,
+  Drop,
+  Fight,
+  Build,
+  Destroy
+}
+
 export enum CellType {
   Field,
   Water,
@@ -52,7 +62,37 @@ export enum TeamColor {
   Green
 }
 
-export function colorForTeam(teamVal) {
+
+
+export type Element = {
+  type: ElementType,
+  subType: ElementSubType,
+  team: TeamColor|null,
+  position: HexPosition|null,
+  id: string,
+  count: number|null,
+  heldElements: Element[]
+}
+
+// maybe make this hve a coordinate inside? 
+export type Cell = {
+  x: number,
+  y: number,
+  type: CellType,
+  elements: Element[]
+}
+
+export type Coordinate = {
+  x: number,
+  y: number
+}
+
+export function colorForTeam(teamVal: TeamColor|null): string {
+
+  if (teamVal === null) {
+    return ""
+  }
+
   return [
     "white",
     "purple",
@@ -62,23 +102,6 @@ export function colorForTeam(teamVal) {
     "green"
   ][teamVal]
 }
-
-export type Element = {
-  type: ElementType,
-  subType: ElementSubType,
-  team: TeamColor|void,
-  position: HexPosition,
-  id: string,
-  count: number|void,
-  heldElements: Element[]
-}
-
-export type Cell = {
-  x: number,
-  y: number,
-  type: CellType,
-  contents: Element[]
-};
 
 export const CELL_INFO_BY_TYPE = {
   0: { // Field
@@ -99,22 +122,100 @@ export const CELL_INFO_BY_TYPE = {
   }
 }
 
-export type Coordinate = {
-  x: number,
-  y: number
-}
-
-export function parseElementId(id) {
+export function parseElementId(id: string): any {
   const [coords, position] = id.split('|');
   const [x, y] = coords.split(',').map(Number);
 
   return { x, y, position };
 }
 
-interface BoardState {
+function updateElemAttributes(elem: Element, cell: Cell): Element {
+  let newElem = {...elem};
+  newElem.id = `${cell.x},${cell.y}|${newElem.position}`; 
+
+  if (newElem.type == ElementType.Person) {
+    if (!newElem.heldElements) {
+      newElem.heldElements = [];
+    } else {
+      for (var he of newElem.heldElements) {
+        if (!he.count) {
+          he.count = 1;
+        }
+      }
+    }
+    if (!newElem.count) {
+      newElem.count = 1;
+    }
+  }
+
+  return newElem;
+}
+
+function updateCellElementPositions(elements: Element[]): Element[] {
+
+  let personElements = [], buildingElements = [], itemElements = [];
+
+  for (var elem of elements) {
+    if (elem.type == ElementType.Person) {
+      personElements.push(elem);
+    }
+    if (elem.type == ElementType.Building) {
+      buildingElements.push(elem);
+    }
+    if (elem.type == ElementType.Item) {
+      itemElements.push(elem);
+    }
+  }
+
+  let newElements = [];
+
+  if (buildingElements.length > 0) {
+    let building = {...buildingElements[0]};
+    building.position = 0;
+    newElements.push(building);
+  }
+
+  for (let i=0; i < personElements.length; i++) {
+    let newElem = {...personElements[i]};
+    if (buildingElements.length == 0) {
+      newElem.position = i;
+    } else {
+      newElem.position = i + 1;
+    }
+  }
+
+  return newElements
+}
+
+function updateCellElements(cell: Cell): Element[] {
+
+  let newElements = [...cell.elements];
+  newElements = updateCellElementPositions(newElements);
+
+  for (var elem of newElements) {
+    newElements.push(updateElemAttributes(elem, cell));
+  }
+
+  return newElements;
+}
+
+function prepareCellsForStateSave(cells: Cell[]): Cell[] {
+  let newCells = [];
+
+  for (var cell of cells) {
+    let newCell = {...cell};
+    let newElements = updateCellElements(newCell);
+    newCell.elements = newElements;
+    newCells.push(newCell);
+  }
+
+  return newCells
+}
+
+export interface BoardState {
   cells: Cell[],
-  selectedCell: Cell,
-  selectedElement: Element,
+  selectedCell: Cell|null,
+  selectedElement: Element|null,
   offset: Coordinate,
   zoom: number
 }
@@ -133,78 +234,30 @@ const boardSlice = createSlice({
   reducers: {
     setCells(state, action: PayloadAction<Cell[]>) {
       let cells = action.payload;
-      let newCells = [];
-
-      for (var cell of cells) {
-        let newCell = {...cell};
-        let newContents = [];
-
-        //TODO 
-        // instead of 3 filters, loop through all and populate
-        let personElements = cell.contents.filter(e => e.type == ElementType.Person);
-        let buildingElements = cell.contents.filter(e => e.type == ElementType.Building);
-        let itemElements = cell.contents.filter(e => e.type == ElementType.Item);
-        
-        if (buildingElements.length > 0) {
-          let building = {...buildingElements[0]};
-          building.position = 0;
-          newContents.push(building);
-        }
-
-        for (let i=0; i < personElements.length; i++) {
-          let newElem = {...personElements[i]};
-          if (buildingElements.length == 0) {
-            newElem.position = i;
-          } else {
-            newElem.position = i + 1;
-          }
-
-          newElem.id = `${cell.x},${cell.y}|${newElem.position}`;
-
-          if (!newElem.heldElements) {
-            newElem.heldElements = [];
-          } else {
-            for (var he of newElem.heldElements) {
-              if (!he.count) {
-                he.count = 1;
-              }
-            }
-          }
-          if (!newElem.count) {
-            newElem.count = 1;
-          }
-          newContents.push(newElem);
-        }
-
-        for (var ie of itemElements) {
-          newContents.push(ie);
-        }
-
-        newCell.contents = newContents;
-        newCells.push(newCell);
-      }
+      // state.cells = cells;
+      let newCells = prepareCellsForStateSave(cells);
       state.cells = newCells;
     },
-    setSelectedCell(state, action: PayloadAction<Cell>) {
+    setSelectedCell(state, action: PayloadAction<Cell|null>) {
       state.selectedCell = action.payload;
     },
     setBoardOffset(state, action: PayloadAction<Coordinate>) {
       state.offset = action.payload;
     },
-    setBoardZoom(state, action: PayloadAction<Number>) {
+    setBoardZoom(state, action: PayloadAction<number>) {
       state.zoom = action.payload;
     },
-    setSelectedElement(state, action: Payload<Element>) {
+    setSelectedElement(state, action: PayloadAction<Element|null>) {
       state.selectedElement = action.payload;
     }
   },
 });
 
-export const getCells = (state: RootState) => state.board.cells;
-export const getSelectedCell = (state: RootState) => state.board.selectedCell;
-export const getSelectedElement = (state: RootState) => state.board.selectedElement;
-export const getBoardZoom = (state: RootState) => state.board.zoom;
-export const getBoardOffset = (state: RootState) => state.board.offset;
+export const getCells = (state: RootState): Cell[] => state.board.cells;
+export const getSelectedCell = (state: RootState): Cell|null => state.board.selectedCell;
+export const getSelectedElement = (state: RootState): Element|null => state.board.selectedElement;
+export const getBoardZoom = (state: RootState): number => state.board.zoom;
+export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 
 export const { 
   setCells,

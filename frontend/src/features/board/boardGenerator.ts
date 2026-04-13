@@ -1,5 +1,5 @@
 import {
-  HexPosition, ElementType, ElementSubType, CellType, TeamColor,
+  ElementType, ElementSubType, CellType, TeamColor,
   CELL_INFO_BY_TYPE
 } from "./boardSlice.ts";
 
@@ -8,7 +8,7 @@ import {
 } from "./utils.js";
 
 import type { 
-  Cell, Coordinate, Element
+  Cell
 } from "./boardSlice.ts";
 
 export class BoardGenerator {
@@ -17,7 +17,7 @@ export class BoardGenerator {
     hexRadius: number,
     canvasWidth: number,
     canvasHeight: number,
-    playerCount: number|null=2,
+    playerCount: number=2,
     cellCount: number=-1,
     maxCellAdditionAttemptNum: number=10, // The number of times to try to add before giving up
   )
@@ -28,7 +28,7 @@ export class BoardGenerator {
       x: Math.floor(boardWidth / 2),
       y: Math.floor(boardHeight / 2),
       type: CellType.Field,
-      contents: []
+      elements: []
     };
 
     let cells = [startCell];
@@ -49,11 +49,11 @@ export class BoardGenerator {
       }
     }
 
-    let result = this.addStarterElements(cells, playerCount);
+    let result: Cell[] = this.addStarterElements(cells, playerCount);
     return result
   }
 
-  getBoardWidthAndHeight(canvasWidth, canvasHeight, radius) {
+  getBoardWidthAndHeight(canvasWidth: number, canvasHeight: number, radius: number) {
     const hexWidth = radius * 2;
     const colStep = radius * 1.5;
     const rowStep = Math.sqrt(3) * radius;
@@ -68,7 +68,7 @@ export class BoardGenerator {
     };
   }
 
-  generateRandomNeighborCell(cell: Cell, boardWidth: number, boardHeight: number): Cell {
+  generateRandomNeighborCell(cell: Cell, boardWidth: number, boardHeight: number): any {
     let changingIndex = randomItem([0, 1]);
     let changeAmount = randomItem([-1, 1]);
 
@@ -89,7 +89,8 @@ export class BoardGenerator {
       newVal = cell.y - 1;
     }
 
-    let newCell;
+    let newCell: any;
+
     if (changingIndex == 0) {
       newCell = {
         x: newVal,
@@ -103,18 +104,18 @@ export class BoardGenerator {
     }
 
     newCell.type = this.generateNewCellType(cell.type);
-    newCell.contents = [];
+    newCell.elements = [];
 
     return newCell
   }
 
-  generateNewCellType(oldType: CellType, mutationRate: number=0.4): CellType {
+  generateNewCellType(oldType: CellType, mutationRate: number=0.4): any {
     let doMutation = Math.random() < mutationRate;
     if (!doMutation) { return oldType }
     return this.getRandomCellTypeByRates();
   }
 
-  getRandomCellTypeByRates(): Cell {
+  getRandomCellTypeByRates(): any {
     let rateTotal = 0;
 
     for (var info of Object.values(CELL_INFO_BY_TYPE)) {
@@ -143,6 +144,7 @@ export class BoardGenerator {
 
   addStarterElements(board: Cell[], playerCount: number): Cell[] {
     let newBoard = [...board];
+    
 
     for (let i=0; i<playerCount; i++) {
       newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColor, i));
@@ -154,7 +156,7 @@ export class BoardGenerator {
   addRandomCapitalToBoard(board: Cell[], color: TeamColor): Cell[] {
     let newBoard = structuredClone(board);
 
-    let emptyCells = newBoard.filter(cell => cell.contents.length == 0);
+    let emptyCells = newBoard.filter(cell => cell.elements.length == 0);
 
     if (emptyCells.length == 0) {
       throw new Error("No empty cells to add capital to.");
@@ -165,13 +167,13 @@ export class BoardGenerator {
     let twoFood = {type: ElementType.Item, subType: ElementSubType.Food, count: 2};
     let oneWood = {type: ElementType.Item, subType: ElementSubType.Wood, count: 1};
 
-    randomCell.contents.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
-    randomCell.contents.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[twoFood, oneWood]});
+    randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[twoFood, oneWood]});
 
-    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 3});
-    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 5});
-    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Gold, count: 10});
-    randomCell.contents.push({type: ElementType.Item, subType: ElementSubType.Food, count: 15});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 3});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 5});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Gold, count: 10});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: 15});
     return newBoard;
   }
 }
