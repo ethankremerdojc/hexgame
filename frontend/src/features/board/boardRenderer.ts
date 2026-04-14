@@ -250,7 +250,14 @@ export class BoardRenderer {
     ctx.fillStyle = "red";
     ctx.font = `${miniItemSize*1.5}px serif`;
     let healthStr: string = element.health.toString() + " h";
-    ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5)
+    ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
+
+    // Working
+    if (element.isWorking) {
+      ctx.fillStyle = "blue";
+      ctx.font = `${miniItemSize*1.5}px serif`;
+      ctx.fillText("Working", elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*2.5);
+    }
   }
 
   static drawItemElements(ctx, itemElements, origin, radius) {

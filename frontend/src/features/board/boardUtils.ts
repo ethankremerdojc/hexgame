@@ -531,13 +531,19 @@ export class BoardUtils {
 
     let result = [ElementAction.Move];
 
+    let capitalExists = buildingElements[0] && buildingElements[0].subType == ElementSubType.Capital;
+
     if (buildingElements.length === 0) {
       result.push(ElementAction.Build);
     } else {
       // Can't destroy the capital
-      if (buildingElements[0].subType != ElementSubType.Capital) {
+      if (!capitalExists) {
         result.push(ElementAction.Destroy);
       }
+    }
+
+    if (!capitalExists) {
+      result.push(ElementAction.Work);
     }
 
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);

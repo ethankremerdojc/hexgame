@@ -89,11 +89,13 @@ export function ElementActionsMenu() {
   }
 
   const dropHandler = () => {
+    dispatch(setShowMoveInfo(false));
     setActionHandling("drop");
     setItemsToSelectFrom(selectedElement.heldElements);
   }
 
   const takeHandler = () => {
+    dispatch(setShowMoveInfo(false));
     setActionHandling("take");
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     setItemsToSelectFrom(parentCell.elements.filter(e => e.type == ElementType.Item));
@@ -104,10 +106,14 @@ export function ElementActionsMenu() {
   }
 
   const workHandler = () => {
-
+    let newCells = BoardUtils.makePersonWork(selectedElement, cells);
+    dispatch(setCells(newCells));
+    setActionHandling(null);
+    setItemsToSelectFrom([]);
   }
 
   const buildHandler = () => {
+    dispatch(setShowMoveInfo(false));
     setActionHandling("build");
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let buildingType = buildingTypeForCellType(parentCell.type);
@@ -118,6 +124,7 @@ export function ElementActionsMenu() {
   }
 
   const buildElem = (type) => {
+    dispatch(setShowMoveInfo(false));
     const newCells = BoardUtils.build(selectedElement, type, cells);
     dispatch(setCells(newCells));
 
@@ -126,6 +133,7 @@ export function ElementActionsMenu() {
   }
 
   const fightHandler = () => {
+    dispatch(setShowMoveInfo(false));
     setActionHandling("fight");
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let enemyPersons = BoardUtils.getEnemyPersons(selectedElement, parentCell);
@@ -133,6 +141,7 @@ export function ElementActionsMenu() {
   }
 
   const fight = (enemyId) => {
+    dispatch(setShowMoveInfo(false));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let enemyElem = parentCell.elements.filter(e => e.id == enemyId)[0];
     const newCells = BoardUtils.makePersonsFight(selectedElement, enemyElem, cells);
@@ -147,9 +156,11 @@ export function ElementActionsMenu() {
   }
 
   const getActionHandler = (title) => {
+
     if (title == "move") {
       return moveHandler
     }
+
     if (title == "drop") {
       return dropHandler
     }
@@ -161,6 +172,9 @@ export function ElementActionsMenu() {
     }
     if (title == "fight") {
       return fightHandler
+    }
+    if (title == "work") {
+      return workHandler
     }
     return () => { console.log("non handled action", title) }
   }
@@ -185,7 +199,7 @@ export function ElementActionsMenu() {
               </button>
 
               <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {nameForElementSubType(item.subType)} ({remainingCarryWeight} MAX)
+                {actionHandling} {nameForElementSubType(item.subType)} (MAX)
               </button>
             </div>
             )

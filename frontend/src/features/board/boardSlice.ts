@@ -389,10 +389,7 @@ const initialState: BoardState = {
 export const WORKER_ITEM_GENERATION_AMOUNT = 5;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
 
-function setupNewTurn(boardState): Cell[] {
-  let newCells = structuredClone(boardState.cells);
-  let playerTurn = boardState.playerTurn;
-
+function setupNewTurn(newCells: Cell[], playerTurn): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
     cell => cell.elements.filter(el => el.type == ElementType.person && el.team == playerTurn).length > 0);
 
@@ -463,7 +460,9 @@ const boardSlice = createSlice({
       state.selectedElement = null;
       state.showMoveInfo = false;
 
-      state.cells = setupNewTurn(state);
+      let copiedCells = structuredClone(state.cells);
+
+      state.cells = setupNewTurn(copiedCells, state.play);
     }
   },
 });
