@@ -2,7 +2,7 @@ import { drawSvgToCanvas } from "./utils.ts";
 import grassTileSvg from "./svg/grassTile.svg?raw";
 import forestTileSvg from "./svg/forestTile.svg?raw";
 import rockTileSvg from "./svg/rockTile.svg?raw";
-import waterTileSvg from "./svg/waterTile.svg?raw";
+import desertTileSvg from "./svg/desertTile.svg?raw";
 
 function getPatternCanvas(img: string, tileWidth: number, tileHeight: number): HTMLCanvasElement {
   const tile = document.createElement("canvas");
@@ -33,8 +33,8 @@ export function getMountainCanvas(radius: number): HTMLCanvasElement {
   return getPatternCanvas(rockTileSvg, Math.floor(radius/2), Math.floor(radius/2));
 }
 
-export function getWaterCanvas(radius: number): HTMLCanvasElement {
-  return getPatternCanvas(waterTileSvg, Math.floor(radius/2), Math.floor(radius/2));
+export function getDesertCanvas(radius: number): HTMLCanvasElement {
+  return getPatternCanvas(desertTileSvg, Math.floor(radius/2), Math.floor(radius/2));
 }
 
 export function getForestCanvas(radius: number): HTMLCanvasElement {

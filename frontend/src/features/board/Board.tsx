@@ -102,7 +102,6 @@ export function Board() {
   let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
   let maxOffsetY = 0.5*hexRadius+qch;
 
-  console.log("selected Elem", selectedElement);
   useEffect(() => {
     if (cells.length === 0) {
       const BG = new BoardGenerator();

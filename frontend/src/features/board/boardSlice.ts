@@ -2,48 +2,6 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
-export enum HexPosition {
-  Center,
-  Top,
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
-}
-
-export enum ElementType {
-  Building,
-  Person,
-  Item
-}
-
-export enum ElementSubType {
-
-  // buildings 
-  Capital,
-  Village,
-  Farm,
-  Quarry,
-
-  // persons
-  Worker,
-  Soldier,
-  Archer,
-
-  // items
-  Food,
-  Wood,
-  Ore,
-  Gold
-}
-
-export enum CellType {
-  Field,
-  Water,
-  Forest,
-  Mountain
-}
-
 export enum TeamColor {
   White,
   Purple,
@@ -64,11 +22,72 @@ export function nameForTeamColor(color: TeamColor): string {
   ][color]
 }
 
+export enum HexPosition {
+  Center,
+  Top,
+  TopLeft,
+  TopRight,
+  BottomLeft,
+  BottomRight,
+}
+
+export enum ElementType {
+  Building,
+  Person,
+  Item
+}
+
+export enum ElementSubType {
+
+  // buildings 
+  Capital,
+  Village,
+
+  Farm,
+  SawMill,
+  Quarry,
+
+  // persons
+  Worker,
+  Soldier,
+  Archer,
+
+  // items
+  Food,
+  Wood,
+  Ore,
+  Gold
+}
+
+export enum CellType {
+  Field,
+  Desert,
+  Forest,
+  Mountain
+}
+
+export function buildingTypeForCellType(cellType: CellType): ElementSubType {
+  if (cellType == CellType.Field) {
+    return ElementSubType.Farm
+  }
+  if (cellType == CellType.Forest) {
+    return ElementSubType.SawMill
+  }
+  if (cellType == CellType.Mountain) {
+    return ElementSubType.Quarry
+  }
+
+  throw new Error("Unhandled building type for cell type")
+}
+
+
+
 export function nameForElementSubType(elemSubType: ElementType): string {
   return [
     "Capital",
     "Village",
     "Farm",
+    "SawMill",
     "Quarry",
     "Worker",
     "Soldier",
@@ -114,7 +133,8 @@ export enum ElementAction {
   Drop,
   Fight,
   Build,
-  Destroy
+  Destroy,
+  Work
 }
 
 interface ActionDetails {
@@ -153,6 +173,11 @@ const ELEMENT_ACTION_DETAILS: ActionDetails[] = [
     title: "destroy",
     depletesAction: true,
     helpText: "Destroy a structure at the current tile."
+  },
+  { // Work
+    title: "work",
+    depletesAction: true,
+    helpText: "Work on the current tile for more resources."
   }
 ]
 
@@ -181,17 +206,17 @@ export const CELL_INFO_BY_TYPE = {
     color: "rgb(16 108 14)",
     weight: 1
   },
-  1: { // Water
+  1: { // Desert
     color: "rgb(32 35 196)",
-    weight: 0.4
+    weight: 0.15
   },
   2: { // Forest
     color: "rgb(91 41 10)",
-    weight: 0.5
+    weight: 0.4
   },
   3: { // Mountain
     color: "rgb(75 69 66)",
-    weight: 0.3
+    weight: 0.25
   }
 }
 

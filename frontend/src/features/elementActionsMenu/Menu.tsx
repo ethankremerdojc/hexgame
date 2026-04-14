@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import {
 
-  ElementType,
+  ElementType, ElementSubType,
   nameForElementSubType,
   getActionDetails,
 
@@ -13,7 +13,7 @@ import {
 
   getShowMoveInfo, setShowMoveInfo,
   getPlayerTurn, nameForTeamColor,
-
+  buildingTypeForCellType,
   ElementAction
 } from "../board/boardSlice.ts";
 
@@ -53,8 +53,6 @@ export function ElementActionsMenu() {
 
   // ==========================================
   
-
-
 
   const itemTransferHandler = (transferType, itemId, itemCount) => {
     let newCells;
@@ -108,6 +106,27 @@ export function ElementActionsMenu() {
     dispatch(setShowMoveInfo(true));
   }
 
+  const buildHandler = () => {
+    setActionHandling("build");
+    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+    let buildingType = buildingTypeForCellType(parentCell.type);
+    setItemsToSelectFrom([
+      [nameForElementSubType(buildingType), buildingType],
+      // other things like rams etc.
+    ]);
+  }
+
+  const buildElem = (type) => {
+    const newCells = BoardUtils.build(selectedElement, type, cells);
+    dispatch(setCells(newCells));
+
+    // Reset everything
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+    setActionHandling(null);
+    setItemsToSelectFrom([]);
+  }
+
   const getActionHandler = (title) => {
     if (title == "move") {
       return moveHandler
@@ -117,6 +136,9 @@ export function ElementActionsMenu() {
     }
     if (title == "take") {
       return takeHandler
+    }
+    if (title == "build") {
+      return buildHandler
     }
     return () => { console.log("non handled action", title) }
   }
@@ -130,9 +152,10 @@ export function ElementActionsMenu() {
           <span>{aai.helpText}</span>
         </div>)
       }) }
-      {
+
+      { ["drop", "take"].includes(actionHandling) &&
         itemsToSelectFrom &&
-        <ul>{itemsToSelectFrom.map(item => {
+        <div>{itemsToSelectFrom.map(item => {
             return (<div>
               <button key={item.id+"one"} onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
                 {actionHandling} {nameForElementSubType(item.subType)} (1)
@@ -145,8 +168,22 @@ export function ElementActionsMenu() {
             )
           })
         }
-        </ul>
+        </div>
       }
+        
+      {
+        actionHandling == "build" &&
+        <div>
+          {itemsToSelectFrom.map(item => {
+            return (
+              <button key={item[1]} onClick={() => { buildElem(item[1]) }}>
+                {item[0]}
+              </button>
+            )
+          })}
+        </div>
+      }
+  
     </div>
   )
 };

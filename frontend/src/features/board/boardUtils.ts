@@ -3,7 +3,8 @@ import type {
 } from "./boardSlice"
 
 import {
-  HexPosition, ElementType, ElementAction, parseElementId,
+  HexPosition, ElementType, ElementSubType, ElementAction, parseElementId,
+  buildingTypeForCellType,
   PERSON_MAX_CARRY_WEIGHT
 } from "./boardSlice"
 
@@ -34,7 +35,7 @@ export function pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomR
 export class BoardUtils {
   static getElemSizes(radius: number): any {
     let halfRadius = radius/2;
-    let buildingSize = radius*0.35;
+    let buildingSize = radius*0.4;
     let objectSize = buildingSize * 0.65;
     let toolSize = objectSize / 3;
     let itemSize = objectSize / 2.5;
@@ -289,7 +290,10 @@ export class BoardUtils {
       else if (cell.x == cellToMoveTo.x && cell.y == cellToMoveTo.y) {
         let newElements = [...cell.elements];
         let newElem = structuredClone(elem);
-        newElem.hasActionAvailable = false;
+
+        //TODO Add this back
+
+        // newElem.hasActionAvailable = false;
         newElements.push(newElem);
         newCell.elements = newElements;
       }
@@ -373,8 +377,6 @@ export class BoardUtils {
       let newParentChild = structuredClone(elementToTake);
       newParentChild.count -= count;
       elemParentCell.elements.push(newParentChild);
-
-      console.log("new parent", elemParentCell);
     }
 
     return newCells
@@ -406,7 +408,7 @@ export class BoardUtils {
 
   static getPersonRemainingCarryWeight(elem: Element): number {
     let result = PERSON_MAX_CARRY_WEIGHT - BoardUtils.getPersonCarryingWeight(elem);
-    console.log("result", result);
+
     //TODO
     //Will want to remove below, but right now we can keep
     if (result < 0) {
@@ -425,6 +427,28 @@ export class BoardUtils {
     })
 
     return enemyExists;
+  }
+
+  static build(personElem: Element, buildingType: ElementSubType, cells: Cell[]): Cell[] {
+    // make sure there is no other building element
+    // add a building element with building type above
+    // make person element have no more actions
+    // return cells
+    let newCells = structuredClone(cells);
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+
+    let existingBuildingElements = elemParentCell.elements.filter(elem => elem.type == ElementType.Building);
+
+    if (buildingType != buildingTypeForCellType(elemParentCell.type)) {
+      throw new Error("Wrong building type for cell.")
+    }
+
+    if (existingBuildingElements.length > 0) {
+      throw new Error("Can't build where there is already a building.");
+    }
+    //personElem.hasActionAvailable = false;
+    elemParentCell.elements.push({type: ElementType.Building, subType: buildingType});
+    return newCells;
   }
 
   static getAvailableActions(personElem: Element, cells: Cell[]): ElementAction[] {
@@ -453,7 +477,10 @@ export class BoardUtils {
     if (buildingElements.length === 0) {
       result.push(ElementAction.Build);
     } else {
-      result.push(ElementAction.Destroy);
+      // Can't destroy the capital
+      if (buildingElements[0].subType != ElementSubType.Capital) {
+        result.push(ElementAction.Destroy);
+      }
     }
 
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);

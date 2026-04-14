@@ -109,7 +109,7 @@ export class BoardGenerator {
     return newCell
   }
 
-  generateNewCellType(oldType: CellType, mutationRate: number=0.4): any {
+  generateNewCellType(oldType: CellType, mutationRate: number=0.5): any {
     let doMutation = Math.random() < mutationRate;
     if (!doMutation) { return oldType }
     return this.getRandomCellTypeByRates();
@@ -155,13 +155,13 @@ export class BoardGenerator {
   addRandomCapitalToBoard(board: Cell[], color: TeamColor): Cell[] {
     let newBoard = structuredClone(board);
 
-    let emptyCells = newBoard.filter(cell => cell.elements.length == 0);
+    let emptyNonDesertCells = newBoard.filter(cell => cell.elements.length == 0).filter(cell => cell.type != CellType.Desert);
 
-    if (emptyCells.length == 0) {
+    if (emptyNonDesertCells.length == 0) {
       throw new Error("No empty cells to add capital to.");
     }
 
-    let randomCell = randomItem(emptyCells);
+    let randomCell = randomItem(emptyNonDesertCells);
 
     randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
 

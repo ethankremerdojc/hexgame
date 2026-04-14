@@ -17,13 +17,16 @@ import {
   getGrassCanvas,
   getForestCanvas,
   getMountainCanvas,
-  getWaterCanvas
+  getDesertCanvas
 } from "./canvasPatterns.ts";
 import { drawSvgToCanvas } from "./utils.js";
 
 //buildings
 import capitalSvg from "./svg/capital.svg?raw";
-// import villageSvg from "./svg/house.svg?raw";
+import villageSvg from "./svg/house.svg?raw";
+import farmSvg from "./svg/farm.svg?raw";
+import sawmillSvg from "./svg/sawmill.svg?raw";
+import quarrySvg from "./svg/quarry.svg?raw";
 
 //persons
 import personSvg from "./svg/person.svg?raw";
@@ -42,14 +45,18 @@ function getSvgForElement(elem: Element) {
       return capitalSvg;
       break;
     case ElementSubType.Village:
-      return capitalSvg;
+      return villageSvg;
       break;
-    // case ElementSubType.Farm:
-    //   return capitalSvg;
-    //   break;
-    // case ElementSubType.Quarry:
-    //   return capitalSvg;
-    //   break;
+    case ElementSubType.Farm:
+      return farmSvg;
+      break;
+    case ElementSubType.Quarry:
+      return quarrySvg;
+      break;
+    case ElementSubType.SawMill:
+      return sawmillSvg;
+      break;
+
 
     // Persons
     case ElementSubType.Worker:
@@ -163,8 +170,8 @@ export class BoardRenderer {
       case CellType.Mountain:
         canvasEl = getMountainCanvas(radius);
         break;
-      case CellType.Water:
-        canvasEl = getWaterCanvas(radius);
+      case CellType.Desert:
+        canvasEl = getDesertCanvas(radius);
         break;
       default:
         throw new Error(`Can't fill cell by cell type ${cellType}`);
