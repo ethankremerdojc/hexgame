@@ -20,14 +20,17 @@ import {
 import { BoardUtils } from "../board/boardUtils.ts"
 
 export function ElementActionsMenu() {
-
   const dispatch = useAppDispatch();
-
   const cells =             useAppSelector(getCells);
   const selectedCell =      useAppSelector(getSelectedCell);
   const selectedElement =   useAppSelector(getSelectedElement);
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
-  const playerTurn =      useAppSelector(getPlayerTurn);
+  const playerTurn =        useAppSelector(getPlayerTurn);
+
+  const [actionHandling, setActionHandling] = useState(null);
+  const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
+
+  // ==========================================
 
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
@@ -47,18 +50,39 @@ export function ElementActionsMenu() {
     }
   };
 
-  const [actionHandling, setActionHandling] = useState(null);
-  const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
+  // ==========================================
 
-  const itemTransferHandler = (transferType, itemId) => {
+  const itemTransferHandler = (transferType, itemId, itemCount) => {
     let newCells;
+
     if (transferType == "drop") {
-      newCells = BoardUtils.dropItem(selectedElement, itemId, cells);
+
+      let dropAmount;
+
+      if (itemCount == "one") {
+        dropAmount = 1;
+      } else if (itemCount == "max") {
+        dropAmount = -1;
+      }
+
+      newCells = BoardUtils.dropItem(selectedElement, itemId, cells, dropAmount);
+
+    } else if (transferType == "take") {
+
+      let takeAmount;
+
+      if (itemCount == "one") {
+        takeAmount = 1;
+      } else if (itemCount == "max") {
+        takeAmount = BoardUtils.getPersonExtraWeightAllowed(selectedElement);
+      }
+
+      newCells = BoardUtils.takeItem(selectedElement, itemId, cells, takeAmount);
     }
-    if (transferType == "take") {
-      newCells = BoardUtils.takeItem(selectedElement, itemId, cells);
-    }
+
     dispatch(setCells(newCells));
+
+    // Reset everything
     dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
     setActionHandling(null);
@@ -105,9 +129,18 @@ export function ElementActionsMenu() {
       {
         itemsToSelectFrom &&
         <ul>{itemsToSelectFrom.map(item => {
-            return (<button key={item.id} onClick={() => itemTransferHandler(actionHandling, item.id)}>
-              {nameForElementSubType(item.subType)} : {item.count}
-            </button>)})
+            return (<>
+              <button key={item.id+"one"} onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
+                {actionHandling} {nameForElementSubType(item.subType)} : {item.count} (1)
+              </button>
+
+              <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
+                {actionHandling} {nameForElementSubType(item.subType)} : {item.count} (MAX)
+              </button>
+            </>
+
+            )
+          })
         }
         </ul>
       }

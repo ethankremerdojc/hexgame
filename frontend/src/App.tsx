@@ -46,13 +46,13 @@ function App() {
   return (
     <>
       <section id="center">
-        <DebugStats 
-          cells={cells}
-          selectedCell={selectedCell}
-          selectedElement={selectedElement}
-          zoom={zoom}
-          offset={offset}
-        />
+        {/* <DebugStats  */}
+        {/*   cells={cells} */}
+        {/*   selectedCell={selectedCell} */}
+        {/*   selectedElement={selectedElement} */}
+        {/*   zoom={zoom} */}
+        {/*   offset={offset} */}
+        {/* /> */}
 
 
         <Board />

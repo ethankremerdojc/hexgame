@@ -299,7 +299,7 @@ export class BoardUtils {
     return newCells
   }
 
-  static dropItem(personElem: Element, droppedItemId: string, cells: Cell[]): Cell[] {
+  static dropItem(personElem: Element, droppedItemId: string, cells: Cell[], count: number): Cell[] {
     let _elemParentCell = BoardUtils.getElementParentCell(personElem, cells);
 
     let newCells = structuredClone(cells);
@@ -318,13 +318,28 @@ export class BoardUtils {
       }
     }
 
+    // if count is max
+
     let elementToDrop = newPersonElem.heldElements.filter(e => e.id == droppedItemId)[0];
-    newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != droppedItemId);
-    elemParentCell.elements.push(elementToDrop);
+
+    //TODO 
+    //Figure out better way to do this
+    if (count == -1) { 
+      // Drop All
+      // just take actual item and move it
+      newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != droppedItemId);
+      elemParentCell.elements.push(elementToDrop);
+    } else {
+      // create new element on the tile, will be combined automatically in the slice
+      let copiedDroppedElement = structuredClone(elementToDrop);
+      copiedDroppedElement.count = count;
+      elemParentCell.elements.push(copiedDroppedElement);
+      elementToDrop.count -= count;
+    }
     return newCells
   }
 
-  static takeItem(personElem: Element, takenItemId: string, cells: Cell[]): Cell[] {
+  static takeItem(personElem: Element, takenItemId: string, cells: Cell[], count: number): Cell[] {
     let _elemParentCell = BoardUtils.getElementParentCell(personElem, cells);
 
     let newCells = structuredClone(cells);
@@ -344,8 +359,24 @@ export class BoardUtils {
     }
 
     let elementToTake = elemParentCell.elements.filter(e => e.id == takenItemId)[0];
-    newPersonElem.heldElements.push(elementToTake);
-    elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+
+    if (count == elementToTake.count) {
+      // just take actual item and move it
+      newPersonElem.heldElements.push(elementToTake);
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+    } else {
+      let copiedTakenElement = structuredClone(elementToTake);
+      copiedTakenElement.count = count;
+      newPersonElem.heldElements.push(copiedTakenElement);
+
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+      let newParentChild = structuredClone(elementToTake);
+      newParentChild.count -= count;
+      elemParentCell.elements.push(newParentChild);
+
+      console.log("new parent", elemParentCell);
+    }
+
     return newCells
   }
 
@@ -370,6 +401,17 @@ export class BoardUtils {
       }
       result += itemWeight * he.count;
     })
+    return result
+  }
+
+  static getPersonExtraWeightAllowed(elem: Element): number {
+    let result = PERSON_MAX_CARRY_WEIGHT - BoardUtils.getPersonCarryingWeight(elem);
+    console.log("result", result);
+    //TODO
+    //Will want to remove below, but right now we can keep
+    if (result < 0) {
+      return 0
+    }
     return result
   }
 

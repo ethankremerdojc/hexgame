@@ -88,9 +88,9 @@ export function Board() {
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
   const playerTurn =        useAppSelector(getPlayerTurn);
 
-  let initialRadius =   40;
-  let canvasWidth =     600;
-  let canvasHeight =    600;
+  let initialRadius =   35;
+  let canvasWidth =     700;
+  let canvasHeight =    700;
 
   let hexRadius = initialRadius*zoom;
   let qcw = canvasWidth / 4;
@@ -102,6 +102,7 @@ export function Board() {
   let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
   let maxOffsetY = 0.5*hexRadius+qch;
 
+  console.log("selected Elem", selectedElement);
   useEffect(() => {
     if (cells.length === 0) {
       const BG = new BoardGenerator();

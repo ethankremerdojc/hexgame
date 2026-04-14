@@ -363,6 +363,14 @@ const boardSlice = createSlice({
   },
 });
 
+export const endTurn = (state) => {
+  // Change player turn
+  // disable selected cell, selected element, showMoveInfo
+  // increase player turn
+  //
+  // need to add player count to initialState so we know how to do it
+}
+
 export const getCells = (state: RootState): Cell[] => state.board.cells;
 export const getSelectedCell = (state: RootState): Cell|null => state.board.selectedCell;
 export const getSelectedElement = (state: RootState): Element|null => state.board.selectedElement;

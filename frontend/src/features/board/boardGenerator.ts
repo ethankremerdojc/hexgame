@@ -144,7 +144,6 @@ export class BoardGenerator {
 
   addStarterElements(board: Cell[], playerCount: number): Cell[] {
     let newBoard = [...board];
-    
 
     for (let i=0; i<playerCount; i++) {
       newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColor, i));
@@ -164,16 +163,13 @@ export class BoardGenerator {
 
     let randomCell = randomItem(emptyCells);
 
-    let twoFood = {type: ElementType.Item, subType: ElementSubType.Food, count: 2};
-    let oneWood = {type: ElementType.Item, subType: ElementSubType.Wood, count: 1};
-
     randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[twoFood, oneWood]});
 
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 3});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 5});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[]});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[]});
+
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Gold, count: 10});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: 15});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: 10});
     return newBoard;
   }
 }
