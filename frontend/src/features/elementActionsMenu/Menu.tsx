@@ -3,7 +3,8 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import {
 
-  ElementType, ElementSubType,
+  ElementType, ElementSubType, ElementAction,
+
   nameForElementSubType,
   getActionDetails,
 
@@ -14,7 +15,7 @@ import {
   getShowMoveInfo, setShowMoveInfo,
   getPlayerTurn, nameForTeamColor,
   buildingTypeForCellType,
-  ElementAction
+  endTurn,
 } from "../board/boardSlice.ts";
 
 import { BoardUtils } from "../board/boardUtils.ts"
@@ -52,7 +53,6 @@ export function ElementActionsMenu() {
   };
 
   // ==========================================
-  
 
   const itemTransferHandler = (transferType, itemId, itemCount) => {
     let newCells;
@@ -84,9 +84,6 @@ export function ElementActionsMenu() {
 
     dispatch(setCells(newCells));
 
-    // Reset everything
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
     setActionHandling(null);
     setItemsToSelectFrom([]);
   }
@@ -106,6 +103,10 @@ export function ElementActionsMenu() {
     dispatch(setShowMoveInfo(true));
   }
 
+  const workHandler = () => {
+
+  }
+
   const buildHandler = () => {
     setActionHandling("build");
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
@@ -120,11 +121,29 @@ export function ElementActionsMenu() {
     const newCells = BoardUtils.build(selectedElement, type, cells);
     dispatch(setCells(newCells));
 
-    // Reset everything
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
     setActionHandling(null);
     setItemsToSelectFrom([]);
+  }
+
+  const fightHandler = () => {
+    setActionHandling("fight");
+    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+    let enemyPersons = BoardUtils.getEnemyPersons(selectedElement, parentCell);
+    dispatch(setItemsToSelectFrom(enemyPersons));
+  }
+
+  const fight = (enemyId) => {
+    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+    let enemyElem = parentCell.elements.filter(e => e.id == enemyId)[0];
+    const newCells = BoardUtils.makePersonsFight(selectedElement, enemyElem, cells);
+    dispatch(setCells(newCells));
+
+    setActionHandling(null);
+    setItemsToSelectFrom([]); 
+  }
+
+  const endTurnHandler = () => {
+    dispatch(endTurn());
   }
 
   const getActionHandler = (title) => {
@@ -140,12 +159,16 @@ export function ElementActionsMenu() {
     if (title == "build") {
       return buildHandler
     }
+    if (title == "fight") {
+      return fightHandler
+    }
     return () => { console.log("non handled action", title) }
   }
 
   return (
     <div className="element-actions-menu">
-      <h1>Color: {nameForTeamColor(playerTurn)}</h1>
+      <p>Color: {nameForTeamColor(playerTurn)}</p>
+
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
           <button onClick={getActionHandler(aai.title)}>{aai.title}</button>
@@ -183,7 +206,20 @@ export function ElementActionsMenu() {
           })}
         </div>
       }
-  
+      {
+        actionHandling == "fight" &&
+        <div>
+          {itemsToSelectFrom.map(item => {
+            return (
+              <button key={item.id} onClick={() => { fight(item.id) }}>
+                Fight: {nameForTeamColor(item.team)} {item.id}
+              </button>
+            )
+          })}
+        </div>
+      }
+
+      <button onClick={endTurnHandler}>End Turn</button>
     </div>
   )
 };

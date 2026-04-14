@@ -12,7 +12,7 @@ import {
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
   getShowMoveInfo, setShowMoveInfo,
-  getPlayerTurn
+  getPlayerTurn, getPlayerCount
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -87,6 +87,7 @@ export function Board() {
   const offset =            useAppSelector(getBoardOffset);
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
   const playerTurn =        useAppSelector(getPlayerTurn);
+  const playerCount =       useAppSelector(getPlayerCount);
 
   let initialRadius =   35;
   let canvasWidth =     700;
@@ -106,12 +107,11 @@ export function Board() {
     if (cells.length === 0) {
       const BG = new BoardGenerator();
       const newBoard = BG.generateBoard(
-        hexRadius, canvasWidth, canvasHeight, 4
+        hexRadius, canvasWidth, canvasHeight, playerCount
       );
       dispatch(setCells(newBoard));
     }
   }, [cells, dispatch]);
-
 
   useEffect(() => {
     if (cells.length === 0) return;

@@ -5,7 +5,8 @@ import type {
 import {
   HexPosition, ElementType, ElementSubType, ElementAction, parseElementId,
   buildingTypeForCellType,
-  PERSON_MAX_CARRY_WEIGHT
+  PERSON_MAX_CARRY_WEIGHT,
+  PERSON_BASE_DAMAGE
 } from "./boardSlice"
 
 export function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
@@ -339,6 +340,10 @@ export class BoardUtils {
       copiedDroppedElement.count = count;
       elemParentCell.elements.push(copiedDroppedElement);
       elementToDrop.count -= count;
+
+      if (elementToDrop.count < 1) {
+        newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != elementToDrop.id);
+      }
     }
     return newCells
   }
@@ -417,23 +422,21 @@ export class BoardUtils {
     return result
   }
 
-  static enemyExistsOnCell(personElem: Element, parentCell: Cell): boolean {
-    let enemyExists = false;
-
+  static getEnemyPersons(personElem: Element, parentCell: Cell): Element[] {
+    let result = [];
     parentCell.elements.forEach(elem => {
       if (elem.type == ElementType.Person && elem.team != personElem.team) {
-        enemyExists = true;
+        result.push(elem);
       }
     })
+    return result;
+  }
 
-    return enemyExists;
+  static enemyExistsOnCell(personElem: Element, parentCell: Cell): boolean {
+    return BoardUtils.getEnemyPersons(personElem, parentCell).length > 0
   }
 
   static build(personElem: Element, buildingType: ElementSubType, cells: Cell[]): Cell[] {
-    // make sure there is no other building element
-    // add a building element with building type above
-    // make person element have no more actions
-    // return cells
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
 
@@ -448,6 +451,60 @@ export class BoardUtils {
     }
     //personElem.hasActionAvailable = false;
     elemParentCell.elements.push({type: ElementType.Building, subType: buildingType});
+
+    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPerson.hasActionAvailable = false;
+
+    return newCells;
+  }
+
+  static makePersonsFight(personElem: Element, targetElem: Element, cells: Cell[]): Cell[] {
+
+    if (personElem.type != ElementType.Person || targetElem.type != ElementType.Person) {
+      throw new Error("Can only fight between two persons.");
+    }
+
+    let newCells = structuredClone(cells);
+
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+    let targetParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+
+    if (elemParentCell.x != targetParentCell.x || elemParentCell.y != targetParentCell.y) {
+      throw new Error("Can't fight a person in a different cell!");
+    };
+
+    let newPersonOne = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPersonOne.hasActionAvailable = false;
+
+    let newPersonTwo = elemParentCell.elements.filter(e => e.id == targetElem.id)[0];
+
+    let p1armor = newPersonOne.armor ? newPersonOne.armor : 0;
+    let p2armor = newPersonTwo.armor ? newPersonTwo.armor : 0;
+
+    if (PERSON_BASE_DAMAGE > p1armor) {
+      newPersonOne.health = newPersonOne.health - (PERSON_BASE_DAMAGE - p1armor);
+    }
+    if (PERSON_BASE_DAMAGE > p2armor) {
+      newPersonTwo.health = newPersonTwo.health - (PERSON_BASE_DAMAGE - p2armor);
+    }
+
+    if (newPersonOne.health < 1) {
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != newPersonOne.id);
+    }
+
+    if (newPersonTwo.health < 1) {
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != newPersonTwo.id);
+    }
+
+    return newCells;
+  }
+
+  static makePersonWork(personElem: Element, cells: Cell[]): Cell[] {
+    let newCells = structuredClone(cells);
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPerson.isWorking = true;
+    newPerson.hasActionAvailable = false;
     return newCells;
   }
 

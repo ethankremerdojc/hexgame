@@ -66,7 +66,7 @@ export enum CellType {
   Mountain
 }
 
-export function buildingTypeForCellType(cellType: CellType): ElementSubType {
+export function buildingTypeForCellType(cellType: CellType): ElementSubType|null {
   if (cellType == CellType.Field) {
     return ElementSubType.Farm
   }
@@ -77,10 +77,22 @@ export function buildingTypeForCellType(cellType: CellType): ElementSubType {
     return ElementSubType.Quarry
   }
 
-  throw new Error("Unhandled building type for cell type")
+  return null
 }
 
+export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
+  if (cellType == CellType.Field) {
+    return ElementSubType.Food
+  }
+  if (cellType == CellType.Forest) {
+    return ElementSubType.Wood
+  }
+  if (cellType == CellType.Mountain) {
+    return ElementSubType.Ore
+  }
 
+  return null
+}
 
 export function nameForElementSubType(elemSubType: ElementType): string {
   return [
@@ -102,16 +114,24 @@ export function nameForElementSubType(elemSubType: ElementType): string {
 export type Element = {
   type: ElementType,
   subType: ElementSubType,
+
   team: TeamColor|null,
   position: HexPosition|null,
   id: string,
   count: number|null,
+
+  // Person only
   heldElements: Element[],
+  health: number|null,
+  armor: number|null,
   weight: number|null,
-  hasActionAvailable: boolean|null
+  hasActionAvailable: boolean|null,
+  isWorking: boolean|null,
 }
 
 export const PERSON_MAX_CARRY_WEIGHT = 3;
+export const PERSON_BASE_DAMAGE = 5;
+export const PERSON_BASE_HEALTH = 10;
 
 // maybe make this hve a coordinate inside? 
 export type Cell = {
@@ -338,17 +358,25 @@ function prepareCellsForStateSave(cells: Cell[]): Cell[] {
   return newCells
 }
 
+
+
 export interface BoardState {
+  playerCount: number,
+  turnNumber: number,
+
   cells: Cell[],
   selectedCell: Cell|null,
   selectedElement: Element|null,
   offset: Coordinate,
   zoom: number,
   showMoveInfo: boolean,
-  playerTurn: TeamColor
+  playerTurn: TeamColor,
 }
 
 const initialState: BoardState = {
+  playerCount: 3,
+  turnNumber: 1,
+
   cells: [],
   selectedCell: null,
   selectedElement: null,
@@ -357,6 +385,41 @@ const initialState: BoardState = {
   showMoveInfo: false,
   playerTurn: TeamColor.White
 };
+
+export const WORKER_ITEM_GENERATION_AMOUNT = 5;
+export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
+
+function setupNewTurn(boardState): Cell[] {
+  let newCells = structuredClone(boardState.cells);
+  let playerTurn = boardState.playerTurn;
+
+  let cellsWithOwnPersons = newCells.filter(
+    cell => cell.elements.filter(el => el.type == ElementType.person && el.team == playerTurn).length > 0);
+
+  for (var cell of cellsWithOwnPersons) {
+
+    let ownPersons = cell.elements.filter(el => el.team == playerTurn);
+
+    for (var p of ownPersons) {
+      p.hasActionAvailable = true;
+    }
+
+    let workerCount = ownPersons.filter(el => el.isWorking).length;
+    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital);
+
+    let itemCreationCount;
+    if (buildingExists) {
+      itemCreationCount = BUILDING_ITEM_GENERATION_AMOUNT * workers.length;
+    } else {
+      itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
+    };
+
+    cell.elements.push({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount});
+  }
+
+  newCells = prepareCellsForStateSave(newCells);
+  return newCells
+}
 
 const boardSlice = createSlice({
   name: "board",
@@ -384,17 +447,26 @@ const boardSlice = createSlice({
     },
     setPlayerTurn(state, action: PayloadAction<TeamColor>) {
       state.playerTurn = action.payload;
+    },
+    setPlayerCount(state, action: PayloadAction<number>) {
+      state.playerCount = action.payload;
+    },
+    endTurn(state) {
+      let currentPlayerTurn = state.playerTurn;
+      if (currentPlayerTurn == state.playerCount - 1) {
+        state.playerTurn = 0;
+      } else {
+        state.playerTurn += 1;
+      }
+
+      state.selectedCell = null;
+      state.selectedElement = null;
+      state.showMoveInfo = false;
+
+      state.cells = setupNewTurn(state);
     }
   },
 });
-
-export const endTurn = (state) => {
-  // Change player turn
-  // disable selected cell, selected element, showMoveInfo
-  // increase player turn
-  //
-  // need to add player count to initialState so we know how to do it
-}
 
 export const getCells = (state: RootState): Cell[] => state.board.cells;
 export const getSelectedCell = (state: RootState): Cell|null => state.board.selectedCell;
@@ -403,6 +475,7 @@ export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
 export const getPlayerTurn = (state: RootState): TeamColor => state.board.playerTurn;
+export const getPlayerCount = (state: RootState): number => state.board.playerCount;
 
 export const { 
   setCells,
@@ -410,7 +483,10 @@ export const {
   setSelectedElement,
   setBoardOffset,
   setBoardZoom,
-  setShowMoveInfo
+  setShowMoveInfo,
+  setPlayerCount,
+
+  endTurn
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

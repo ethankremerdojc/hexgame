@@ -8,6 +8,9 @@ import {
   getBoardZoom,
   getBoardOffset,
 
+  getPlayerCount,
+  setPlayerCount
+
 } from "@/features/board/boardSlice"
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -37,11 +40,20 @@ function DebugStats({cells, selectedCell, selectedElement, zoom, offset}) {
 }
 
 function App() {
+
+  const dispatch = useAppDispatch();
+
   const cells = useAppSelector(getCells);
   const selectedCell = useAppSelector(getSelectedCell);
   const selectedElement = useAppSelector(getSelectedElement);
   const zoom = useAppSelector(getBoardZoom);
   const offset = useAppSelector(getBoardOffset);
+
+  // const playerCount = useAppSelector(getPlayerCount);
+  //
+  // if (playerCount == -1) {
+  //   setPlayerCount()
+  // }
 
   return (
     <>

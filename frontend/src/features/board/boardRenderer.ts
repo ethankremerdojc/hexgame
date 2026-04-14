@@ -197,73 +197,64 @@ export class BoardRenderer {
     ctx.fill();
   }
 
-  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number) {
-
-    //TODO
-    //Refactor
+  static drawPersonElement(
+    ctx: CanvasRenderingContext2D, element: Element, elemPos: Coordinate, elemSvg: any, elemColor: string, radius: number) {
 
     let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
-    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
-    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
 
-    for (var element of nonItemElements) {
-        
-      let elemPos = BoardUtils.getElementPosition(element, origin, radius);
+    drawSvgToCanvas(elemSvg, ctx,
+      elemPos.x, elemPos.y,
+      objectSize, objectSize,
+      elemColor
+    );
 
-      let elemColor = colorForTeam(element.team);
-      let elemSvg = getSvgForElement(element);
+    let miniItemSize = itemSize / 1.5;
 
-      if (element.type == ElementType.Building) {
-        drawSvgToCanvas(elemSvg, ctx,
-          elemPos.x, elemPos.y,
-          buildingSize, buildingSize,
-          elemColor
-        );
-      }
+    // held elements
+    for (let i=0; i<element.heldElements.length; i++) {
+      let heldElement = element.heldElements[i];
+      let heldElemSvg = getSvgForElement(heldElement);
 
-      if (element.type == ElementType.Person) {
-        drawSvgToCanvas(elemSvg, ctx,
-          elemPos.x, elemPos.y,
-          objectSize, objectSize,
-          elemColor
-        );
+      drawSvgToCanvas(heldElemSvg, ctx,
+        elemPos.x - miniItemSize*1.25, elemPos.y + miniItemSize*i*1.2+miniItemSize*0.5,
+        miniItemSize, miniItemSize,
+      );
 
-        // held elements
-        for (let i=0; i<element.heldElements.length; i++) {
-          let heldElement = element.heldElements[i];
-          let heldElemSvg = getSvgForElement(heldElement);
-          let miniItemSize = itemSize * 0.75;
+      ctx.fillStyle = "white";
+      ctx.font = `${miniItemSize}px serif`;
+      let countStr = heldElement.count ? heldElement.count.toString() : "";
 
-          drawSvgToCanvas(heldElemSvg, ctx,
-            elemPos.x - miniItemSize*1.25, elemPos.y + miniItemSize*i*1.2+miniItemSize*0.5,
-            miniItemSize, miniItemSize,
-          );
-
-          ctx.fillStyle = "white";
-          ctx.font = `${miniItemSize}px serif`;
-          let countStr = heldElement.count ? heldElement.count.toString() : "";
-
-          ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
-        }
-
-
-        if (element.subType == ElementSubType.Worker) {
-          drawSvgToCanvas(forkSvg, ctx,
-            elemPos.x + objectSize, elemPos.y,
-            toolSize, objectSize,
-          );
-        }
-
-
-        //todo determine better 'has actions'
-        if (!element.hasActionAvailable) {
-          ctx.fillStyle = "black";
-          ctx.font = `${objectSize}px serif`;
-
-          ctx.fillText("X", elemPos.x, elemPos.y+objectSize)
-        }
-      }
+      ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
     }
+
+    //TODO
+    //refactor to draw tool based on elementsubtype
+    if (element.subType == ElementSubType.Worker) {
+      drawSvgToCanvas(forkSvg, ctx,
+        elemPos.x + objectSize, elemPos.y,
+        toolSize, objectSize,
+      );
+    }
+
+    //todo determine better 'has actions'
+    if (!element.hasActionAvailable) {
+      ctx.fillStyle = "black";
+      ctx.font = `${objectSize}px serif`;
+
+      ctx.fillText("X", elemPos.x, elemPos.y+objectSize)
+    }
+
+    // Health
+
+    
+    ctx.fillStyle = "red";
+    ctx.font = `${miniItemSize*1.5}px serif`;
+    let healthStr: string = element.health.toString() + " h";
+    ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5)
+  }
+
+  static drawItemElements(ctx, itemElements, origin, radius) {
+    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
 
     let itemElementsCount = itemElements.length;
 
@@ -312,6 +303,38 @@ export class BoardRenderer {
 
       ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
     }
+  }
+
+  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number) {
+
+    //TODO
+    //Refactor
+
+    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
+    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
+    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
+
+    for (var element of nonItemElements) {
+        
+      let elemPos = BoardUtils.getElementPosition(element, origin, radius);
+
+      let elemColor = colorForTeam(element.team);
+      let elemSvg = getSvgForElement(element);
+
+      if (element.type == ElementType.Building) {
+        drawSvgToCanvas(elemSvg, ctx,
+          elemPos.x, elemPos.y,
+          buildingSize, buildingSize,
+          elemColor
+        );
+      }
+
+      if (element.type == ElementType.Person) {
+        BoardRenderer.drawPersonElement(ctx, element, elemPos, elemSvg, elemColor, radius);
+      }
+    }
+
+    BoardRenderer.drawItemElements(ctx, itemElements, origin, radius);
   }
 
   static drawBoundingBoxTriangles(ctx: CanvasRenderingContext2D, cell: Cell, radius: number) {

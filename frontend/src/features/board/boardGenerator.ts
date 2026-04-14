@@ -1,6 +1,7 @@
 import {
   ElementType, ElementSubType, CellType, TeamColor,
-  CELL_INFO_BY_TYPE
+  CELL_INFO_BY_TYPE, 
+  PERSON_BASE_HEALTH
 } from "./boardSlice.ts";
 
 import {
@@ -165,11 +166,11 @@ export class BoardGenerator {
 
     randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
 
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[]});
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[]});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[], health: 10});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[], health: 10});
 
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Gold, count: 10});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: 10});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Gold, count: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: PERSON_BASE_HEALTH});
     return newBoard;
   }
 }
