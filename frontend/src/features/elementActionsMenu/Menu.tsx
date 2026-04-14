@@ -31,10 +31,11 @@ export function ElementActionsMenu() {
   const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
 
   // ==========================================
-
+  let remainingCarryWeight = 0;
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
     availableActions = BoardUtils.getAvailableActions(selectedElement, cells);
+    remainingCarryWeight = BoardUtils.getPersonRemainingCarryWeight(selectedElement);
   }
 
   let availableActionsInfo = [];
@@ -51,6 +52,9 @@ export function ElementActionsMenu() {
   };
 
   // ==========================================
+  
+
+
 
   const itemTransferHandler = (transferType, itemId, itemCount) => {
     let newCells;
@@ -74,7 +78,7 @@ export function ElementActionsMenu() {
       if (itemCount == "one") {
         takeAmount = 1;
       } else if (itemCount == "max") {
-        takeAmount = BoardUtils.getPersonExtraWeightAllowed(selectedElement);
+        takeAmount = remainingCarryWeight;
       }
 
       newCells = BoardUtils.takeItem(selectedElement, itemId, cells, takeAmount);
@@ -129,16 +133,15 @@ export function ElementActionsMenu() {
       {
         itemsToSelectFrom &&
         <ul>{itemsToSelectFrom.map(item => {
-            return (<>
+            return (<div>
               <button key={item.id+"one"} onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
-                {actionHandling} {nameForElementSubType(item.subType)} : {item.count} (1)
+                {actionHandling} {nameForElementSubType(item.subType)} (1)
               </button>
 
               <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {nameForElementSubType(item.subType)} : {item.count} (MAX)
+                {actionHandling} {nameForElementSubType(item.subType)} ({remainingCarryWeight} MAX)
               </button>
-            </>
-
+            </div>
             )
           })
         }

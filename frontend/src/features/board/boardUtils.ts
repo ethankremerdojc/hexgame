@@ -404,7 +404,7 @@ export class BoardUtils {
     return result
   }
 
-  static getPersonExtraWeightAllowed(elem: Element): number {
+  static getPersonRemainingCarryWeight(elem: Element): number {
     let result = PERSON_MAX_CARRY_WEIGHT - BoardUtils.getPersonCarryingWeight(elem);
     console.log("result", result);
     //TODO
