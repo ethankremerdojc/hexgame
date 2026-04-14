@@ -257,7 +257,7 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
     } else {
       let newHeldElements = [];
       for (let h = 0; h < newElem.heldElements.length; h++) {
-        let he = structuredClone(newElem.heldElements[h]);
+        let he = {...newElem.heldElements[h]};
         if (!he.count) {
           he.count = 1;
         }
@@ -287,7 +287,7 @@ function mergeItemElements(itemElements: Element[]): Element[] {
     if (matchingElems[0]) {
       matchingElems[0].count += ie.count;
     } else{
-      result.push(structuredClone(ie));
+      result.push({...ie});
     }
   })
 
@@ -386,23 +386,26 @@ const initialState: BoardState = {
   playerTurn: TeamColor.White
 };
 
-export const WORKER_ITEM_GENERATION_AMOUNT = 5;
+export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
 
-function setupNewTurn(newCells: Cell[], playerTurn): Cell[] {
+function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
-    cell => cell.elements.filter(el => el.type == ElementType.person && el.team == playerTurn).length > 0);
+    cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
 
   for (var cell of cellsWithOwnPersons) {
 
-    let ownPersons = cell.elements.filter(el => el.team == playerTurn);
+    let ownPersons = cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn);
+    let workers = ownPersons.filter(el => el.isWorking);
 
     for (var p of ownPersons) {
       p.hasActionAvailable = true;
+      p.isWorking = false;
     }
 
-    let workerCount = ownPersons.filter(el => el.isWorking).length;
-    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital);
+    if (workers.length < 1) { continue }
+
+    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital).length > 0;
 
     let itemCreationCount;
     if (buildingExists) {
@@ -460,9 +463,7 @@ const boardSlice = createSlice({
       state.selectedElement = null;
       state.showMoveInfo = false;
 
-      let copiedCells = structuredClone(state.cells);
-
-      state.cells = setupNewTurn(copiedCells, state.play);
+      state.cells = setupNewTurn(state.cells, state.playerTurn);
     }
   },
 });

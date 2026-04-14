@@ -83,7 +83,8 @@ export function ElementActionsMenu() {
     }
 
     dispatch(setCells(newCells));
-
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
     setActionHandling(null);
     setItemsToSelectFrom([]);
   }

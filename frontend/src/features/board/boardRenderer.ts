@@ -239,9 +239,9 @@ export class BoardRenderer {
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
       ctx.fillStyle = "black";
-      ctx.font = `${objectSize}px serif`;
+      ctx.font = `${objectSize/2}px serif`;
 
-      ctx.fillText("X", elemPos.x, elemPos.y+objectSize)
+      ctx.fillText("no actions", elemPos.x, elemPos.y+objectSize*1.3)
     }
 
     // Health

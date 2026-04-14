@@ -294,7 +294,7 @@ export class BoardUtils {
 
         //TODO Add this back
 
-        // newElem.hasActionAvailable = false;
+        newElem.hasActionAvailable = false;
         newElements.push(newElem);
         newCell.elements = newElements;
       }
