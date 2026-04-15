@@ -565,18 +565,12 @@ export class BoardUtils {
 
     let capitalExists = buildingElements[0] && buildingElements[0].subType == ElementSubType.Capital;
 
-    if (buildingElements.length === 0) {
-      result.push(ElementAction.Build);
-    } else {
-      // Can't destroy the capital
-      if (!capitalExists) {
-        result.push(ElementAction.Destroy);
-      }
+    result.push(ElementAction.Build);
+    if (!capitalExists) {
+      result.push(ElementAction.Destroy);
     }
 
-    if (!capitalExists) {
-      result.push(ElementAction.Work);
-    }
+    result.push(ElementAction.Work);
 
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);
     if (currentCarryWeight > 0) {
@@ -618,6 +612,19 @@ export class BoardUtils {
     }
 
     return null
+  }
+
+  static getAvailableThingsToBuild(cell: Cell): ElementSubType[] {
+    let result = [];
+
+    if (cell.elements.filter(el => el.type == ElementType.Building) == 0) {
+      result.push(BoardUtils.buildingTypeForCellType(cell.type));
+    }
+    result.push(ElementSubType.Sword);
+    result.push(ElementSubType.Shield);
+    result.push(ElementSubType.Bow);
+
+    return result
   }
 
   static itemTypeForCellType(cellType: CellType): ElementSubType|null {

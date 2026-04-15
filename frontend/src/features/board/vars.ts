@@ -96,6 +96,29 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 2
       })
+    case ElementSubType.Sword:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 1
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 3
+      })
+    case ElementSubType.Bow:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 3
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 1
+      })
+    case ElementSubType.Shield:
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 5
+      })
     default:
       break;
   }

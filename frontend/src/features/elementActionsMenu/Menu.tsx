@@ -131,11 +131,9 @@ export function ElementActionsMenu() {
     dispatch(setShowMoveInfo(false));
     dispatch(setActionHandling("build"));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    let buildingType = BoardUtils.buildingTypeForCellType(parentCell.type);
-    dispatch(setActionItemsToSelectFrom([
-      [BoardUtils.nameForElementSubType(buildingType), buildingType],
-      // other things like rams etc.
-    ]));
+    let thingsToBuild = BoardUtils.getAvailableThingsToBuild(parentCell);
+
+    dispatch(setActionItemsToSelectFrom(thingsToBuild));
   }
 
   const buildElem = (type) => {
@@ -245,8 +243,8 @@ export function ElementActionsMenu() {
         <div>
           {itemsToSelectFrom.map(item => {
             return (
-              <button key={item[1]} onClick={() => { buildElem(item[1]) }} disabled={getBuildingDisabled(item[1])}>
-                {item[0]} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item[1]))}
+              <button key={item} onClick={() => { buildElem(item) }} disabled={getBuildingDisabled(item)}>
+                {BoardUtils.nameForElementSubType(item)} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item))}
               </button>
             )
           })}
