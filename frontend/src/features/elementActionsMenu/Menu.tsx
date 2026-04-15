@@ -17,6 +17,8 @@ import {
   endTurn,
 } from "../board/boardSlice.ts";
 
+import { getBuildingCost } from "../board/vars"
+
 import { BoardUtils } from "../board/boardUtils.ts"
 
 export function ElementActionsMenu() {
@@ -27,8 +29,9 @@ export function ElementActionsMenu() {
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
   const playerTurn =        useAppSelector(getPlayerTurn);
 
-  //TODOzi
+  // TODOz
   //Move these two to redux state so that clicking off of them during action doesn't break things
+
   const [actionHandling, setActionHandling] = useState(null);
   const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
 
@@ -131,19 +134,17 @@ export function ElementActionsMenu() {
       [BoardUtils.nameForElementSubType(buildingType), buildingType],
       // other things like rams etc.
     ]);
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
   }
 
   const buildElem = (type) => {
-
-
     dispatch(setShowMoveInfo(false));
     const newCells = BoardUtils.build(selectedElement, type, cells);
     dispatch(setCells(newCells));
 
     setActionHandling(null);
     setItemsToSelectFrom([]);
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
   }
 
   const getBuildingDisabled = (buildingType) => {
@@ -243,7 +244,7 @@ export function ElementActionsMenu() {
           {itemsToSelectFrom.map(item => {
             return (
               <button key={item[1]} onClick={() => { buildElem(item[1]) }} disabled={getBuildingDisabled(item[1])}>
-                {item[0]} | COST: {BoardUtils.buildingCostToString(BoardUtils.getBuildingCost(item[1]))}
+                {item[0]} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item[1]))}
               </button>
             )
           })}

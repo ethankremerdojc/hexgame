@@ -1,3 +1,7 @@
+import {
+  ElementType, ElementSubType
+} from "./boardTypes"
+
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
 export const PERSON_MAX_CARRY_WEIGHT = 5;
@@ -62,3 +66,39 @@ export const ELEMENT_ACTION_DETAILS: ActionDetails[] = [
     helpText: "Work on the current tile for more resources."
   }
 ]
+
+export function getBuildingCost(elemSubType: ElementType) {
+  let ingredients = [];
+
+  switch (elemSubType) {
+    case ElementSubType.Farm:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 5
+      })
+      break;
+    case ElementSubType.Quarry:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 3
+      })
+      break;
+    case ElementSubType.SawMill:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 3
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 2
+      })
+    default:
+      break;
+  }
+
+  return ingredients
+}

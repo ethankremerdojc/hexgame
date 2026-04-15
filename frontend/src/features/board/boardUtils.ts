@@ -9,7 +9,8 @@ import {
 import {
   ELEMENT_ACTION_DETAILS,
   PERSON_MAX_CARRY_WEIGHT,
-  PERSON_BASE_DAMAGE
+  PERSON_BASE_DAMAGE,
+  getBuildingCost
 } from "./vars"
 
 export class BoardUtils {
@@ -439,7 +440,7 @@ export class BoardUtils {
   static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell): boolean {
     let counts = {};
 
-    let requiredElements = BoardUtils.getBuildingCost(elementSubType);
+    let requiredElements = getBuildingCost(elementSubType);
     let mergedItemElements = BoardUtils.mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
 
     for (var requiredElement of requiredElements) {
@@ -458,7 +459,7 @@ export class BoardUtils {
   }
 
   static depleteResourcesFromBuild(buildingType: ElementSubType, cell: Cell, cells: Cell[]) {
-    let requiredResources = BoardUtils.getBuildingCost(buildingType);
+    let requiredResources = getBuildingCost(buildingType);
     let newCells = structuredClone(cells);
     let newCell;
     for (var c of newCells) {
@@ -633,42 +634,6 @@ export class BoardUtils {
     return null
   }
 
-  static getBuildingCost(elemSubType: ElementType) {
-    let ingredients = [];
-
-    switch (elemSubType) {
-      case ElementSubType.Farm:
-        ingredients.push({
-          subType: ElementSubType.Wood,
-          count: 5
-        })
-        break;
-      case ElementSubType.Quarry:
-        ingredients.push({
-          subType: ElementSubType.Wood,
-          count: 2
-        })
-        ingredients.push({
-          subType: ElementSubType.Ore,
-          count: 3
-        })
-        break;
-      case ElementSubType.SawMill:
-        ingredients.push({
-          subType: ElementSubType.Wood,
-          count: 3
-        })
-        ingredients.push({
-          subType: ElementSubType.Ore,
-          count: 2
-        })
-      default:
-        break;
-    }
-
-    return ingredients
-  }
-
   static buildingCostToString(buildingCost: object[]): string {
     let result = "(";
 
@@ -690,7 +655,10 @@ export class BoardUtils {
       "Food",
       "Wood",
       "Ore",
-      "Gold"
+      "Gold",
+      "Sword",
+      "Bow",
+      "Shield"
     ][elemSubType]
   }
 

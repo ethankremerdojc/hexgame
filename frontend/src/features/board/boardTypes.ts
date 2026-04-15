@@ -39,7 +39,11 @@ export enum ElementSubType {
   Food,
   Wood,
   Ore,
-  Gold
+  Gold,
+
+  Sword,
+  Bow,
+  Shield
 }
 
 export enum CellType {
