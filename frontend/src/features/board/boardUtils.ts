@@ -4,7 +4,8 @@ import type {
 
 import {
   HexPosition, ElementType, ElementSubType, ElementAction, parseElementId,
-  buildingTypeForCellType,
+  mergeItemElements,
+  buildingTypeForCellType, getBuildingCost,
   PERSON_MAX_CARRY_WEIGHT,
   PERSON_BASE_DAMAGE
 } from "./boardSlice"
@@ -327,23 +328,14 @@ export class BoardUtils {
 
     let elementToDrop = newPersonElem.heldElements.filter(e => e.id == droppedItemId)[0];
 
-    //TODO 
-    //Figure out better way to do this
-    if (count == -1) { 
-      // Drop All
-      // just take actual item and move it
-      newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != droppedItemId);
-      elemParentCell.elements.push(elementToDrop);
-    } else {
-      // create new element on the tile, will be combined automatically in the slice
-      let copiedDroppedElement = structuredClone(elementToDrop);
-      copiedDroppedElement.count = count;
-      elemParentCell.elements.push(copiedDroppedElement);
-      elementToDrop.count -= count;
+    // create new element on the tile, will be combined automatically in the slice
+    let copiedDroppedElement = structuredClone(elementToDrop);
+    copiedDroppedElement.count = count;
+    elemParentCell.elements.push(copiedDroppedElement);
+    elementToDrop.count -= count;
 
-      if (elementToDrop.count < 1) {
-        newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != elementToDrop.id);
-      }
+    if (elementToDrop.count < 1) {
+      newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != elementToDrop.id);
     }
     return newCells
   }
@@ -455,6 +447,60 @@ export class BoardUtils {
     let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
     newPerson.hasActionAvailable = false;
 
+    newCells = BoardUtils.depleteResourcesFromBuild(buildingType, elemParentCell, newCells);
+    return newCells;
+  }
+
+  static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell): boolean {
+    let counts = {};
+
+    let requiredElements = getBuildingCost(elementSubType);
+    let mergedItemElements = mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
+
+    for (var requiredElement of requiredElements) {
+      let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredElement.subType)[0];
+
+      if (!relevantItemElement) {
+        return false
+      }
+
+      if (relevantItemElement.count < requiredElement.count) {
+        return false;
+      }
+    }
+
+    return true
+  }
+
+  static depleteResourcesFromBuild(buildingType: ElementSubType, cell: Cell, cells: Cell[]) {
+    let requiredResources = getBuildingCost(buildingType);
+    let newCells = structuredClone(cells);
+    let newCell;
+    for (var c of newCells) {
+      if (c.x == cell.x && c.y == cell.y) {
+        newCell = c;
+      }
+    }
+    
+    let mergedItemElements = mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
+
+    let newElements = [...newCell.elements.filter(e => e.type != ElementType.Item)]; // remove all current items to add again later
+
+    for (var requiredResource of requiredResources) {
+
+      let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredResource.subType)[0];
+
+      if (requiredResource.count > relevantItemElement.count) {
+        throw new Error(`Required resources exceeded resources on tile.`);
+      }
+
+      if (requiredResource.count < relevantItemElement.count) {
+        relevantItemElement.count -= relevantItemElement.count;
+        newElements.push(relevantItemElement);
+      }
+    }
+
+    newCell.elements = newElements;
     return newCells;
   }
 

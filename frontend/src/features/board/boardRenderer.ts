@@ -121,16 +121,19 @@ export class BoardRenderer {
 
       BoardRenderer.drawHex(
         ctx, radius,
-        pixelOrigin,
-        hexPoints, cell,
-        cellHighlighted, selectedCell, offsetX, offsetY
+        pixelOrigin, hexPoints, 
+        cell, cellHighlighted, 
+        selectedCell, selectedElement,
+        offsetX, offsetY
       );
     }
   }
 
   static drawHex(
-    ctx: CanvasRenderingContext2D, radius: number, origin: Coordinate, points: any, 
-    cell: Cell, cellHighlighted: boolean, selectedCell: Cell|null,
+    ctx: CanvasRenderingContext2D, radius: number, 
+    origin: Coordinate, points: any, 
+    cell: Cell, cellHighlighted: boolean, 
+    selectedCell: Cell|null, selectedElement: Cell|null,
     offsetX: number, offsetY: number
   ) {
     ctx.save();
@@ -139,11 +142,12 @@ export class BoardRenderer {
     ctx.restore();
 
     BoardRenderer.fillCell(ctx, cell.type, radius, offsetX, offsetY);
-    BoardRenderer.drawElements(ctx, origin, cell, radius);
+    BoardRenderer.drawElements(ctx, origin, cell, radius, selectedElement);
 
     // we should be able to add a linewidth to all hexes as long as we draw the 
     // highlighted and selected cells last, reordering them or whatever
-
+    
+    ctx.save();
     ctx.lineWidth = 4;
 
     if (selectedCell && cell.x == selectedCell.x && cell.y == selectedCell.y) {
@@ -154,7 +158,7 @@ export class BoardRenderer {
       ctx.stroke();
     }
 
-    ctx.lineWidth = 1;
+    ctx.restore();
   }
 
   static fillCell(ctx: CanvasRenderingContext2D, cellType: CellType, radius: number, offsetX: number, offsetY: number) {
@@ -197,8 +201,24 @@ export class BoardRenderer {
     ctx.fill();
   }
 
+  static drawHighlightBox(
+    ctx: CanvasRenderingContext2D, elemPos: Coordinate, objectSize: number, color: string
+  ) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    let lineWidth = objectSize/12;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeRect(elemPos.x-lineWidth, elemPos.y-lineWidth, objectSize+2*lineWidth, objectSize+2*lineWidth);
+    ctx.restore();
+  }
+
   static drawPersonElement(
-    ctx: CanvasRenderingContext2D, element: Element, elemPos: Coordinate, elemSvg: any, elemColor: string, radius: number) {
+    ctx: CanvasRenderingContext2D, 
+    element: Element, elemPos: Coordinate, 
+    elemSvg: any, elemColor: string, 
+    radius: number,
+    isSelected: boolean
+  ) {
 
     let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
 
@@ -239,9 +259,9 @@ export class BoardRenderer {
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
       ctx.fillStyle = "black";
-      ctx.font = `${objectSize/2}px serif`;
+      ctx.font = `${objectSize/2.5}px serif`;
 
-      ctx.fillText("no actions", elemPos.x, elemPos.y+objectSize*1.3)
+      ctx.fillText("no actions", elemPos.x - objectSize*0.25, elemPos.y+objectSize*1.4)
     }
 
     // Health
@@ -257,6 +277,10 @@ export class BoardRenderer {
       ctx.fillStyle = "blue";
       ctx.font = `${miniItemSize*1.5}px serif`;
       ctx.fillText("Working", elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*2.5);
+    }
+
+    if (isSelected) {
+      BoardRenderer.drawHighlightBox(ctx, elemPos, objectSize, "yellow");
     }
   }
 
@@ -312,17 +336,14 @@ export class BoardRenderer {
     }
   }
 
-  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number) {
-
-    //TODO
-    //Refactor
-
+  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number, selectedElement: Element) {
     let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
     let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
     let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
 
     for (var element of nonItemElements) {
-        
+      let isSelected = selectedElement && selectedElement.id == element.id;
+
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
 
       let elemColor = colorForTeam(element.team);
@@ -337,7 +358,7 @@ export class BoardRenderer {
       }
 
       if (element.type == ElementType.Person) {
-        BoardRenderer.drawPersonElement(ctx, element, elemPos, elemSvg, elemColor, radius);
+        BoardRenderer.drawPersonElement(ctx, element, elemPos, elemSvg, elemColor, radius, isSelected);
       }
     }
 

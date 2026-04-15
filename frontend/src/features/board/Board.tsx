@@ -246,7 +246,7 @@ export function Board() {
         dispatch(setSelectedCell(null));
         return
       } else {
-
+        dispatch(setShowMoveInfo(false));
         if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 

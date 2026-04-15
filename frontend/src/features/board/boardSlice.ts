@@ -2,6 +2,8 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
+import { BoardUtils } from "./boardUtils"
+
 export enum TeamColor {
   White,
   Purple,
@@ -94,6 +96,52 @@ export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
   return null
 }
 
+export function getBuildingCost(elemSubType: ElementType) {
+  let ingredients = [];
+
+  switch (elemSubType) {
+    case ElementSubType.Farm:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 5
+      })
+      break;
+    case ElementSubType.Quarry:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 3
+      })
+      break;
+    case ElementSubType.SawMill:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 3
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 2
+      })
+    default:
+      break;
+  }
+
+  return ingredients
+}
+
+export function buildingCostToString(buildingCost: object[]): string {
+  let result = "(";
+
+  for (var ingredient of buildingCost) {
+    result += `${nameForElementSubType(ingredient.subType)}: ${ingredient.count}, `;
+  }
+
+  return result.slice(0, -2) + ")"; // remove last two chars: ', '
+}
+
 export function nameForElementSubType(elemSubType: ElementType): string {
   return [
     "Capital",
@@ -128,10 +176,6 @@ export type Element = {
   hasActionAvailable: boolean|null,
   isWorking: boolean|null,
 }
-
-export const PERSON_MAX_CARRY_WEIGHT = 3;
-export const PERSON_BASE_DAMAGE = 5;
-export const PERSON_BASE_HEALTH = 10;
 
 // maybe make this hve a coordinate inside? 
 export type Cell = {
@@ -279,7 +323,7 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
   return newElem;
 }
 
-function mergeItemElements(itemElements: Element[]): Element[] {
+export function mergeItemElements(itemElements: Element[]): Element[] {
   let result = [];
 
   itemElements.forEach(ie => {
@@ -359,6 +403,51 @@ function prepareCellsForStateSave(cells: Cell[]): Cell[] {
 }
 
 
+function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): Cell[] {
+  let cellsWithPlayersOnTeam = newCells.filter(
+    cell => cell.elements.filter(
+      elem => elem.type == ElementType.Person && elem.team == playerTeam
+    ).length > 0);
+
+  for (var cell of cellsWithPlayersOnTeam) {
+    let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
+
+    for (var person of persons) {
+
+      let foodElementsOnTile = cell.elements.filter(el => el.subType == ElementSubType.Food);
+
+      if (foodElementsOnTile.length > 0) {
+        let foodElem = foodElementsOnTile[0];
+        if (foodElem.count == 1) {
+          cell.elements = cell.elements.filter(el => el.id != foodElem.id);
+        } else {
+          foodElem.count -= 1;
+        }
+
+        continue
+      }
+
+      let foodElementsHeld = person.heldElements.filter(el => el.subType == ElementSubType.Food);
+      console.log(foodElementsHeld);
+
+      if (foodElementsHeld.length > 0) {
+        let foodElem = foodElementsHeld[0];
+        if (foodElem.count == 1) {
+          person.heldElements = person.heldElements.filter(el => el.id != foodElem.id);
+        } else {
+          foodElem.count -= 1;
+        }
+      } else {
+        person.health -= 2;
+        if (person.health < 1) {
+          cell.elements = cell.elements.filter(el => el.id != person.id);
+        }
+      }
+    }
+  }
+
+  return newCells;
+}
 
 export interface BoardState {
   playerCount: number,
@@ -388,6 +477,11 @@ const initialState: BoardState = {
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
+export const PERSON_MAX_CARRY_WEIGHT = 5;
+export const PERSON_BASE_DAMAGE = 4;
+export const PERSON_BASE_HEALTH = 9;
+export const STARTING_FOOD = 15;
+export const STARTING_GOLD = 10;
 
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
@@ -462,6 +556,9 @@ const boardSlice = createSlice({
       state.selectedCell = null;
       state.selectedElement = null;
       state.showMoveInfo = false;
+
+
+      let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
 
       state.cells = setupNewTurn(state.cells, state.playerTurn);
     }

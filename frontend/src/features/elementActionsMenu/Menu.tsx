@@ -7,6 +7,7 @@ import {
 
   nameForElementSubType,
   getActionDetails,
+  getBuildingCost, buildingCostToString,
 
   getCells, setCells,
   getSelectedCell, setSelectedCell,
@@ -28,16 +29,20 @@ export function ElementActionsMenu() {
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
   const playerTurn =        useAppSelector(getPlayerTurn);
 
+  //TODOzi
+  //Move these two to redux state so that clicking off of them during action doesn't break things
   const [actionHandling, setActionHandling] = useState(null);
   const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
 
   // ==========================================
   let remainingCarryWeight = 0;
+  let maxTakeAmount = 0;
+
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
     availableActions = BoardUtils.getAvailableActions(selectedElement, cells);
     remainingCarryWeight = BoardUtils.getPersonRemainingCarryWeight(selectedElement);
-  }
+  };
 
   let availableActionsInfo = [];
   for (var aa of availableActions) {
@@ -61,22 +66,26 @@ export function ElementActionsMenu() {
 
       let dropAmount;
 
+      let relevantItem = selectedElement.heldElements.filter(el => el.id == itemId)[0];
+
       if (itemCount == "one") {
         dropAmount = 1;
       } else if (itemCount == "max") {
-        dropAmount = -1;
+        dropAmount = relevantItem.count;
       }
 
       newCells = BoardUtils.dropItem(selectedElement, itemId, cells, dropAmount);
 
     } else if (transferType == "take") {
-
       let takeAmount;
+
+      let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+      let parentCellRelevantItem = parentCell.elements.filter(el => el.id == itemId)[0];
 
       if (itemCount == "one") {
         takeAmount = 1;
       } else if (itemCount == "max") {
-        takeAmount = remainingCarryWeight;
+        takeAmount = Math.min(remainingCarryWeight, parentCellRelevantItem.count);
       }
 
       newCells = BoardUtils.takeItem(selectedElement, itemId, cells, takeAmount);
@@ -125,12 +134,19 @@ export function ElementActionsMenu() {
   }
 
   const buildElem = (type) => {
+
+
     dispatch(setShowMoveInfo(false));
     const newCells = BoardUtils.build(selectedElement, type, cells);
     dispatch(setCells(newCells));
 
     setActionHandling(null);
     setItemsToSelectFrom([]);
+  }
+
+  const getBuildingDisabled = (buildingType) => {
+    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+    return !BoardUtils.elementsToBuildExistOnTile(buildingType, parentCell);
   }
 
   const fightHandler = () => {
@@ -200,7 +216,15 @@ export function ElementActionsMenu() {
               </button>
 
               <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {nameForElementSubType(item.subType)} (MAX)
+                {actionHandling} {nameForElementSubType(item.subType)} (MAX:
+                {
+                  actionHandling == "take" ? <>
+                  {Math.min(remainingCarryWeight, item.count)}
+                  </>
+                  :
+                  <>{item.count}</>
+                }
+                )
               </button>
             </div>
             )
@@ -214,8 +238,8 @@ export function ElementActionsMenu() {
         <div>
           {itemsToSelectFrom.map(item => {
             return (
-              <button key={item[1]} onClick={() => { buildElem(item[1]) }}>
-                {item[0]}
+              <button key={item[1]} onClick={() => { buildElem(item[1]) }} disabled={getBuildingDisabled(item[1])}>
+                {item[0]} | COST: {buildingCostToString(getBuildingCost(item[1]))}
               </button>
             )
           })}
