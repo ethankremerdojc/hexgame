@@ -145,7 +145,6 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
       }
 
       let foodElementsHeld = person.heldElements.filter(el => el.subType == ElementSubType.Food);
-      console.log(foodElementsHeld);
 
       if (foodElementsHeld.length > 0) {
         let foodElem = foodElementsHeld[0];
@@ -189,7 +188,10 @@ const initialState: BoardState = {
   offset: {x: 0, y: 0},
   zoom: 1.0,
   showMoveInfo: false,
-  playerTurn: TeamColor.White
+
+  playerTurn: TeamColor.White,
+  actionHandling: null,
+  actionItemsToSelectFrom: []
 };
 
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
@@ -254,6 +256,12 @@ const boardSlice = createSlice({
     setPlayerCount(state, action: PayloadAction<number>) {
       state.playerCount = action.payload;
     },
+    setActionHandling(state, action: PayloadAction<string|null>) {
+      state.actionHandling = action.payload;
+    },
+    setActionItemsToSelectFrom(state, action: PayloadAction<any[]>) {
+      state.actionItemsToSelectFrom = action.payload;
+    },
     endTurn(state) {
       let currentPlayerTurn = state.playerTurn;
       if (currentPlayerTurn == state.playerCount - 1) {
@@ -282,6 +290,8 @@ export const getBoardOffset = (state: RootState): Coordinate => state.board.offs
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
 export const getPlayerTurn = (state: RootState): TeamColor => state.board.playerTurn;
 export const getPlayerCount = (state: RootState): number => state.board.playerCount;
+export const getActionHandling = (state: RootState): number => state.board.actionHandling;
+export const getActionItemsToSelectFrom = (state: RootState): number => state.board.actionItemsToSelectFrom;
 
 export const { 
   setCells,
@@ -291,7 +301,8 @@ export const {
   setBoardZoom,
   setShowMoveInfo,
   setPlayerCount,
-
+  setActionHandling,
+  setActionItemsToSelectFrom,
   endTurn
 } = boardSlice.actions;
 

@@ -16,7 +16,9 @@ import {
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
   getShowMoveInfo, setShowMoveInfo,
-  getPlayerTurn, getPlayerCount
+  getPlayerTurn, getPlayerCount,
+  setActionHandling, getActionHandling,
+  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -250,7 +252,13 @@ export function Board() {
         dispatch(setSelectedCell(null));
         return
       } else {
+        // no selected element.
+        //
+        // below only make sense when person is selected
         dispatch(setShowMoveInfo(false));
+        dispatch(setActionHandling(null));
+        dispatch(setActionItemsToSelectFrom([]));
+
         if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 
@@ -270,6 +278,7 @@ export function Board() {
           }
         }
 
+
         dispatch(setSelectedElement(null));
       }
 
@@ -287,6 +296,7 @@ export function Board() {
         dispatch(setSelectedCell(potentialSelectedCell));
       }
     }
+
 
   };
 

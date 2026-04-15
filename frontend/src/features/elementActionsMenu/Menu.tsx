@@ -14,6 +14,8 @@ import {
 
   getShowMoveInfo, setShowMoveInfo,
   getPlayerTurn,
+  setActionHandling, getActionHandling,
+  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
   endTurn,
 } from "../board/boardSlice.ts";
 
@@ -29,11 +31,11 @@ export function ElementActionsMenu() {
   const showMoveInfo =      useAppSelector(getShowMoveInfo);
   const playerTurn =        useAppSelector(getPlayerTurn);
 
+  const actionHandling =    useAppSelector(getActionHandling);
+  const itemsToSelectFrom = useAppSelector(getActionItemsToSelectFrom);
+
   // TODOz
   //Move these two to redux state so that clicking off of them during action doesn't break things
-
-  const [actionHandling, setActionHandling] = useState(null);
-  const [itemsToSelectFrom, setItemsToSelectFrom] = useState([]);
 
   // ==========================================
   let remainingCarryWeight = 0;
@@ -95,21 +97,21 @@ export function ElementActionsMenu() {
     dispatch(setCells(newCells));
     dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
-    setActionHandling(null);
-    setItemsToSelectFrom([]);
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([]));
   }
 
   const dropHandler = () => {
     dispatch(setShowMoveInfo(false));
-    setActionHandling("drop");
-    setItemsToSelectFrom(selectedElement.heldElements);
+    dispatch(setActionHandling("drop"));
+    dispatch(setActionItemsToSelectFrom(selectedElement.heldElements));
   }
 
   const takeHandler = () => {
     dispatch(setShowMoveInfo(false));
-    setActionHandling("take");
+    dispatch(setActionHandling("take"));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    setItemsToSelectFrom(parentCell.elements.filter(e => e.type == ElementType.Item));
+    dispatch(setActionItemsToSelectFrom(parentCell.elements.filter(e => e.type == ElementType.Item)));
   }
 
   const moveHandler = () => {
@@ -119,21 +121,21 @@ export function ElementActionsMenu() {
   const workHandler = () => {
     let newCells = BoardUtils.makePersonWork(selectedElement, cells);
     dispatch(setCells(newCells));
-    setActionHandling(null);
-    setItemsToSelectFrom([]);
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([]));
     dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
   }
 
   const buildHandler = () => {
     dispatch(setShowMoveInfo(false));
-    setActionHandling("build");
+    dispatch(setActionHandling("build"));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let buildingType = BoardUtils.buildingTypeForCellType(parentCell.type);
-    setItemsToSelectFrom([
+    dispatch(setActionItemsToSelectFrom([
       [BoardUtils.nameForElementSubType(buildingType), buildingType],
       // other things like rams etc.
-    ]);
+    ]));
   }
 
   const buildElem = (type) => {
@@ -141,8 +143,8 @@ export function ElementActionsMenu() {
     const newCells = BoardUtils.build(selectedElement, type, cells);
     dispatch(setCells(newCells));
 
-    setActionHandling(null);
-    setItemsToSelectFrom([]);
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([]));
     dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
   }
@@ -154,10 +156,10 @@ export function ElementActionsMenu() {
 
   const fightHandler = () => {
     dispatch(setShowMoveInfo(false));
-    setActionHandling("fight");
+    dispatch(setActionHandling("fight"));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let enemyPersons = BoardUtils.getEnemyPersons(selectedElement, parentCell);
-    dispatch(setItemsToSelectFrom(enemyPersons));
+    dispatch(setActionItemsToSelectFrom(enemyPersons));
   }
 
   const fight = (enemyId) => {
@@ -167,8 +169,8 @@ export function ElementActionsMenu() {
     const newCells = BoardUtils.makePersonsFight(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
 
-    setActionHandling(null);
-    setItemsToSelectFrom([]); 
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([])); 
     dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
   }
@@ -215,12 +217,12 @@ export function ElementActionsMenu() {
       { ["drop", "take"].includes(actionHandling) &&
         itemsToSelectFrom &&
         <div>{itemsToSelectFrom.map(item => {
-            return (<div>
-              <button key={item.id+"one"} onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
+            return (<div id={item.key}>
+              <button onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
                 {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (1)
               </button>
 
-              <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
+              <button onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
                 {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (MAX:
                 {
                   actionHandling == "take" ? <>
