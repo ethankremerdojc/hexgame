@@ -6,9 +6,12 @@ export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
 export const PERSON_MAX_CARRY_WEIGHT = 5;
 export const PERSON_BASE_DAMAGE = 4;
-export const PERSON_BASE_HEALTH = 9;
+export const PERSON_BASE_HEALTH = 10;
 export const STARTING_FOOD = 15;
 export const STARTING_GOLD = 10;
+
+export const SHIELD_ARMOR_INCREASE_AMOUNT = 2;
+export const SWORD_DAMAGE_INCREASE_AMOUNT = 3;
 
 export const CELL_INFO_BY_TYPE = {
   0: { // Field
@@ -96,6 +99,7 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 2
       })
+      break;
     case ElementSubType.Sword:
       ingredients.push({
         subType: ElementSubType.Wood,
@@ -105,6 +109,7 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 3
       })
+      break;
     case ElementSubType.Bow:
       ingredients.push({
         subType: ElementSubType.Wood,
@@ -114,10 +119,17 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 1
       })
+      break;
     case ElementSubType.Shield:
       ingredients.push({
         subType: ElementSubType.Ore,
         count: 5
+      })
+
+    case ElementSubType.Worker:
+      ingredients.push({
+        subType: ElementSubType.Food,
+        count: 10
       })
     default:
       break;

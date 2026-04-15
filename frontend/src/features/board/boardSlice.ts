@@ -19,7 +19,8 @@ import type {
 
 import {
   WORKER_ITEM_GENERATION_AMOUNT,
-  BUILDING_ITEM_GENERATION_AMOUNT
+  BUILDING_ITEM_GENERATION_AMOUNT,
+  PERSON_BASE_HEALTH
 } from "./vars"
 
 import { BoardUtils } from "./boardUtils"

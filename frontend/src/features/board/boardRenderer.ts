@@ -28,6 +28,9 @@ import quarrySvg from "./svg/quarry.svg?raw";
 //persons
 import personSvg from "./svg/person.svg?raw";
 import forkSvg from "./svg/pitchfork.svg?raw";
+import swordSvg from "./svg/sword.svg?raw";
+import bowSvg from "./svg/bow.svg?raw";
+import shieldSvg from "./svg/shield.svg?raw";
 
 //items
 import foodSvg from "./svg/bread.svg?raw";
@@ -75,6 +78,17 @@ function getSvgForElement(elem: Element) {
     case ElementSubType.Ore:
       return oreSvg;
       break;
+
+    case ElementSubType.Sword:
+      return swordSvg;
+      break;
+    case ElementSubType.Bow:
+      return bowSvg;
+      break;
+    case ElementSubType.Shield:
+      return shieldSvg;
+      break;
+
     default:
       throw new Error(`unknown element subtype: ${elem.subType}`);
       break;
@@ -230,6 +244,9 @@ export class BoardRenderer {
     // held elements
     for (let i=0; i<element.heldElements.length; i++) {
       let heldElement = element.heldElements[i];
+      if ([ElementSubType.Sword, ElementSubType.Bow, ElementSubType.Shield].includes(heldElement.subType)) {
+        continue
+      }
       let heldElemSvg = getSvgForElement(heldElement);
 
       drawSvgToCanvas(heldElemSvg, ctx,
@@ -244,12 +261,32 @@ export class BoardRenderer {
       ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
     }
 
-    //TODO
-    //refactor to draw tool based on elementsubtype
-    if (element.subType == ElementSubType.Worker) {
+    let holdingSword = element.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
+    let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
+    let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+
+    if (!holdingSword && !holdingBow) {
       drawSvgToCanvas(forkSvg, ctx,
         elemPos.x + objectSize, elemPos.y,
         toolSize, objectSize,
+      );
+    }
+    if (holdingSword) {
+      drawSvgToCanvas(swordSvg, ctx,
+        elemPos.x + objectSize*1.1, elemPos.y,
+        toolSize, objectSize,
+      );
+    }
+    if (holdingBow) {
+      drawSvgToCanvas(bowSvg, ctx,
+        elemPos.x + objectSize*1.1, elemPos.y,
+        toolSize, objectSize,
+      );
+    };
+    if (holdingShield) {
+      drawSvgToCanvas(shieldSvg, ctx,
+        elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
+        toolSize, objectSize*0.8,
       );
     }
 

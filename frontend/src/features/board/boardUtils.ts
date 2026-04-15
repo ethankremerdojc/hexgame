@@ -10,6 +10,9 @@ import {
   ELEMENT_ACTION_DETAILS,
   PERSON_MAX_CARRY_WEIGHT,
   PERSON_BASE_DAMAGE,
+  SHIELD_ARMOR_INCREASE_AMOUNT,
+  SWORD_DAMAGE_INCREASE_AMOUNT,
+  PERSON_BASE_HEALTH,
   getBuildingCost
 } from "./vars"
 
@@ -414,26 +417,25 @@ export class BoardUtils {
     return BoardUtils.getEnemyPersons(personElem, parentCell).length > 0
   }
 
-  static build(personElem: Element, buildingType: ElementSubType, cells: Cell[]): Cell[] {
+  static build(personElem: Element, elementType: ElementType, elementSubType: ElementSubType, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
 
-    let existingBuildingElements = elemParentCell.elements.filter(elem => elem.type == ElementType.Building);
+    let newEl = {type: elementType, subType: elementSubType};
 
-    if (buildingType != BoardUtils.buildingTypeForCellType(elemParentCell.type)) {
-      throw new Error("Wrong building type for cell.")
+    if (elementType == ElementType.Person) {
+      newEl.health = PERSON_BASE_HEALTH;
+      newEl.team = personElem.team;
+      newEl.heldElements = [];
+      newEl.hasActionAvailable = false;
     }
 
-    if (existingBuildingElements.length > 0) {
-      throw new Error("Can't build where there is already a building.");
-    }
-    //personElem.hasActionAvailable = false;
-    elemParentCell.elements.push({type: ElementType.Building, subType: buildingType});
+    elemParentCell.elements.push(newEl);
 
     let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    console.log(elemParentCell);
     newPerson.hasActionAvailable = false;
-
-    newCells = BoardUtils.depleteResourcesFromBuild(buildingType, elemParentCell, newCells);
+    newCells = BoardUtils.depleteResourcesFromBuild(elementSubType, elemParentCell, newCells);
     return newCells;
   }
 
@@ -467,22 +469,23 @@ export class BoardUtils {
         newCell = c;
       }
     }
-    
+ 
     let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
-
+    
+    let oldItemElements = newCell.elements.filter(e => e.type == ElementType.Item);
     let newElements = [...newCell.elements.filter(e => e.type != ElementType.Item)]; // remove all current items to add again later
 
-    for (var requiredResource of requiredResources) {
+    for (var itemElement of mergedItemElements) {
+      let relevantResourceRequirement = requiredResources.filter(r => r.subType == itemElement.subType)[0];
 
-      let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredResource.subType)[0];
-
-      if (requiredResource.count > relevantItemElement.count) {
-        throw new Error(`Required resources exceeded resources on tile.`);
+      if (!relevantResourceRequirement) {
+        newElements.push(itemElement);
+        continue
       }
 
-      if (requiredResource.count < relevantItemElement.count) {
-        relevantItemElement.count -= relevantItemElement.count;
-        newElements.push(relevantItemElement);
+       if (relevantResourceRequirement.count < itemElement.count) {
+        itemElement.count -= relevantResourceRequirement.count;
+        newElements.push(itemElement);
       }
     }
 
@@ -505,6 +508,16 @@ export class BoardUtils {
       throw new Error("Can't fight a person in a different cell!");
     };
 
+    function getShieldFactor(person) {
+      let isHoldingShield = person.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+      return isHoldingShield ? SHIELD_ARMOR_INCREASE_AMOUNT : 0
+    }
+
+    function getSwordFactor(person) {
+      let isHoldingShield = person.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
+      return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
+    }
+
     let newPersonOne = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
     newPersonOne.hasActionAvailable = false;
 
@@ -512,12 +525,17 @@ export class BoardUtils {
 
     let p1armor = newPersonOne.armor ? newPersonOne.armor : 0;
     let p2armor = newPersonTwo.armor ? newPersonTwo.armor : 0;
+    p1armor += getShieldFactor(newPersonOne);
+    p2armor += getShieldFactor(newPersonTwo);
 
-    if (PERSON_BASE_DAMAGE > p1armor) {
-      newPersonOne.health = newPersonOne.health - (PERSON_BASE_DAMAGE - p1armor);
+    let p1damage = PERSON_BASE_DAMAGE + getSwordFactor(newPersonOne);
+    let p2damage = PERSON_BASE_DAMAGE + getSwordFactor(newPersonTwo);
+
+    if (p2damage > p1armor) {
+      newPersonOne.health = newPersonOne.health - (p2damage - p1armor);
     }
-    if (PERSON_BASE_DAMAGE > p2armor) {
-      newPersonTwo.health = newPersonTwo.health - (PERSON_BASE_DAMAGE - p2armor);
+    if (p1damage > p2armor) {
+      newPersonTwo.health = newPersonTwo.health - (p1damage - p2armor);
     }
 
     if (newPersonOne.health < 1) {
@@ -618,11 +636,11 @@ export class BoardUtils {
     let result = [];
 
     if (cell.elements.filter(el => el.type == ElementType.Building) == 0) {
-      result.push(BoardUtils.buildingTypeForCellType(cell.type));
+      result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
     }
-    result.push(ElementSubType.Sword);
-    result.push(ElementSubType.Shield);
-    result.push(ElementSubType.Bow);
+    result.push([ElementType.Item, ElementSubType.Sword]);
+    result.push([ElementType.Item, ElementSubType.Shield]);
+    result.push([ElementType.Person, ElementSubType.Worker]);
 
     return result
   }
@@ -692,15 +710,26 @@ export class BoardUtils {
   static mergeItemElements(itemElements: Element[]): Element[] {
     let result = [];
 
-    itemElements.forEach(ie => {
-      let matchingElems = result.filter(re => re.subType == ie.subType);
-      if (matchingElems[0]) {
-        matchingElems[0].count += ie.count;
-      } else{
-        result.push({...ie});
-      }
-    })
+    let previousSubTypes = [];
+    let cloned = [...itemElements];
 
+    for (var ie of cloned) {
+      if (previousSubTypes.includes(ie.subType)) { continue }
+
+      previousSubTypes.push(ie.subType);
+
+      let matchingElems = cloned.filter(re => re.subType == ie.subType);
+      let copied = {...ie};
+
+      for (var me of matchingElems) {
+        if (me.id != ie.id) {
+          console.log("adding", me.count);
+          copied.count += me.count;
+        }
+      }
+      result.push(copied);
+    }
+    
     return result
   }
 
