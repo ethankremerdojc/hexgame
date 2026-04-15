@@ -2,294 +2,27 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
+import {
+  TeamColor,
+  HexPosition,
+  ElementType,
+  ElementSubType,
+  CellType,
+  ElementAction
+} from "./boardTypes"
+
+import type {
+  Element,
+  Cell,
+  Coordinate
+} from "./boardTypes"
+
+import {
+  WORKER_ITEM_GENERATION_AMOUNT,
+  BUILDING_ITEM_GENERATION_AMOUNT
+} from "./vars"
+
 import { BoardUtils } from "./boardUtils"
-
-export enum TeamColor {
-  White,
-  Purple,
-  Red,
-  Yellow,
-  Blue,
-  Green
-}
-
-export function nameForTeamColor(color: TeamColor): string {
-  return [
-    "White",
-    "Purple",
-    "Red",
-    "Yellow",
-    "Blue",
-    "Green"
-  ][color]
-}
-
-export enum HexPosition {
-  Center,
-  Top,
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
-}
-
-export enum ElementType {
-  Building,
-  Person,
-  Item
-}
-
-export enum ElementSubType {
-
-  // buildings 
-  Capital,
-  Village,
-
-  Farm,
-  SawMill,
-  Quarry,
-
-  // persons
-  Worker,
-  Soldier,
-  Archer,
-
-  // items
-  Food,
-  Wood,
-  Ore,
-  Gold
-}
-
-export enum CellType {
-  Field,
-  Desert,
-  Forest,
-  Mountain
-}
-
-export function buildingTypeForCellType(cellType: CellType): ElementSubType|null {
-  if (cellType == CellType.Field) {
-    return ElementSubType.Farm
-  }
-  if (cellType == CellType.Forest) {
-    return ElementSubType.SawMill
-  }
-  if (cellType == CellType.Mountain) {
-    return ElementSubType.Quarry
-  }
-
-  return null
-}
-
-export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
-  if (cellType == CellType.Field) {
-    return ElementSubType.Food
-  }
-  if (cellType == CellType.Forest) {
-    return ElementSubType.Wood
-  }
-  if (cellType == CellType.Mountain) {
-    return ElementSubType.Ore
-  }
-
-  return null
-}
-
-export function getBuildingCost(elemSubType: ElementType) {
-  let ingredients = [];
-
-  switch (elemSubType) {
-    case ElementSubType.Farm:
-      ingredients.push({
-        subType: ElementSubType.Wood,
-        count: 5
-      })
-      break;
-    case ElementSubType.Quarry:
-      ingredients.push({
-        subType: ElementSubType.Wood,
-        count: 2
-      })
-      ingredients.push({
-        subType: ElementSubType.Ore,
-        count: 3
-      })
-      break;
-    case ElementSubType.SawMill:
-      ingredients.push({
-        subType: ElementSubType.Wood,
-        count: 3
-      })
-      ingredients.push({
-        subType: ElementSubType.Ore,
-        count: 2
-      })
-    default:
-      break;
-  }
-
-  return ingredients
-}
-
-export function buildingCostToString(buildingCost: object[]): string {
-  let result = "(";
-
-  for (var ingredient of buildingCost) {
-    result += `${nameForElementSubType(ingredient.subType)}: ${ingredient.count}, `;
-  }
-
-  return result.slice(0, -2) + ")"; // remove last two chars: ', '
-}
-
-export function nameForElementSubType(elemSubType: ElementType): string {
-  return [
-    "Capital",
-    "Village",
-    "Farm",
-    "SawMill",
-    "Quarry",
-    "Worker",
-    "Soldier",
-    "Archer",
-    "Food",
-    "Wood",
-    "Ore",
-    "Gold"
-  ][elemSubType]
-}
-
-export type Element = {
-  type: ElementType,
-  subType: ElementSubType,
-
-  team: TeamColor|null,
-  position: HexPosition|null,
-  id: string,
-  count: number|null,
-
-  // Person only
-  heldElements: Element[],
-  health: number|null,
-  armor: number|null,
-  weight: number|null,
-  hasActionAvailable: boolean|null,
-  isWorking: boolean|null,
-}
-
-// maybe make this hve a coordinate inside? 
-export type Cell = {
-  x: number,
-  y: number,
-  type: CellType,
-  elements: Element[]
-}
-
-export type Coordinate = {
-  x: number,
-  y: number
-}
-
-
-export enum ElementAction {
-  Move,
-  Take,
-  Drop,
-  Fight,
-  Build,
-  Destroy,
-  Work
-}
-
-interface ActionDetails {
-  title: string,
-  depletesAction: boolean,
-  helpText: string,
-}
-
-const ELEMENT_ACTION_DETAILS: ActionDetails[] = [
-  { // Move
-    title: "move",
-    depletesAction: true,
-    helpText: "Move to an adjacent tile.",
-  },
-  { // Take
-    title: "take",
-    depletesAction: false,
-    helpText: "Pickup an item at the current cell position.",
-  },
-  { // Drop
-    title: "drop",
-    depletesAction: false,
-    helpText: "Drop an item at the current cell position.",
-  },
-  { // Fight
-    title: "fight",
-    depletesAction: true,
-    helpText: "Do damage to another team's person."
-  },
-  { // Build
-    title: "build",
-    depletesAction: true,
-    helpText: "Build a structure with the resources at the current tile."
-  },
-  { // Destroy
-    title: "destroy",
-    depletesAction: true,
-    helpText: "Destroy a structure at the current tile."
-  },
-  { // Work
-    title: "work",
-    depletesAction: true,
-    helpText: "Work on the current tile for more resources."
-  }
-]
-
-export function getActionDetails(actionType: number): ActionDetails {
-  return ELEMENT_ACTION_DETAILS[actionType]
-}
-
-export function colorForTeam(teamVal: TeamColor|null): string {
-
-  if (teamVal === null) {
-    return ""
-  }
-
-  return [
-    "white",
-    "purple",
-    "red",
-    "yellow",
-    "blue",
-    "green"
-  ][teamVal]
-}
-
-export const CELL_INFO_BY_TYPE = {
-  0: { // Field
-    color: "rgb(16 108 14)",
-    weight: 1
-  },
-  1: { // Desert
-    color: "rgb(32 35 196)",
-    weight: 0.15
-  },
-  2: { // Forest
-    color: "rgb(91 41 10)",
-    weight: 0.4
-  },
-  3: { // Mountain
-    color: "rgb(75 69 66)",
-    weight: 0.25
-  }
-}
-
-export function parseElementId(id: string): any {
-  const [coords, heldElementIndex, position, type, subType, count] = id.split('|');
-  const [x, y] = coords.split(',').map(Number);
-
-  return { x, y, heldElementIndex, position, type, subType, count };
-}
 
 function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
@@ -309,7 +42,7 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
         he.id = `${cell.x},${cell.y}|${h}|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`;
         newHeldElements.push(he);
       }
-      newElem.heldElements = mergeItemElements(newHeldElements);
+      newElem.heldElements = BoardUtils.mergeItemElements(newHeldElements);
     }
     if (!newElem.count) {
       newElem.count = 1;
@@ -321,21 +54,6 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
   }
 
   return newElem;
-}
-
-export function mergeItemElements(itemElements: Element[]): Element[] {
-  let result = [];
-
-  itemElements.forEach(ie => {
-    let matchingElems = result.filter(re => re.subType == ie.subType);
-    if (matchingElems[0]) {
-      matchingElems[0].count += ie.count;
-    } else{
-      result.push({...ie});
-    }
-  })
-
-  return result
 }
 
 function updateCellElementPositions(elements: Element[]): Element[] {
@@ -372,7 +90,7 @@ function updateCellElementPositions(elements: Element[]): Element[] {
     newElements.push(newElem);
   }
 
-  return [...newElements, ...mergeItemElements(itemElements)];
+  return [...newElements, ...BoardUtils.mergeItemElements(itemElements)];
 }
 
 function updateCellElements(cell: Cell): Element[] {
@@ -401,7 +119,6 @@ function prepareCellsForStateSave(cells: Cell[]): Cell[] {
 
   return newCells
 }
-
 
 function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): Cell[] {
   let cellsWithPlayersOnTeam = newCells.filter(
@@ -475,14 +192,6 @@ const initialState: BoardState = {
   playerTurn: TeamColor.White
 };
 
-export const WORKER_ITEM_GENERATION_AMOUNT = 2;
-export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
-export const PERSON_MAX_CARRY_WEIGHT = 5;
-export const PERSON_BASE_DAMAGE = 4;
-export const PERSON_BASE_HEALTH = 9;
-export const STARTING_FOOD = 15;
-export const STARTING_GOLD = 10;
-
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
     cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
@@ -508,7 +217,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
       itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
     };
 
-    cell.elements.push({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount});
+    cell.elements.push({type: ElementType.Item, subType: BoardUtils.itemTypeForCellType(cell.type), count: itemCreationCount});
   }
 
   newCells = prepareCellsForStateSave(newCells);

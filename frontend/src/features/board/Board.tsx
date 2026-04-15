@@ -1,11 +1,15 @@
 import React, { useEffect, useRef, useState  } from "react";
 
+
 import type {
   Coordinate, Cell, Element
-} from "./boardSlice.ts";
+} from "./boardTypes"
 
 import {
-  ElementType,
+  ElementType
+} from "./boardTypes"
+
+import {
   getCells, setCells,
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
@@ -26,7 +30,7 @@ import {
 } from "./boardGenerator.ts";
 
 import {
-  BoardUtils, pointInRectangle
+  BoardUtils
 } from "./boardUtils.ts";
 
 function getSelectedCellFromMousePos(
@@ -63,7 +67,7 @@ function getSelectedElementFromMousePos(
       let topLeft = {x: elemPos.x, y: elemPos.y};
       let bottomRight = {x: elemPos.x + elemSize, y: elemPos.y + elemSize};
 
-      let intersects = pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
+      let intersects = BoardUtils.pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
       if (intersects) {
         return elem;
       }

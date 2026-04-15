@@ -2,20 +2,18 @@ import React, {useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import {
+  ElementType,
+  ElementSubType,
+  ElementAction
+} from "../board/boardTypes"
 
-  ElementType, ElementSubType, ElementAction,
-
-  nameForElementSubType,
-  getActionDetails,
-  getBuildingCost, buildingCostToString,
-
+import {
   getCells, setCells,
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
 
   getShowMoveInfo, setShowMoveInfo,
-  getPlayerTurn, nameForTeamColor,
-  buildingTypeForCellType,
+  getPlayerTurn,
   endTurn,
 } from "../board/boardSlice.ts";
 
@@ -46,7 +44,7 @@ export function ElementActionsMenu() {
 
   let availableActionsInfo = [];
   for (var aa of availableActions) {
-    let details = getActionDetails(aa);
+    let details = BoardUtils.getActionDetails(aa);
 
     if (!details.depletesAction) {
       availableActionsInfo.push(details);
@@ -120,17 +118,21 @@ export function ElementActionsMenu() {
     dispatch(setCells(newCells));
     setActionHandling(null);
     setItemsToSelectFrom([]);
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
   }
 
   const buildHandler = () => {
     dispatch(setShowMoveInfo(false));
     setActionHandling("build");
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    let buildingType = buildingTypeForCellType(parentCell.type);
+    let buildingType = BoardUtils.buildingTypeForCellType(parentCell.type);
     setItemsToSelectFrom([
-      [nameForElementSubType(buildingType), buildingType],
+      [BoardUtils.nameForElementSubType(buildingType), buildingType],
       // other things like rams etc.
     ]);
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
   }
 
   const buildElem = (type) => {
@@ -166,6 +168,8 @@ export function ElementActionsMenu() {
 
     setActionHandling(null);
     setItemsToSelectFrom([]); 
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
   }
 
   const endTurnHandler = () => {
@@ -198,7 +202,7 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu">
-      <p>Color: {nameForTeamColor(playerTurn)}</p>
+      <p>Color: {BoardUtils.nameForTeamColor(playerTurn)}</p>
 
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
@@ -212,11 +216,11 @@ export function ElementActionsMenu() {
         <div>{itemsToSelectFrom.map(item => {
             return (<div>
               <button key={item.id+"one"} onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
-                {actionHandling} {nameForElementSubType(item.subType)} (1)
+                {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (1)
               </button>
 
               <button key={item.id+"max"} onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {nameForElementSubType(item.subType)} (MAX:
+                {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (MAX:
                 {
                   actionHandling == "take" ? <>
                   {Math.min(remainingCarryWeight, item.count)}
@@ -239,7 +243,7 @@ export function ElementActionsMenu() {
           {itemsToSelectFrom.map(item => {
             return (
               <button key={item[1]} onClick={() => { buildElem(item[1]) }} disabled={getBuildingDisabled(item[1])}>
-                {item[0]} | COST: {buildingCostToString(getBuildingCost(item[1]))}
+                {item[0]} | COST: {BoardUtils.buildingCostToString(BoardUtils.getBuildingCost(item[1]))}
               </button>
             )
           })}
@@ -248,10 +252,10 @@ export function ElementActionsMenu() {
       {
         actionHandling == "fight" &&
         <div>
-          {itemsToSelectFrom.map(item => {
+          {itemsToSelectFrom.map(person => {
             return (
-              <button key={item.id} onClick={() => { fight(item.id) }}>
-                Fight: {nameForTeamColor(item.team)} {item.id}
+              <button key={person.id} onClick={() => { fight(person.id) }}>
+                Fight: {BoardUtils.nameForTeamColor(person.team)} {BoardUtils.nameForElementSubType(person.subType)} ({person.health}H)
               </button>
             )
           })}

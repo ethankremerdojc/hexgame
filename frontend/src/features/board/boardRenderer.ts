@@ -1,17 +1,14 @@
+import type {
+  Cell, Element, Coordinate
+} from "./boardTypes"
+
 import {
-  CellType,
-  colorForTeam,
-  ElementType,
-  ElementSubType,
-} from "./boardSlice.ts";
+  CellType, ElementType, ElementSubType, ElementAction
+} from "./boardTypes"
 
 import {
   BoardUtils
 } from "./boardUtils.ts"
-
-import type { 
-  Cell, Coordinate, Element
-} from "./boardSlice.ts";
 
 import { 
   getGrassCanvas,
@@ -266,7 +263,6 @@ export class BoardRenderer {
 
     // Health
 
-    
     ctx.fillStyle = "red";
     ctx.font = `${miniItemSize*1.5}px serif`;
     let healthStr: string = element.health.toString() + " h";
@@ -346,7 +342,7 @@ export class BoardRenderer {
 
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
 
-      let elemColor = colorForTeam(element.team);
+      let elemColor = BoardUtils.colorForTeam(element.team);
       let elemSvg = getSvgForElement(element);
 
       if (element.type == ElementType.Building) {

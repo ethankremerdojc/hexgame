@@ -1,38 +1,16 @@
 import type {
   Cell, Element, Coordinate
-} from "./boardSlice"
+} from "./boardTypes"
 
 import {
-  HexPosition, ElementType, ElementSubType, ElementAction, parseElementId,
-  mergeItemElements,
-  buildingTypeForCellType, getBuildingCost,
+  HexPosition, ElementType, ElementSubType, ElementAction, CellType,
+} from "./boardTypes"
+
+import {
+  ELEMENT_ACTION_DETAILS,
   PERSON_MAX_CARRY_WEIGHT,
   PERSON_BASE_DAMAGE
-} from "./boardSlice"
-
-export function pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
-  function sign(p: Coordinate, a: Coordinate, b: Coordinate) {
-    return (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
-  }
-
-  const d1 = sign(P, A, B);
-  const d2 = sign(P, B, C);
-  const d3 = sign(P, C, A);
-
-  const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
-  const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
-
-  return !(hasNeg && hasPos);
-}
-
-export function pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomRight: Coordinate): boolean {
-  let top = topLeft.y;
-  let bottom = bottomRight.y;
-  let left = topLeft.x;
-  let right = bottomRight.x;
-
-  return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom
-}
+} from "./vars"
 
 export class BoardUtils {
   static getElemSizes(radius: number): any {
@@ -196,7 +174,7 @@ export class BoardUtils {
     let boundingBoxCornerClicked = null;
 
     for (var triangle of boundingBoxTriangles) {
-      if (pointInTriangle({x: px, y: py}, triangle.points[0], triangle.points[1], triangle.points[2])) {
+      if (BoardUtils.pointInTriangle({x: px, y: py}, triangle.points[0], triangle.points[1], triangle.points[2])) {
         boundingBoxCornerClicked = triangle.name;
       }
     }
@@ -379,8 +357,15 @@ export class BoardUtils {
     return newCells
   }
 
+  static parseElementId(id: string): any {
+    const [coords, heldElementIndex, position, type, subType, count] = id.split('|');
+    const [x, y] = coords.split(',').map(Number);
+
+    return { x, y, heldElementIndex, position, type, subType, count };
+  }
+
   static getElementParentCell(elem: Element, cells: Cell[]): Cell {
-    let { x, y } = parseElementId(elem.id);
+    let { x, y } = BoardUtils.parseElementId(elem.id);
     for (var cell of cells) {
       if (cell.x == x && cell.y == y) {
         return cell
@@ -434,7 +419,7 @@ export class BoardUtils {
 
     let existingBuildingElements = elemParentCell.elements.filter(elem => elem.type == ElementType.Building);
 
-    if (buildingType != buildingTypeForCellType(elemParentCell.type)) {
+    if (buildingType != BoardUtils.buildingTypeForCellType(elemParentCell.type)) {
       throw new Error("Wrong building type for cell.")
     }
 
@@ -454,8 +439,8 @@ export class BoardUtils {
   static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell): boolean {
     let counts = {};
 
-    let requiredElements = getBuildingCost(elementSubType);
-    let mergedItemElements = mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
+    let requiredElements = BoardUtils.getBuildingCost(elementSubType);
+    let mergedItemElements = BoardUtils.mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
 
     for (var requiredElement of requiredElements) {
       let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredElement.subType)[0];
@@ -473,7 +458,7 @@ export class BoardUtils {
   }
 
   static depleteResourcesFromBuild(buildingType: ElementSubType, cell: Cell, cells: Cell[]) {
-    let requiredResources = getBuildingCost(buildingType);
+    let requiredResources = BoardUtils.getBuildingCost(buildingType);
     let newCells = structuredClone(cells);
     let newCell;
     for (var c of newCells) {
@@ -482,7 +467,7 @@ export class BoardUtils {
       }
     }
     
-    let mergedItemElements = mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
+    let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
 
     let newElements = [...newCell.elements.filter(e => e.type != ElementType.Item)]; // remove all current items to add again later
 
@@ -607,5 +592,164 @@ export class BoardUtils {
     }
 
     return result
+  }
+
+  static nameForTeamColor(color: TeamColor): string {
+    return [
+      "White",
+      "Purple",
+      "Red",
+      "Yellow",
+      "Blue",
+      "Green"
+    ][color]
+  }
+
+  static buildingTypeForCellType(cellType: CellType): ElementSubType|null {
+    if (cellType == CellType.Field) {
+      return ElementSubType.Farm
+    }
+    if (cellType == CellType.Forest) {
+      return ElementSubType.SawMill
+    }
+    if (cellType == CellType.Mountain) {
+      return ElementSubType.Quarry
+    }
+
+    return null
+  }
+
+  static itemTypeForCellType(cellType: CellType): ElementSubType|null {
+    if (cellType == CellType.Field) {
+      return ElementSubType.Food
+    }
+    if (cellType == CellType.Forest) {
+      return ElementSubType.Wood
+    }
+    if (cellType == CellType.Mountain) {
+      return ElementSubType.Ore
+    }
+
+    return null
+  }
+
+  static getBuildingCost(elemSubType: ElementType) {
+    let ingredients = [];
+
+    switch (elemSubType) {
+      case ElementSubType.Farm:
+        ingredients.push({
+          subType: ElementSubType.Wood,
+          count: 5
+        })
+        break;
+      case ElementSubType.Quarry:
+        ingredients.push({
+          subType: ElementSubType.Wood,
+          count: 2
+        })
+        ingredients.push({
+          subType: ElementSubType.Ore,
+          count: 3
+        })
+        break;
+      case ElementSubType.SawMill:
+        ingredients.push({
+          subType: ElementSubType.Wood,
+          count: 3
+        })
+        ingredients.push({
+          subType: ElementSubType.Ore,
+          count: 2
+        })
+      default:
+        break;
+    }
+
+    return ingredients
+  }
+
+  static buildingCostToString(buildingCost: object[]): string {
+    let result = "(";
+
+    for (var ingredient of buildingCost) {
+      result += `${BoardUtils.nameForElementSubType(ingredient.subType)}: ${ingredient.count}, `;
+    }
+
+    return result.slice(0, -2) + ")"; // remove last two chars: ', '
+  }
+
+  static nameForElementSubType(elemSubType: ElementType): string {
+    return [
+      "Capital",
+      "Village",
+      "Farm",
+      "SawMill",
+      "Quarry",
+      "Villager",
+      "Food",
+      "Wood",
+      "Ore",
+      "Gold"
+    ][elemSubType]
+  }
+
+  static getActionDetails(actionType: number): ActionDetails {
+    return ELEMENT_ACTION_DETAILS[actionType]
+  }
+
+  static colorForTeam(teamVal: TeamColor|null): string {
+
+    if (teamVal === null) {
+      return ""
+    }
+
+    return [
+      "white",
+      "purple",
+      "red",
+      "yellow",
+      "blue",
+      "green"
+    ][teamVal]
+  }
+
+  static mergeItemElements(itemElements: Element[]): Element[] {
+    let result = [];
+
+    itemElements.forEach(ie => {
+      let matchingElems = result.filter(re => re.subType == ie.subType);
+      if (matchingElems[0]) {
+        matchingElems[0].count += ie.count;
+      } else{
+        result.push({...ie});
+      }
+    })
+
+    return result
+  }
+
+  static pointInTriangle(P: Coordinate, A: Coordinate, B: Coordinate, C: Coordinate): boolean {
+    function sign(p: Coordinate, a: Coordinate, b: Coordinate) {
+      return (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
+    }
+
+    const d1 = sign(P, A, B);
+    const d2 = sign(P, B, C);
+    const d3 = sign(P, C, A);
+
+    const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+    const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
+
+    return !(hasNeg && hasPos);
+  }
+
+  static pointInRectangle(point: Coordinate, topLeft: Coordinate, bottomRight: Coordinate): boolean {
+    let top = topLeft.y;
+    let bottom = bottomRight.y;
+    let left = topLeft.x;
+    let right = bottomRight.x;
+
+    return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom
   }
 }

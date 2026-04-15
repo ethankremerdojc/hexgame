@@ -1,17 +1,20 @@
 import {
-  ElementType, ElementSubType, CellType, TeamColor,
   CELL_INFO_BY_TYPE, 
   PERSON_BASE_HEALTH,
   STARTING_FOOD, STARTING_GOLD
-} from "./boardSlice.ts";
+} from "./vars"
 
 import {
   randomItem, getEnumValueByIndex
 } from "./utils.js";
 
-import type { 
+import type {
   Cell
-} from "./boardSlice.ts";
+} from "./boardTypes"
+
+import {
+  CellType, ElementType, ElementSubType, TeamColor
+} from "./boardTypes"
 
 export class BoardGenerator {
 
