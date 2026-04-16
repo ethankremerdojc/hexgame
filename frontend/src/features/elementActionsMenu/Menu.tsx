@@ -16,7 +16,7 @@ import {
   getPlayerTurn,
   setActionHandling, getActionHandling,
   setActionItemsToSelectFrom, getActionItemsToSelectFrom,
-  endTurn,
+  endTurn, revertToBeginningOfTurn
 } from "../board/boardSlice.ts";
 
 import { 
@@ -241,10 +241,16 @@ export function ElementActionsMenu() {
   }
 
   const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
+  const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
 
   const endTurnHandler = () => {
     dispatch(endTurn());
     setConfirmingEndTurn(false);
+  }
+
+  const resetTurnHandler = () => {
+    dispatch(revertToBeginningOfTurn());
+    setConfirmingResetTurn(false);
   }
 
   return (
@@ -308,6 +314,7 @@ export function ElementActionsMenu() {
           })}
         </div>
       }
+
       {
         confirmingEndTurn ? <>
           <button onClick={endTurnHandler}>Really End Turn?</button>
@@ -315,6 +322,16 @@ export function ElementActionsMenu() {
         </>
         :
         <button onClick={() => setConfirmingEndTurn(true)}>End Turn</button>
+      }
+      
+
+      {
+        confirmingResetTurn ? <>
+          <button onClick={resetTurnHandler}>Really Reset Turn?</button>
+          <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
+        </>
+        :
+        <button onClick={() => setConfirmingResetTurn(true)}>Undo to beginning of turn</button>
       }
     </div>
   )

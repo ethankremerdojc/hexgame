@@ -87,6 +87,7 @@ export class BoardUtils {
       default:
 
         if (element.position === undefined || element.position === null) {
+          console.log(element);
           throw new Error(`No element.position found for element`);
         }
 

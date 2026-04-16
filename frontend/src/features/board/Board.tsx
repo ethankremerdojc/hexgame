@@ -10,7 +10,7 @@ import {
 } from "./boardTypes"
 
 import {
-  getCells, setCells,
+  getCells, setCells, setBackupCells,
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
@@ -118,6 +118,7 @@ export function Board() {
         hexRadius, canvasWidth, canvasHeight, playerCount
       );
       dispatch(setCells(newBoard));
+      dispatch(setBackupCells(newBoard));
     }
   }, [cells, dispatch]);
 

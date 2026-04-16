@@ -85,8 +85,6 @@ export default class BoardActions {
     elemParentCell.elements.push(copiedDroppedElement);
     elementToDrop.count -= count;
 
-
-
     if (elementToDrop.count < 1) {
       newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != elementToDrop.id);
     }

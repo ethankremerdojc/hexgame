@@ -213,7 +213,9 @@ const initialState: BoardState = {
 
   playerTurn: TeamColor.White,
   actionHandling: null,
-  actionItemsToSelectFrom: []
+  actionItemsToSelectFrom: [],
+
+  backupCells: null
 };
 
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
@@ -257,6 +259,18 @@ const boardSlice = createSlice({
       let newCells = prepareCellsForStateSave(cells);
       state.cells = newCells;
     },
+
+
+    setBackupCells(state, action: PayloadAction<Cell[]>) {
+      state.backupCells = action.payload;
+    },
+    revertToBeginningOfTurn(state) {
+      state.cells = prepareCellsForStateSave(state.backupCells);
+      state.selectedCell = null;
+      state.showMoveInfo = false;
+      state.selectedElement = null;
+    },
+
     setSelectedCell(state, action: PayloadAction<Cell|null>) {
       state.selectedCell = action.payload;
     },
@@ -300,6 +314,7 @@ const boardSlice = createSlice({
       cells = makePersonsWithActionOnTeamWork(currentPlayerTurn, state.cells);
 
       state.cells = setupNewTurn(state.cells, state.playerTurn);
+      state.backupCells = state.cells;
     }
   },
 });
@@ -317,6 +332,7 @@ export const getActionItemsToSelectFrom = (state: RootState): number => state.bo
 
 export const { 
   setCells,
+  setBackupCells,
   setSelectedCell,
   setSelectedElement,
   setBoardOffset,
@@ -325,6 +341,7 @@ export const {
   setPlayerCount,
   setActionHandling,
   setActionItemsToSelectFrom,
+  revertToBeginningOfTurn,
   endTurn
 } = boardSlice.actions;
 
