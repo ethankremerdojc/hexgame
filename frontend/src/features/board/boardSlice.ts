@@ -29,6 +29,10 @@ import { BoardUtils } from "./boardUtils"
 function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
   newElem.id = `${cell.x},${cell.y}|null|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`; 
+  
+  if (newElem.count === undefined) {
+    newElem.count = 1;
+  }
 
   if (newElem.type == ElementType.Person) {
     if (!newElem.heldElements) {
@@ -45,9 +49,6 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
         newHeldElements.push(he);
       }
       newElem.heldElements = BoardUtils.mergeItemElements(newHeldElements);
-    }
-    if (!newElem.count) {
-      newElem.count = 1;
     }
 
     if (newElem.hasActionAvailable === null || newElem.hasActionAvailable === undefined) {
@@ -158,6 +159,7 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
       } else {
         person.health -= 2;
         if (person.health < 1) {
+          cell.elements = [...cell.elements, ...person.heldElements];
           cell.elements = cell.elements.filter(el => el.id != person.id);
         }
       }

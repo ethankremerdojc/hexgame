@@ -3,8 +3,9 @@ import {
 } from "./boardTypes"
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
-export const BUILDING_ITEM_GENERATION_AMOUNT = 5;
+export const BUILDING_ITEM_GENERATION_AMOUNT = 4;
 export const PERSON_MAX_CARRY_WEIGHT = 5;
+export const CART_CARRY_WEIGHT_INCREASE = 6; // because cart still weighs 1
 export const PERSON_BASE_DAMAGE = 4;
 export const PERSON_BASE_HEALTH = 10;
 export const STARTING_FOOD = 15;
@@ -67,6 +68,16 @@ export const ELEMENT_ACTION_DETAILS: object[] = [
     title: "work",
     depletesAction: true,
     helpText: "Work on the current tile for more resources."
+  },
+  { // Heal
+    title: "heal",
+    depletesAction: false,
+    helpText: "Use 1 food to heal person by 1 health."
+  },
+  { // Reproduce
+    title: "reproduce",
+    depletesAction: true,
+    helpText: "Create another person with two persons."
   }
 ]
 
@@ -74,6 +85,8 @@ export function getBuildingCost(elemSubType: ElementType) {
   let ingredients = [];
 
   switch (elemSubType) {
+
+    // Buildings
     case ElementSubType.Farm:
       ingredients.push({
         subType: ElementSubType.Wood,
@@ -100,6 +113,14 @@ export function getBuildingCost(elemSubType: ElementType) {
         count: 2
       })
       break;
+    case ElementSubType.Village:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 4
+      })
+      break;
+
+    // Items
     case ElementSubType.Sword:
       ingredients.push({
         subType: ElementSubType.Wood,
@@ -125,6 +146,19 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 5
       })
+    case ElementSubType.Cart:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 1
+      })
+
+
+
+
 
     case ElementSubType.Worker:
       ingredients.push({
@@ -152,7 +186,8 @@ export function nameForElementSubType(elemSubType: ElementType): string {
     "Gold",
     "Sword",
     "Bow",
-    "Shield"
+    "Shield",
+    "Cart"
   ][elemSubType]
 }
 

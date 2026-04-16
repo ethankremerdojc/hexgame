@@ -43,7 +43,8 @@ export enum ElementSubType {
 
   Sword,
   Bow,
-  Shield
+  Shield,
+  Cart
 }
 
 export enum CellType {
@@ -92,5 +93,7 @@ export enum ElementAction {
   Fight,
   Build,
   Destroy,
-  Work
+  Work,
+  Heal,
+  Reproduce
 }

@@ -8,6 +8,7 @@ import {
 
 import {
   PERSON_MAX_CARRY_WEIGHT,
+  CART_CARRY_WEIGHT_INCREASE,
   PERSON_BASE_DAMAGE,
   SHIELD_ARMOR_INCREASE_AMOUNT,
   SWORD_DAMAGE_INCREASE_AMOUNT,
@@ -306,14 +307,35 @@ export class BoardUtils {
     return result
   }
 
-  static getPersonRemainingCarryWeight(elem: Element): number {
-    let result = PERSON_MAX_CARRY_WEIGHT - BoardUtils.getPersonCarryingWeight(elem);
-
-    //TODO
-    //Will want to remove below, but right now we can keep
-    if (result < 0) {
-      return 0
+  static getCarryingCapacity(personElem: Element): number {
+    let holdingCart = personElem.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+    if (!holdingCart) {
+      return PERSON_MAX_CARRY_WEIGHT;
     }
+    return PERSON_MAX_CARRY_WEIGHT + CART_CARRY_WEIGHT_INCREASE;
+  }
+  
+  static getCellsPersonCanMoveTo(personElem: Element, cells: Cell[]): Cell[] {
+    let parentCell = BoardUtils.getElementParentCell(personElem, cells);
+    let adjacentCells = BoardUtils.getAdjacentCells(cells, parentCell);
+
+    let result = [];
+
+    for (var cell of adjacentCells) {
+      if (cell.elements.filter(e => e.type == ElementType.Person).length > 4) {
+        continue
+      }
+      if (cell.elements.filter(e => e.type == ElementType.Person && e.team == personElem.team).length > 2) {
+        continue
+      }
+      result.push(cell);
+    }
+
+    return result
+  }
+
+  static getPersonRemainingCarryWeight(elem: Element): number {
+    let result = BoardUtils.getCarryingCapacity(elem) - BoardUtils.getPersonCarryingWeight(elem);
     return result
   }
 
@@ -331,13 +353,13 @@ export class BoardUtils {
     return BoardUtils.getEnemyPersons(personElem, parentCell).length > 0
   }
 
-  static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell, personElem: Element): boolean { 
-    let requiredElements = getBuildingCost(elementSubType);
-    let mergedItemElements = BoardUtils.mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
+  static resourcesExistForPerson(resourcesRequired: object[], personElem: Element, cells: Cell[]): boolean {
+    let parentCell = BoardUtils.getElementParentCell(personElem, cells);
+    let mergedItemElements = BoardUtils.mergeItemElements(parentCell.elements.filter(e => e.type == ElementType.Item));
 
     let counts = {};
-    for (var requiredElement of requiredElements) {
-      let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredElement.subType)[0];
+    for (var resourceRequired of resourcesRequired) {
+      let relevantItemElement = mergedItemElements.filter(e => e.subType == resourceRequired.subType)[0];
 
       let tileCount; 
       let playerCount;
@@ -348,7 +370,7 @@ export class BoardUtils {
         tileCount = relevantItemElement.count;
       }
 
-      let relevantHeldElement = personElem.heldElements.filter(e => e.subType == requiredElement.subType)[0];
+      let relevantHeldElement = personElem.heldElements.filter(e => e.subType == resourceRequired.subType)[0];
 
       if (!relevantHeldElement) {
         playerCount = 0;
@@ -356,12 +378,18 @@ export class BoardUtils {
         playerCount = relevantHeldElement.count;
       }
 
-      if (tileCount + playerCount < requiredElement.count) {
+      if (tileCount + playerCount < resourceRequired.count) {
         return false
       }
     }
 
     return true
+
+  }
+
+  static elementsToBuildExistOnTile(elementSubType: ElementSubType, personElem: Element, cells: Cell[]): boolean { 
+    let requiredElements = getBuildingCost(elementSubType);
+    return BoardUtils.resourcesExistForPerson(requiredElements, personElem, cells)
   }
 
   static buildingTypeForCellType(cellType: CellType): ElementSubType|null {
@@ -383,10 +411,11 @@ export class BoardUtils {
 
     if (cell.elements.filter(el => el.type == ElementType.Building) == 0) {
       result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
+      result.push([ElementType.Building, ElementSubType.Village]);
     }
     result.push([ElementType.Item, ElementSubType.Sword]);
     result.push([ElementType.Item, ElementSubType.Shield]);
-    result.push([ElementType.Person, ElementSubType.Worker]);
+    result.push([ElementType.Item, ElementSubType.Cart]);
 
     return result
   }
@@ -399,6 +428,69 @@ export class BoardUtils {
     }
 
     return result.slice(0, -2) + ")"; // remove last two chars: ', '
+  }
+
+  static depleteResources(resources: object[], _personElem: Element, cells: Cell[]): Cell[] {
+    let newCells = structuredClone(cells);
+    let parentCell = BoardUtils.getElementParentCell(_personElem, newCells);
+    let newCell;
+
+    for (var c of newCells) {
+      if (c.x == parentCell.x && c.y == parentCell.y) {
+        newCell = c;
+      }
+    };
+
+    let personElem = newCell.elements.filter(el => el.id == _personElem.id)[0];
+ 
+    // Deplete from tile
+    let oldNonItemElements = newCell.elements.filter(el => el.type != ElementType.Item);
+
+    let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
+
+    let requirementsAfterTile = [];
+
+    for (var resourceRequired of resources) {
+
+      let relevantItemElement = mergedItemElements.filter(e => e.subType == resourceRequired.subType)[0];
+
+      if (!relevantItemElement) {
+        requirementsAfterTile.push({...resourceRequired});
+      }
+      else if (relevantItemElement.count > resourceRequired.count) {
+        relevantItemElement.count -= resourceRequired.count;
+      }
+      else if (relevantItemElement.count == resourceRequired.count) {
+        mergedItemElements = mergedItemElements.filter(el => el.id != relevantItemElement.id);
+      }
+      else {
+        mergedItemElements = mergedItemElements.filter(el => el.id != relevantItemElement.id);
+        let copiedRequirement = {...resourceRequired};
+        copiedRequirement.count -= relevantItemElement.count;
+        requirementsAfterTile.push(copiedRequirement);
+      }
+    };
+
+    newCell.elements = [...oldNonItemElements, ...mergedItemElements];
+
+    // Adjust personElem held elements
+    for (var requiredElement of requirementsAfterTile) {
+      let relevantItemElement = personElem.heldElements.filter(e => e.subType == requiredElement.subType)[0];
+      if (!relevantItemElement) {
+        throw new Error(`Expected an item on the person element for building that wasn't there.`);
+      }
+      else if (requiredElement.count > relevantItemElement.count) {
+        throw new Error(`Expected an item with higher count on the person element for building that wasn't there.`);
+      }
+      else if (requiredElement.count == relevantItemElement.count) {
+        personElem.heldElements = personElem.heldElements.filter(el => el.id != relevantItemElement.id);
+      }
+      else {
+        relevantItemElement.count -= requiredElement.count;
+      }
+    }
+
+    return newCells;
   }
 
   static mergeItemElements(itemElements: Element[]): Element[] {
@@ -417,13 +509,117 @@ export class BoardUtils {
 
       for (var me of matchingElems) {
         if (me.id != ie.id) {
-          console.log("adding", me.count);
           copied.count += me.count;
         }
       }
       result.push(copied);
     }
     
+    return result
+  }
+
+  static getTeamPersonCapacity(teamColor: TeamColor, cells: Cell[]): boolean {
+    let capacity = 0;
+
+    for (var cell of cells) {
+      let capitalExists = cell.elements.filter(e => e.subType == ElementSubType.Capital && e.team == teamColor).length > 0;
+      let villageExists = cell.elements.filter(e => e.subType == ElementSubType.Village && e.team == teamColor).length > 0;
+
+      if (capitalExists) {
+        capacity += 3;
+      } else if (villageExists) {
+        capacity += 2;
+      }
+    }
+
+    return capacity
+  }
+
+  static getCurrentTeamPersons(teamColor: TeamColor, cells: Cell[]): number {
+    let persons = 0;
+
+    for (var cell of cells) {
+      persons += cell.elements.filter(el => el.type == ElementType.Person && el.team == teamColor).length;
+    }
+
+    return persons
+  }
+
+  static personCanReproduce(personElem: Element, cells: Cell[]): boolean {
+
+    const elementParent = BoardUtils.getElementParentCell(personElem, cells);
+    let capitalExists = elementParent.elements.filter(e => e.subType == ElementSubType.Capital).length > 0;
+    let villageExists = elementParent.elements.filter(e => e.subType == ElementSubType.Village).length > 0;
+
+    if (!capitalExists && !villageExists) {
+      return false
+    }
+
+    let ownTeamPersonsOnTile = elementParent.elements.filter(el => el.type == ElementType.Person && el.team == personElem.team);
+    if (ownTeamPersonsOnTile.length > 2) {
+      return false
+    }
+
+    let villagerCost = getBuildingCost(ElementSubType.Worker);
+    if (!BoardUtils.resourcesExistForPerson(villagerCost, personElem, cells)) {
+      return false
+    }
+
+    let villagerCapacity = BoardUtils.getTeamPersonCapacity(personElem.team, cells);
+    let currentTeamPersons = BoardUtils.getCurrentTeamPersons(personElem.team, cells);
+
+    return villagerCapacity > currentTeamPersons;
+  }
+
+  static personCanHoldItem(personElem: Element, elementSubType: ElementSubType): boolean {
+
+    if (BoardUtils.getPersonRemainingCarryWeight(personElem) < 1) {
+      return false
+    }
+
+    let holdingCart = personElem.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+
+    let holdingSword = personElem.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
+    let holdingBow = personElem.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
+    let holdingShield = personElem.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+
+    if (elementSubType == ElementSubType.Cart) {
+      if (holdingSword || holdingBow || holdingShield || holdingCart) {
+        return false
+      }
+    } else if (elementSubType == ElementSubType.Bow) {
+      if (holdingSword || holdingShield || holdingCart || holdingBow) {
+        return false
+      }
+    } else if (elementSubType == ElementSubType.Sword) {
+      if (holdingCart || holdingBow || holdingSword) {
+        return false
+      }
+    } else if (elementSubType == ElementSubType.Shield) {
+      if (holdingCart || holdingBow || holdingShield) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  static personCanTakeAnyItem(personElem, cells: Cell[]): boolean {
+    return BoardUtils.getItemsPersonCanTake(personElem, cells).length > 0;
+  }
+
+  static getItemsPersonCanTake(personElem: Element, cells: Cell[]): Element[] {
+    const parentElem = BoardUtils.getElementParentCell(personElem, cells);
+    let items = parentElem.elements.filter(el => el.type == ElementType.Item);
+
+    let result = [];
+
+    for (var item of items) {
+      if (BoardUtils.personCanHoldItem(personElem, item.subType)) {
+        result.push(item);
+      }
+    }
+
     return result
   }
 }

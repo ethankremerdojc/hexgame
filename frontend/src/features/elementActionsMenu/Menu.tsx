@@ -116,8 +116,7 @@ export function ElementActionsMenu() {
   const takeHandler = () => {
     dispatch(setShowMoveInfo(false));
     dispatch(setActionHandling("take"));
-    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    dispatch(setActionItemsToSelectFrom(parentCell.elements.filter(e => e.type == ElementType.Item)));
+    dispatch(setActionItemsToSelectFrom(BoardUtils.getItemsPersonCanTake(selectedElement, cells)));
   }
 
   const moveHandler = () => {
@@ -142,6 +141,16 @@ export function ElementActionsMenu() {
     dispatch(setActionItemsToSelectFrom(thingsToBuild));
   }
 
+  const destroyHandler = () => {
+    let newCells = BoardActions.destroyBuilding(selectedElement, cells);
+    dispatch(setCells(newCells));
+
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([]));
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+  }
+
   const buildElem = (type, subType) => {
     dispatch(setShowMoveInfo(false));
     const newCells = BoardActions.build(selectedElement, type, subType, cells);
@@ -154,8 +163,7 @@ export function ElementActionsMenu() {
   }
 
   const getBuildingDisabled = (buildingType) => {
-    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    return !BoardUtils.elementsToBuildExistOnTile(buildingType, parentCell, selectedElement);
+    return !BoardUtils.elementsToBuildExistOnTile(buildingType, selectedElement, cells);
   }
 
   const fightHandler = () => {
@@ -179,8 +187,24 @@ export function ElementActionsMenu() {
     dispatch(setSelectedCell(null));
   }
 
-  const endTurnHandler = () => {
-    dispatch(endTurn());
+  const healHandler = () => {
+    const newCells = BoardActions.healPerson(selectedElement, cells);
+    dispatch(setCells(newCells));
+
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([])); 
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+  }
+
+  const reproduceHandler = () => {
+    const newCells = BoardActions.reproducePerson(selectedElement, cells);
+    dispatch(setCells(newCells));
+
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([])); 
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
   }
 
   const getActionHandler = (title) => {
@@ -198,13 +222,29 @@ export function ElementActionsMenu() {
     if (title == "build") {
       return buildHandler
     }
+    if (title == "destroy") {
+      return destroyHandler
+    }
     if (title == "fight") {
       return fightHandler
     }
     if (title == "work") {
       return workHandler
     }
-    return () => { console.log("non handled action", title) }
+    if (title == "heal") {
+      return healHandler
+    }
+    if (title == "reproduce") {
+      return reproduceHandler
+    }
+    throw new Error(`Non handled action: ${title}`)
+  }
+
+  const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
+
+  const endTurnHandler = () => {
+    dispatch(endTurn());
+    setConfirmingEndTurn(false);
   }
 
   return (
@@ -243,7 +283,7 @@ export function ElementActionsMenu() {
         }
         </div>
       }
-        
+
       {
         actionHandling == "build" &&
         <div>
@@ -268,8 +308,14 @@ export function ElementActionsMenu() {
           })}
         </div>
       }
-
-      <button onClick={endTurnHandler}>End Turn</button>
+      {
+        confirmingEndTurn ? <>
+          <button onClick={endTurnHandler}>Really End Turn?</button>
+          <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
+        </>
+        :
+        <button onClick={() => setConfirmingEndTurn(true)}>End Turn</button>
+      }
     </div>
   )
 };

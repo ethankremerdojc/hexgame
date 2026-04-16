@@ -35,6 +35,7 @@ import forkSvg from "./svg/pitchfork.svg?raw";
 import swordSvg from "./svg/sword.svg?raw";
 import bowSvg from "./svg/bow.svg?raw";
 import shieldSvg from "./svg/shield.svg?raw";
+import cartSvg from "./svg/cart.svg?raw";
 
 //items
 import foodSvg from "./svg/bread.svg?raw";
@@ -92,6 +93,11 @@ function getSvgForElement(elem: Element) {
     case ElementSubType.Shield:
       return shieldSvg;
       break;
+    case ElementSubType.Cart:
+      return cartSvg;
+      break;
+
+
 
     default:
       throw new Error(`unknown element subtype: ${elem.subType}`);
@@ -116,18 +122,17 @@ export class BoardRenderer {
   ): void {
     const hexPoints = BoardRenderer.createPoly(radius, inset);
 
-    let adjacentCells: Cell[] = [];
+    let cellsToMoveTo: Cell[] = [];
 
     if (showMoveInfo && selectedElement && selectedElement.type == ElementType.Person) {
-      let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-      adjacentCells = BoardUtils.getAdjacentCells(cells, parentCell);
+      cellsToMoveTo = BoardUtils.getCellsPersonCanMoveTo(selectedElement, cells);
     }
 
     for (var cell of cells) {
       let cellHighlighted = false;
 
-      for (var a of adjacentCells) {
-        if (cell.x == a.x && cell.y == a.y) {
+      for (var cm of cellsToMoveTo) {
+        if (cell.x == cm.x && cell.y == cm.y) {
           cellHighlighted = true;
         }
       }
@@ -248,7 +253,7 @@ export class BoardRenderer {
     // held elements
     for (let i=0; i<element.heldElements.length; i++) {
       let heldElement = element.heldElements[i];
-      if ([ElementSubType.Sword, ElementSubType.Bow, ElementSubType.Shield].includes(heldElement.subType)) {
+      if ([ElementSubType.Sword, ElementSubType.Bow, ElementSubType.Shield, ElementSubType.Cart].includes(heldElement.subType)) {
         continue
       }
       let heldElemSvg = getSvgForElement(heldElement);
@@ -268,6 +273,7 @@ export class BoardRenderer {
     let holdingSword = element.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
     let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
     let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+    let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
 
     if (!holdingSword && !holdingBow) {
       drawSvgToCanvas(forkSvg, ctx,
@@ -291,6 +297,12 @@ export class BoardRenderer {
       drawSvgToCanvas(shieldSvg, ctx,
         elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
         toolSize, objectSize*0.8,
+      );
+    };
+    if (holdingCart) {
+      drawSvgToCanvas(cartSvg, ctx,
+        elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
+        objectSize*0.8, objectSize*0.6,
       );
     }
 

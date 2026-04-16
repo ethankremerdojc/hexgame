@@ -174,9 +174,9 @@ export class BoardGenerator {
     randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
     randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
 
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: STARTING_FOOD});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 5});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 5});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: STARTING_FOOD + 50});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 50});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 50});
     return newBoard;
   }
 }
