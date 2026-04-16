@@ -10,6 +10,10 @@ import {
   BoardUtils
 } from "./boardUtils.ts"
 
+import {
+  colorForTeam
+} from "./vars";
+
 import { 
   getGrassCanvas,
   getForestCanvas,
@@ -379,7 +383,7 @@ export class BoardRenderer {
 
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
 
-      let elemColor = BoardUtils.colorForTeam(element.team);
+      let elemColor = colorForTeam(element.team);
       let elemSvg = getSvgForElement(element);
 
       if (element.type == ElementType.Building) {

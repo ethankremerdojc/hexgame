@@ -1,5 +1,5 @@
 import {
-  ElementType, ElementSubType
+  ElementType, ElementSubType, CellType
 } from "./boardTypes"
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
@@ -32,7 +32,7 @@ export const CELL_INFO_BY_TYPE = {
   }
 }
 
-export const ELEMENT_ACTION_DETAILS: ActionDetails[] = [
+export const ELEMENT_ACTION_DETAILS: object[] = [
   { // Move
     title: "move",
     depletesAction: true,
@@ -136,4 +136,67 @@ export function getBuildingCost(elemSubType: ElementType) {
   }
 
   return ingredients
+}
+
+export function nameForElementSubType(elemSubType: ElementType): string {
+  return [
+    "Capital",
+    "Village",
+    "Farm",
+    "SawMill",
+    "Quarry",
+    "Villager",
+    "Food",
+    "Wood",
+    "Ore",
+    "Gold",
+    "Sword",
+    "Bow",
+    "Shield"
+  ][elemSubType]
+}
+
+export function getActionDetails(actionType: number): ActionDetails {
+  return ELEMENT_ACTION_DETAILS[actionType]
+}
+
+export function colorForTeam(teamVal: TeamColor|null): string {
+
+  if (teamVal === null) {
+    return ""
+  }
+
+  return [
+    "white",
+    "purple",
+    "red",
+    "yellow",
+    "blue",
+    "green"
+  ][teamVal]
+}
+
+export function nameForTeamColor(color: TeamColor): string {
+  return [
+    "White",
+    "Purple",
+    "Red",
+    "Yellow",
+    "Blue",
+    "Green"
+  ][color]
+}
+
+export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
+  if (cellType == CellType.Field) {
+    return ElementSubType.Food
+  }
+  if (cellType == CellType.Forest) {
+    return ElementSubType.Wood
+  }
+  if (cellType == CellType.Mountain) {
+    return ElementSubType.Ore
+  }
+
+  return null
 }

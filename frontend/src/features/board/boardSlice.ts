@@ -20,7 +20,8 @@ import type {
 import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
-  PERSON_BASE_HEALTH
+  PERSON_BASE_HEALTH,
+  itemTypeForCellType
 } from "./vars"
 
 import { BoardUtils } from "./boardUtils"
@@ -220,7 +221,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
       itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
     };
 
-    cell.elements.push({type: ElementType.Item, subType: BoardUtils.itemTypeForCellType(cell.type), count: itemCreationCount});
+    cell.elements.push({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount});
   }
 
   newCells = prepareCellsForStateSave(newCells);
@@ -274,7 +275,7 @@ const boardSlice = createSlice({
       state.selectedCell = null;
       state.selectedElement = null;
       state.showMoveInfo = false;
-
+      
 
       let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
 

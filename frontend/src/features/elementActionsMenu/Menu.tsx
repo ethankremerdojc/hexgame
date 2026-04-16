@@ -19,9 +19,15 @@ import {
   endTurn,
 } from "../board/boardSlice.ts";
 
-import { getBuildingCost } from "../board/vars"
+import { 
+  getBuildingCost,
+  nameForElementSubType,
+  getActionDetails,
+  nameForTeamColor
+} from "../board/vars"
 
-import { BoardUtils } from "../board/boardUtils.ts"
+import { BoardUtils } from "../board/boardUtils"
+import BoardActions from "../board/boardActions"
 
 export function ElementActionsMenu() {
   const dispatch = useAppDispatch();
@@ -43,13 +49,13 @@ export function ElementActionsMenu() {
 
   let availableActions: ElementType[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
-    availableActions = BoardUtils.getAvailableActions(selectedElement, cells);
+    availableActions = BoardActions.getAvailableActions(selectedElement, cells);
     remainingCarryWeight = BoardUtils.getPersonRemainingCarryWeight(selectedElement);
   };
 
   let availableActionsInfo = [];
   for (var aa of availableActions) {
-    let details = BoardUtils.getActionDetails(aa);
+    let details = getActionDetails(aa);
 
     if (!details.depletesAction) {
       availableActionsInfo.push(details);
@@ -77,7 +83,7 @@ export function ElementActionsMenu() {
         dropAmount = relevantItem.count;
       }
 
-      newCells = BoardUtils.dropItem(selectedElement, itemId, cells, dropAmount);
+      newCells = BoardActions.dropItem(selectedElement, itemId, cells, dropAmount);
 
     } else if (transferType == "take") {
       let takeAmount;
@@ -91,7 +97,7 @@ export function ElementActionsMenu() {
         takeAmount = Math.min(remainingCarryWeight, parentCellRelevantItem.count);
       }
 
-      newCells = BoardUtils.takeItem(selectedElement, itemId, cells, takeAmount);
+      newCells = BoardActions.takeItem(selectedElement, itemId, cells, takeAmount);
     }
 
     dispatch(setCells(newCells));
@@ -119,7 +125,7 @@ export function ElementActionsMenu() {
   }
 
   const workHandler = () => {
-    let newCells = BoardUtils.makePersonWork(selectedElement, cells);
+    let newCells = BoardActions.makePersonWork(selectedElement, cells);
     dispatch(setCells(newCells));
     dispatch(setActionHandling(null));
     dispatch(setActionItemsToSelectFrom([]));
@@ -138,7 +144,7 @@ export function ElementActionsMenu() {
 
   const buildElem = (type, subType) => {
     dispatch(setShowMoveInfo(false));
-    const newCells = BoardUtils.build(selectedElement, type, subType, cells);
+    const newCells = BoardActions.build(selectedElement, type, subType, cells);
     dispatch(setCells(newCells));
 
     dispatch(setActionHandling(null));
@@ -164,7 +170,7 @@ export function ElementActionsMenu() {
     dispatch(setShowMoveInfo(false));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let enemyElem = parentCell.elements.filter(e => e.id == enemyId)[0];
-    const newCells = BoardUtils.makePersonsFight(selectedElement, enemyElem, cells);
+    const newCells = BoardActions.makePersonsFight(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
 
     dispatch(setActionHandling(null));
@@ -203,7 +209,7 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu">
-      <p>Color: {BoardUtils.nameForTeamColor(playerTurn)}</p>
+      <p>Color: {nameForTeamColor(playerTurn)}</p>
 
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
@@ -217,11 +223,11 @@ export function ElementActionsMenu() {
         <div>{itemsToSelectFrom.map(item => {
             return (<div id={item.key}>
               <button onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
-                {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (1)
+                {actionHandling} {nameForElementSubType(item.subType)} (1)
               </button>
 
               <button onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {BoardUtils.nameForElementSubType(item.subType)} (MAX:
+                {actionHandling} {nameForElementSubType(item.subType)} (MAX:
                 {
                   actionHandling == "take" ? <>
                   {Math.min(remainingCarryWeight, item.count)}
@@ -244,7 +250,7 @@ export function ElementActionsMenu() {
           {itemsToSelectFrom.map(item => {
             return (
               <button key={item[1]+item[0]} onClick={() => { buildElem(item[0], item[1]) }} disabled={getBuildingDisabled(item[1])}>
-                {BoardUtils.nameForElementSubType(item[1])} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item[1]))}
+                {nameForElementSubType(item[1])} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item[1]))}
               </button>
             )
           })}
@@ -256,7 +262,7 @@ export function ElementActionsMenu() {
           {itemsToSelectFrom.map(person => {
             return (
               <button key={person.id} onClick={() => { fight(person.id) }}>
-                Fight: {BoardUtils.nameForTeamColor(person.team)} {BoardUtils.nameForElementSubType(person.subType)} ({person.health}H)
+                Fight: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
               </button>
             )
           })}

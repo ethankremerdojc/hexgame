@@ -35,6 +35,8 @@ import {
   BoardUtils
 } from "./boardUtils.ts";
 
+import BoardActions from "./boardActions";
+
 function getSelectedCellFromMousePos(
   mx: number, my: number, 
   radius: number, offsetX: number, offsetY: number, 
@@ -276,7 +278,7 @@ export function Board() {
           let newCells = null;
           for (var ac of adjacentCells) {
             if (ac.x == potentialSelectedCell.x && ac.y == potentialSelectedCell.y) {
-              newCells = BoardUtils.moveElement(cells, selectedElement, ac);
+              newCells = BoardActions.moveElement(cells, selectedElement, ac);
               dispatch(setShowMoveInfo(false));
             }
           }
