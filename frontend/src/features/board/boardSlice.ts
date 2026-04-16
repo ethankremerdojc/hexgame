@@ -167,6 +167,24 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
   return newCells;
 }
 
+function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): Cell[] {
+  let cellsWithPlayersOnTeam = cells.filter(
+    cell => cell.elements.filter(
+      elem => elem.type == ElementType.Person && elem.team == playerTeam
+    ).length > 0);
+
+  for (var cell of cellsWithPlayersOnTeam) {
+    let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
+    for (var person of persons) {
+      if (person.hasActionAvailable) {
+        person.isWorking = true;
+      }
+    }
+  }
+
+  return cells
+}
+
 export interface BoardState {
   playerCount: number,
   turnNumber: number,
@@ -275,9 +293,9 @@ const boardSlice = createSlice({
       state.selectedCell = null;
       state.selectedElement = null;
       state.showMoveInfo = false;
-      
 
       let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
+      cells = makePersonsWithActionOnTeamWork(currentPlayerTurn, state.cells);
 
       state.cells = setupNewTurn(state.cells, state.playerTurn);
     }
