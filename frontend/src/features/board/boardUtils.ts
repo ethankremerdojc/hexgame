@@ -433,63 +433,103 @@ export class BoardUtils {
     elemParentCell.elements.push(newEl);
 
     let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
-    console.log(elemParentCell);
     newPerson.hasActionAvailable = false;
-    newCells = BoardUtils.depleteResourcesFromBuild(elementSubType, elemParentCell, newCells);
+    newCells = BoardUtils.depleteResourcesFromBuild(elementSubType, newPerson, elemParentCell, newCells);
     return newCells;
   }
 
-  static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell): boolean {
-    let counts = {};
-
+  static elementsToBuildExistOnTile(elementSubType: ElementSubType, cell: Cell, personElem: Element): boolean { 
     let requiredElements = getBuildingCost(elementSubType);
     let mergedItemElements = BoardUtils.mergeItemElements(cell.elements.filter(e => e.type == ElementType.Item));
 
+    let counts = {};
     for (var requiredElement of requiredElements) {
       let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredElement.subType)[0];
 
+      let tileCount; 
+      let playerCount;
+
       if (!relevantItemElement) {
-        return false
+        tileCount = 0;
+      } else {
+        tileCount = relevantItemElement.count;
       }
 
-      if (relevantItemElement.count < requiredElement.count) {
-        return false;
+      let relevantHeldElement = personElem.heldElements.filter(e => e.subType == requiredElement.subType)[0];
+
+      if (!relevantHeldElement) {
+        playerCount = 0;
+      } else {
+        playerCount = relevantHeldElement.count;
+      }
+
+      if (tileCount + playerCount < requiredElement.count) {
+        return false
       }
     }
 
     return true
   }
 
-  static depleteResourcesFromBuild(buildingType: ElementSubType, cell: Cell, cells: Cell[]) {
-    let requiredResources = getBuildingCost(buildingType);
+  static depleteResourcesFromBuild(buildingType: ElementSubType, _personElem: Element, cell: Cell, cells: Cell[]) {
+    let requiredElements = getBuildingCost(buildingType);
     let newCells = structuredClone(cells);
     let newCell;
     for (var c of newCells) {
       if (c.x == cell.x && c.y == cell.y) {
         newCell = c;
       }
-    }
+    };
+
+    let personElem = newCell.elements.filter(el => el.id == _personElem.id)[0];
  
+    // Deplete from tile
     let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
-    
-    let oldItemElements = newCell.elements.filter(e => e.type == ElementType.Item);
-    let newElements = [...newCell.elements.filter(e => e.type != ElementType.Item)]; // remove all current items to add again later
+    let oldNonItemElements = newCell.elements.filter(el => el.type != ElementType.Item);
 
-    for (var itemElement of mergedItemElements) {
-      let relevantResourceRequirement = requiredResources.filter(r => r.subType == itemElement.subType)[0];
+    let requirementsAfterTile = [];
 
-      if (!relevantResourceRequirement) {
-        newElements.push(itemElement);
-        continue
+    for (var requiredElement of requiredElements) {
+
+      let relevantItemElement = mergedItemElements.filter(e => e.subType == requiredElement.subType)[0];
+
+      if (!relevantItemElement) {
+        requirementsAfterTile.push({...requiredElement});
       }
+      else if (relevantItemElement.count > requiredElement.count) {
+        relevantItemElement.count -= relevantItemElement.count;
+      }
+      else if (relevantItemElement.count == requiredElement.count) {
+        mergedItemElements = mergedItemElements.filter(el => el.id != relevantItemElement.id);
+      }
+      else {
+        mergedItemElements = mergedItemElements.filter(el => el.id != relevantItemElement.id);
+        let copiedRequirement = {...requiredElement};
+        copiedRequirement.count -= relevantItemElement.count;
 
-       if (relevantResourceRequirement.count < itemElement.count) {
-        itemElement.count -= relevantResourceRequirement.count;
-        newElements.push(itemElement);
+        requirementsAfterTile.push(copiedRequirement);
+      }
+    };
+
+    newCell.elements = [...oldNonItemElements, ...mergedItemElements];
+
+    // Adjust personElem held elements
+    for (var requiredElement of requirementsAfterTile) {
+      let relevantItemElement = personElem.heldElements.filter(e => e.subType == requiredElement.subType)[0];
+      if (!relevantItemElement) {
+        throw new Error(`Expected an item on the person element for building that wasn't there.`);
+      }
+      else if (requiredElement.count > relevantItemElement.count) {
+        throw new Error(`Expected an item with higher count on the person element for building that wasn't there.`);
+      }
+      else if (requiredElement.count == relevantItemElement.count) {
+        personElem.heldElements = personElem.heldElements.filter(el => el.id != relevantItemElement.id);
+      }
+      else {
+        relevantItemElement.count -= relevantItemElement.count;
       }
     }
 
-    newCell.elements = newElements;
     return newCells;
   }
 

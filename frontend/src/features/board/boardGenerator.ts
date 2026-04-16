@@ -167,11 +167,12 @@ export class BoardGenerator {
     }
 
     let randomCell = randomItem(emptyNonDesertCells);
+    let twoFood = {type: ElementType.Item, subType: ElementSubType.Food, count: 2};
 
     randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
 
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[], health: PERSON_BASE_HEALTH});
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
 
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: STARTING_FOOD});
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 5});

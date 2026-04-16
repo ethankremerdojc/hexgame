@@ -149,7 +149,7 @@ export function ElementActionsMenu() {
 
   const getBuildingDisabled = (buildingType) => {
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    return !BoardUtils.elementsToBuildExistOnTile(buildingType, parentCell);
+    return !BoardUtils.elementsToBuildExistOnTile(buildingType, parentCell, selectedElement);
   }
 
   const fightHandler = () => {

@@ -248,6 +248,14 @@ export function Board() {
       let potentialElement: Element|null = getSelectedElementFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
       if (potentialElement && potentialElement.team == playerTurn) {
+
+        if (selectedElement) {
+          // selected an element while there was already one selected, reset menu things.
+          dispatch(setShowMoveInfo(false));
+          dispatch(setActionHandling(null));
+          dispatch(setActionItemsToSelectFrom([]));
+        }
+
         dispatch(setSelectedElement(potentialElement));
         dispatch(setSelectedCell(null));
         return
