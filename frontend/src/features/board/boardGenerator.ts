@@ -24,6 +24,7 @@ export class BoardGenerator {
     canvasHeight: number,
     playerCount: number=2,
     cellCount: number=-1,
+    traderCount: number=2,
     maxCellAdditionAttemptNum: number=10, // The number of times to try to add before giving up
   )
   {
@@ -54,7 +55,7 @@ export class BoardGenerator {
       }
     }
 
-    let result: Cell[] = this.addStarterElements(cells, playerCount);
+    let result: Cell[] = this.addStarterElements(cells, playerCount, traderCount);
     return result
   }
 
@@ -147,11 +148,15 @@ export class BoardGenerator {
     return false
   }
 
-  addStarterElements(board: Cell[], playerCount: number): Cell[] {
+  addStarterElements(board: Cell[], playerCount: number, traderCount: number): Cell[] {
     let newBoard = [...board];
 
     for (let i=0; i<playerCount; i++) {
       newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColor, i));
+    }
+
+    for (let i=0; i<traderCount; i++) {
+      newBoard = this.addRandomTraderToBoard(newBoard);
     }
 
     return newBoard;
@@ -171,12 +176,31 @@ export class BoardGenerator {
 
     randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
 
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Worker, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
 
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: STARTING_FOOD + 35});
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 50});
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 50});
     return newBoard;
+  }
+
+  addRandomTraderToBoard(board: Cell[]): Cell[] {
+    let newBoard = structuredClone(board);
+    let emptyCells = newBoard.filter(cell => cell.elements.length == 0);
+    let emptyDesertCells = emptyCells.filter(cell => cell.type == CellType.Desert);
+
+    let desertCell;
+
+    if (emptyDesertCells.length == 0) {
+      desertCell = randomItem(emptyCells);
+      desertCell.type = CellType.Desert;
+    } else {
+      desertCell = randomItem(emptyDesertCells);
+    }
+
+    let trader = {type: ElementType.Person, subType: ElementSubType.Trader};
+    desertCell.elements.push(trader);
+    return newBoard
   }
 }

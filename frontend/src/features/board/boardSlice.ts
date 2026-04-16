@@ -176,6 +176,9 @@ function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): 
     ).length > 0);
 
   for (var cell of cellsWithPlayersOnTeam) {
+    if (cell.type == CellType.Desert) {
+      continue
+    }
     let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
     for (var person of persons) {
       if (person.hasActionAvailable) {

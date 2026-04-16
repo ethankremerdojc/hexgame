@@ -350,8 +350,8 @@ export class BoardUtils {
     return result;
   }
 
-  static enemyExistsOnCell(personElem: Element, parentCell: Cell): boolean {
-    return BoardUtils.getEnemyPersons(personElem, parentCell).length > 0
+  static enemyExistsOnCell(personElem: Element, cell: Cell): boolean {
+    return BoardUtils.getEnemyPersons(personElem, cell).length > 0
   }
 
   static resourcesExistForPerson(resourcesRequired: object[], personElem: Element, cells: Cell[]): boolean {
@@ -414,6 +414,7 @@ export class BoardUtils {
       result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
       result.push([ElementType.Building, ElementSubType.Village]);
     }
+    result.push([ElementType.Item, ElementSubType.Bow]);
     result.push([ElementType.Item, ElementSubType.Sword]);
     result.push([ElementType.Item, ElementSubType.Shield]);
     result.push([ElementType.Item, ElementSubType.Cart]);
@@ -561,7 +562,7 @@ export class BoardUtils {
       return false
     }
 
-    let villagerCost = getBuildingCost(ElementSubType.Worker);
+    let villagerCost = getBuildingCost(ElementSubType.Villager);
     if (!BoardUtils.resourcesExistForPerson(villagerCost, personElem, cells)) {
       return false
     }
@@ -621,6 +622,82 @@ export class BoardUtils {
       }
     }
 
+    return result
+  }
+
+  static personCanTrade(personElem: Element, cells: Cell[]): boolean {
+    const parentElem = BoardUtils.getElementParentCell(personElem, cells);
+    let traderExists = parentElem.elements.filter(el => el.subType == ElementSubType.Trader).length > 0;
+
+    if (!traderExists) {
+      return false
+    }
+
+    if (parentElem.elements.filter(el => el.type == ElementType.Item).length > 0) {
+      return true
+    }
+    if (personElem.heldElements.filter(el => el.type == ElementType.Item).length > 0) {
+      return true
+    }
+    return false
+  }
+
+  static getTradeOfferings(): object[] {
+    return [
+      { type: ElementType.Item, subType: ElementSubType.Wood, count: 1 },
+      { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
+      { type: ElementType.Item, subType: ElementSubType.Ore, count: 1 },
+      { type: ElementType.Item, subType: ElementSubType.Gold, count: 1 },
+    ]
+  }
+
+  static getItemsPersonCanGive(personElem: Element, cells: Cell[]): ElementSubType[] {
+    const parentElem = BoardUtils.getElementParentCell(personElem, cells);
+    let parentElemItems = parentElem.elements.filter(el => el.type == ElementType.Item);
+    
+    let result = [];
+
+    let oneCountItems = [];
+
+    for (var item of parentElemItems) {
+      if (item.count > 1) {
+        result.push(item.subType);
+      }
+      oneCountItems[item.subType] = 1; // could be null
+    }
+
+    for (var heldItem of personElem.heldElements) {
+      if (heldItem.count > 1) {
+        result.push(heldItem.subType);
+      }
+      if (oneCountItems[heldItem.subType]) {
+        result.push(heldItem.subType);
+      }
+    }
+
+    return result
+  }
+
+  static personCanShoot(personElem: Element, cells: Cell[]): boolean {
+    let hasBow = personElem.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
+    if (!hasBow) {
+      return false
+    }
+
+    return BoardUtils.getPersonsThatCanBeShot(personElem, cells).length > 0
+  }
+
+  static getPersonsThatCanBeShot(personElem: Element, cells: Cell[]): Element[] {
+    let parentElem = BoardUtils.getElementParentCell(personElem, cells);
+    let adjacentCells = BoardUtils.getAdjacentCells(cells, parentElem);
+
+    let result = [];
+
+    for (var cell of adjacentCells) {
+      if (BoardUtils.enemyExistsOnCell(personElem, cell)) {
+        result = [...result, ...BoardUtils.getEnemyPersons(personElem, cell)];
+      }
+    }
     return result
   }
 }

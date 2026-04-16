@@ -164,23 +164,12 @@ export default class BoardActions {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
     elemParentCell.elements = elemParentCell.elements.filter(e => e.type != ElementType.Building);
+    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPerson.hasActionAvailable = false;
     return newCells
   }
 
-  static makePersonsFight(personElem: Element, targetElem: Element, cells: Cell[]): Cell[] {
-
-    if (personElem.type != ElementType.Person || targetElem.type != ElementType.Person) {
-      throw new Error("Can only fight between two persons.");
-    }
-
-    let newCells = structuredClone(cells);
-
-    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
-    let targetParentCell = BoardUtils.getElementParentCell(personElem, newCells);
-
-    if (elemParentCell.x != targetParentCell.x || elemParentCell.y != targetParentCell.y) {
-      throw new Error("Can't fight a person in a different cell!");
-    };
+  static doDamage(agressor: Element, defender: Element) {
 
     function getShieldFactor(person) {
       let isHoldingShield = person.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
@@ -192,39 +181,47 @@ export default class BoardActions {
       return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
     }
 
-    // TODO
-    // Refactor below to remove duplicates
+    let defenderArmor = defender.armor ? defender.armor : 0;
+    defenderArmor += getShieldFactor(defender);
 
-    let newPersonOne = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
-    newPersonOne.hasActionAvailable = false;
+    let agressorDamage = PERSON_BASE_DAMAGE + getSwordFactor(agressor);
 
-    let newPersonTwo = elemParentCell.elements.filter(e => e.id == targetElem.id)[0];
-
-    let p1armor = newPersonOne.armor ? newPersonOne.armor : 0;
-    let p2armor = newPersonTwo.armor ? newPersonTwo.armor : 0;
-    p1armor += getShieldFactor(newPersonOne);
-    p2armor += getShieldFactor(newPersonTwo);
-
-    let p1damage = PERSON_BASE_DAMAGE + getSwordFactor(newPersonOne);
-    let p2damage = PERSON_BASE_DAMAGE + getSwordFactor(newPersonTwo);
-
-    if (p2damage > p1armor) {
-      newPersonOne.health = newPersonOne.health - (p2damage - p1armor);
-    }
-    if (p1damage > p2armor) {
-      newPersonTwo.health = newPersonTwo.health - (p1damage - p2armor);
+    if (agressorDamage > defenderArmor) {
+      defender.health = defender.health - (agressorDamage - defenderArmor);
     }
 
-    if (newPersonOne.health < 1) {
-      // have person drop elements
-      elemParentCell.elements = [...elemParentCell.elements, ...newPersonOne.heldElements];
-      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != newPersonOne.id);
+    if (defender.health < 1) {
+      return null
+    }
+    return defender
+  }
+
+  static makePersonsFight(_personElem: Element, _targetElem: Element, cells: Cell[]): Cell[] {
+
+    if (_personElem.type != ElementType.Person || _targetElem.type != ElementType.Person) {
+      throw new Error("Can only fight between two persons.");
     }
 
-    if (newPersonTwo.health < 1) {
-      // have person drop elements
-      elemParentCell.elements = [...elemParentCell.elements, ...newPersonTwo.heldElements];
-      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != newPersonTwo.id);
+    let newCells = structuredClone(cells);
+
+    let elemParentCell = BoardUtils.getElementParentCell(_personElem, newCells);
+    let personElem = elemParentCell.elements.filter(el => el.id == _personElem.id)[0];
+    personElem.hasActionAvailable = false;
+    let targetElem = elemParentCell.elements.filter(el => el.id == _targetElem.id)[0];
+
+    let hurtPersonElem = BoardActions.doDamage(targetElem, personElem);
+
+
+    if (!hurtPersonElem) {
+      elemParentCell.elements = [...elemParentCell.elements, ...personElem.heldElements];
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != personElem.id);
+    }
+
+    let hurtTargetElem = BoardActions.doDamage(personElem, targetElem);
+
+    if (!hurtTargetElem) {
+      elemParentCell.elements = [...elemParentCell.elements, ...targetElem.heldElements];
+      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != targetElem.id);
     }
 
     return newCells;
@@ -255,13 +252,45 @@ export default class BoardActions {
   }
 
   static reproducePerson(personElem: Element, cells: Cell[]): Cell[] {
-    return BoardActions.build(personElem, ElementType.Person, ElementSubType.Worker, cells);
+    return BoardActions.build(personElem, ElementType.Person, ElementSubType.Villager, cells);
+  }
+
+  static trade(personElem: Element, givenItem: Element, receivedItem: Element, cells: Cell[]): Cell[] {
+    let newCells = BoardUtils.depleteResources([givenItem], personElem, cells);
+    let parentCell = BoardUtils.getElementParentCell(personElem, newCells);
+    let newPerson = parentCell.elements.filter(el => el.id == personElem.id)[0];
+
+    newPerson.heldElements.push(receivedItem);
+
+    return newCells
+  }
+
+  static shoot(personShooting: Element, personToShoot: Element, cells: Cell[]): Cell[] {
+    let newCells = structuredClone(cells);
+    let parentCell = BoardUtils.getElementParentCell(personToShoot, newCells);
+
+    let shooterParentCell = BoardUtils.getElementParentCell(personShooting, newCells);
+    let newPersonShooting = shooterParentCell.elements.filter(el => el.id == personShooting.id)[0];
+    newPersonShooting.hasActionAvailable = false;
+
+    let newPersonToShoot = parentCell.elements.filter(el => el.id == personToShoot.id)[0];
+    let hurtTargetElem = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
+
+    if (!hurtTargetElem) {
+      parentCell.elements = [...elemParentCell.elements, ...newPerson.heldElements];
+      parentCell.elements = elemParentCell.elements.filter(e => e.id != newPerson.id);
+    }
+    return newCells
   }
 
   static getAvailableActions(personElem: Element, cells: Cell[]): ElementAction[] {
 
     if (personElem.type !== ElementType.Person) {
       throw new Error("Non-person elements do not have actions.")
+    }
+
+    if (!personElem.hasActionAvailable) {
+      return []
     }
 
     const elementParent = BoardUtils.getElementParentCell(personElem, cells);
@@ -289,8 +318,10 @@ export default class BoardActions {
     if (!capitalExists && elementParent.elements.filter(el => el.type == ElementType.Building).length > 0) {
       result.push(ElementAction.Destroy);
     }
-
-    result.push(ElementAction.Work);
+    
+    if (elementParent.type != CellType.Desert) {
+      result.push(ElementAction.Work);
+    }
 
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);
     if (currentCarryWeight > 0) {
@@ -313,6 +344,15 @@ export default class BoardActions {
 
     if (BoardUtils.personCanReproduce(personElem, cells)) {
       result.push(ElementAction.Reproduce)
+    }
+    
+    // do not deplete actions, but cannot drop or pickup anymore after an action that does
+    if (BoardUtils.personCanTrade(personElem, cells)) {
+      result.push(ElementAction.Trade)
+    }
+
+    if (BoardUtils.personCanShoot(personElem, cells)) {
+      result.push(ElementAction.Shoot)
     }
 
     return result

@@ -23,7 +23,8 @@ import {
   getBuildingCost,
   nameForElementSubType,
   getActionDetails,
-  nameForTeamColor
+  nameForTeamColor,
+  colorForTeam
 } from "../board/vars"
 
 import { BoardUtils } from "../board/boardUtils"
@@ -56,14 +57,7 @@ export function ElementActionsMenu() {
   let availableActionsInfo = [];
   for (var aa of availableActions) {
     let details = getActionDetails(aa);
-
-    if (!details.depletesAction) {
-      availableActionsInfo.push(details);
-    } else {
-      if (selectedElement.type == ElementType.Person && selectedElement.hasActionAvailable) {
-        availableActionsInfo.push(details);
-      }
-    }
+    availableActionsInfo.push(details);
   };
 
   // ==========================================
@@ -174,6 +168,24 @@ export function ElementActionsMenu() {
     dispatch(setActionItemsToSelectFrom(enemyPersons));
   }
 
+  const tradeHandler = () => {
+    dispatch(setShowMoveInfo(false));
+    dispatch(setActionHandling("trade"));
+    dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings()));
+  }
+
+  const handleTrade = (giveType, receiveType) => {
+    let depletingResource = {type: ElementType.Item, subType: giveType, count: 2};
+    let receivingResource = {type: ElementType.Item, subType: receiveType, count: 1}
+    let newCells = BoardActions.trade(selectedElement, depletingResource, receivingResource, cells);
+
+    dispatch(setCells(newCells));
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([]));   
+  }
+
   const fight = (enemyId) => {
     dispatch(setShowMoveInfo(false));
     let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
@@ -199,6 +211,21 @@ export function ElementActionsMenu() {
 
   const reproduceHandler = () => {
     const newCells = BoardActions.reproducePerson(selectedElement, cells);
+    dispatch(setCells(newCells));
+
+    dispatch(setActionHandling(null));
+    dispatch(setActionItemsToSelectFrom([])); 
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+  }
+
+  const shootHandler = () => {
+    dispatch(setActionHandling("shoot"));
+    dispatch(setActionItemsToSelectFrom(BoardUtils.getPersonsThatCanBeShot(selectedElement, cells)));
+  }
+
+  const shoot = (enemyElem) => {
+    let newCells = BoardActions.shoot(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
 
     dispatch(setActionHandling(null));
@@ -237,11 +264,18 @@ export function ElementActionsMenu() {
     if (title == "reproduce") {
       return reproduceHandler
     }
+    if (title == "trade") {
+      return tradeHandler
+    }
+    if (title == "shoot") {
+      return shootHandler
+    }
     throw new Error(`Non handled action: ${title}`)
   }
 
   const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
   const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
+  const [tradeOfferingChosen, setTradeOfferingChosen] = useState(null);
 
   const endTurnHandler = () => {
     dispatch(endTurn());
@@ -255,7 +289,7 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu">
-      <p>Color: {nameForTeamColor(playerTurn)}</p>
+      <p style={{color: colorForTeam(playerTurn)}}>Color: {nameForTeamColor(playerTurn)}</p>
 
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
@@ -314,24 +348,60 @@ export function ElementActionsMenu() {
           })}
         </div>
       }
+      {
+        actionHandling == "shoot" &&
+        <div>
+          {itemsToSelectFrom.map(person => {
+            return (
+              <button key={person.id} onClick={() => { shoot(person) }}>
+                Shoot: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
+              </button>
+            )
+          })}
+        </div>
+      }
 
       {
-        confirmingEndTurn ? <>
+        actionHandling == "trade" &&
+
+        <div>
+        {
+        !tradeOfferingChosen ?
+          itemsToSelectFrom.map(getOffering => {
+            return (
+              <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }}>
+                Trade for {nameForElementSubType(getOffering.subType)}
+              </button>
+            )
+          })
+        :
+          
+          BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
+            return (<button key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen) }}>
+              Give 2 {nameForElementSubType(giveOffering)}
+            </button>)
+          })
+          
+        }
+        </div>
+      }
+  
+      {
+        confirmingEndTurn ? <div>
           <button onClick={endTurnHandler}>Really End Turn?</button>
           <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
-        </>
+        </div>
         :
-        <button onClick={() => setConfirmingEndTurn(true)}>End Turn</button>
+        <div><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></div>
       }
-      
 
       {
-        confirmingResetTurn ? <>
+        confirmingResetTurn ? <div>
           <button onClick={resetTurnHandler}>Really Reset Turn?</button>
           <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
-        </>
+        </div>
         :
-        <button onClick={() => setConfirmingResetTurn(true)}>Undo to beginning of turn</button>
+        <div><button onClick={() => setConfirmingResetTurn(true)}>Undo to beginning of turn</button></div>
       }
     </div>
   )

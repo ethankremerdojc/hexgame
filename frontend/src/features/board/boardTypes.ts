@@ -33,7 +33,8 @@ export enum ElementSubType {
   Quarry,
 
   // persons
-  Worker,
+  Villager,
+  Trader,
 
   // items
   Food,
@@ -95,5 +96,7 @@ export enum ElementAction {
   Destroy,
   Work,
   Heal,
-  Reproduce
+  Reproduce,
+  Trade,
+  Shoot
 }

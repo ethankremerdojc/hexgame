@@ -31,6 +31,9 @@ import quarrySvg from "./svg/quarry.svg?raw";
 
 //persons
 import personSvg from "./svg/person.svg?raw";
+import traderSvg from "./svg/trader.svg?raw";
+
+// held items
 import forkSvg from "./svg/pitchfork.svg?raw";
 import swordSvg from "./svg/sword.svg?raw";
 import bowSvg from "./svg/bow.svg?raw";
@@ -64,10 +67,11 @@ function getSvgForElement(elem: Element) {
 
 
     // Persons
-    case ElementSubType.Worker:
-    case ElementSubType.Soldier:
-    case ElementSubType.Archer:
+    case ElementSubType.Villager:
       return personSvg;
+      break;
+    case ElementSubType.Trader:
+      return traderSvg;
       break;
 
     // items
@@ -247,6 +251,10 @@ export class BoardRenderer {
       objectSize, objectSize,
       elemColor
     );
+
+    if (element.subType != ElementSubType.Villager) {
+      return
+    }
 
     let miniItemSize = itemSize / 1.5;
 

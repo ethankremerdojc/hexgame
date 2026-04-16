@@ -36,48 +36,47 @@ export const CELL_INFO_BY_TYPE = {
 export const ELEMENT_ACTION_DETAILS: object[] = [
   { // Move
     title: "move",
-    depletesAction: true,
     helpText: "Move to an adjacent tile.",
   },
   { // Take
     title: "take",
-    depletesAction: false,
     helpText: "Pickup an item at the current cell position.",
   },
   { // Drop
     title: "drop",
-    depletesAction: false,
     helpText: "Drop an item at the current cell position.",
   },
   { // Fight
     title: "fight",
-    depletesAction: true,
     helpText: "Do damage to another team's person."
   },
   { // Build
     title: "build",
-    depletesAction: true,
     helpText: "Build a structure with the resources at the current tile."
   },
   { // Destroy
     title: "destroy",
-    depletesAction: true,
     helpText: "Destroy a structure at the current tile."
   },
   { // Work
     title: "work",
-    depletesAction: true,
     helpText: "Work on the current tile for more resources."
   },
   { // Heal
     title: "heal",
-    depletesAction: false,
     helpText: "Use 1 food to heal person by 1 health."
   },
   { // Reproduce
     title: "reproduce",
-    depletesAction: true,
     helpText: "Create another person with two persons."
+  },
+  { // trade
+    title: "trade",
+    helpText: "Trade with the desert trader"
+  },
+  { // shoot
+    title: "shoot",
+    helpText: "Shoot someone in adjacent tile"
   }
 ]
 
@@ -160,7 +159,7 @@ export function getBuildingCost(elemSubType: ElementType) {
 
 
 
-    case ElementSubType.Worker:
+    case ElementSubType.Villager:
       ingredients.push({
         subType: ElementSubType.Food,
         count: 10
@@ -179,7 +178,10 @@ export function nameForElementSubType(elemSubType: ElementType): string {
     "Farm",
     "SawMill",
     "Quarry",
+
     "Villager",
+    "Trader",
+
     "Food",
     "Wood",
     "Ore",
