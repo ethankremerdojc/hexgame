@@ -210,7 +210,7 @@ export interface BoardState {
 }
 
 const initialState: BoardState = {
-  playerCount: 3,
+  playerCount: 0,
   turnNumber: 1,
 
   cells: [],

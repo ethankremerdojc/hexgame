@@ -9,5 +9,19 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  build: {
+    outDir: path.resolve(__dirname, '../backend/hexgame/static/gameBuild'),
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Removes hashes from main entry files
+        entryFileNames: `assets/[name].js`,
+        // Removes hashes from split code chunks
+        chunkFileNames: `assets/[name].js`,
+        // Removes hashes from CSS and other static assets
+        assetFileNames: `assets/[name].[ext]`
+      }
+    }
   }
 })

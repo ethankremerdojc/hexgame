@@ -1,11 +1,18 @@
+import os, json
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
+
+from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
+
+from backend.settings import BASE_DIR
 
 from .forms import CreateGameForm
 from .models import Game, Player
+
+from .serializers import GameSerializer
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -67,3 +74,26 @@ def create_game_view(request):
 def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     return render(request, "hexgame/game/game.html", {"game": game})
+
+@login_required
+def game_iframe(request, game_id=None, player_count=None):
+    if game_id:
+        game = get_object_or_404(Game)
+        game = GameSerializer(game).data
+    else:
+        game = None
+
+    react_context = json.dumps({
+        "game": game,
+        "player_count": player_count
+    })
+
+    index_file = os.path.join(BASE_DIR, "hexgame/static/gameBuild/index.html")
+
+    with open(index_file, "r") as f:
+        html = f.read()
+
+    html = html.replace(
+        "</head>",
+        f"<script>window.__GAME_CONTEXT__ = {context_data};</script></head>"
+    )

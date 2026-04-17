@@ -112,7 +112,7 @@ export function Board() {
   let maxOffsetY = 0.5*hexRadius+qch;
 
   useEffect(() => {
-    if (cells.length === 0) {
+    if (cells.length === 0 && playerCount !== 0) {
       const BG = new BoardGenerator();
       const newBoard = BG.generateBoard(
         hexRadius, canvasWidth, canvasHeight, playerCount
@@ -120,7 +120,7 @@ export function Board() {
       dispatch(setCells(newBoard));
       dispatch(setBackupCells(newBoard));
     }
-  }, [cells, dispatch]);
+  }, [cells, dispatch, playerCount]);
 
   useEffect(() => {
     if (cells.length === 0) return;
@@ -316,6 +316,10 @@ export function Board() {
     mouseIsDown.current = false;
     firstMouseRef.current = { x: 0, y: 0 };
   };
+
+  if (playerCount == 0) {
+    return (<div>Set Player Count Before Rendering Board.</div>)
+  }
 
   return (
     <canvas

@@ -1,21 +1,26 @@
+import { useEffect } from "react";
+
 import { Board } from '@/features/board/Board';
 import { ElementActionsMenu } from '@/features/elementActionsMenu/Menu';
 
-// import {
-//   getCells,
-//   getSelectedCell,
-//   getSelectedElement,
-//   getBoardZoom,
-//   getBoardOffset,
-//
-//   getPlayerCount,
-//   setPlayerCount
-//
-// } from "@/features/board/boardSlice"
-//
-// import { useAppDispatch, useAppSelector } from '@/app/hooks'
+import {
+  getPlayerCount,
+  setPlayerCount
+} from "@/features/board/boardSlice"
+
+import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import './App.css'
+
+function getPlayerCountFromUrl(): number {
+  const params = new URLSearchParams(window.location.search);
+  const playerCount = params.get('playerCount');
+  if (!playerCount) {
+    console.log("no player count provided.")
+    return 4
+  }
+  return Number(playerCount)
+}
 
 // function DebugStats({cells, selectedCell, selectedElement, zoom, offset}) {
 //   let selectedCellString = "null";
@@ -41,32 +46,20 @@ import './App.css'
 
 function App() {
 
-  // const dispatch = useAppDispatch();
-  //
-  // const cells = useAppSelector(getCells);
-  // const selectedCell = useAppSelector(getSelectedCell);
-  // const selectedElement = useAppSelector(getSelectedElement);
-  // const zoom = useAppSelector(getBoardZoom);
-  // const offset = useAppSelector(getBoardOffset);
+  const dispatch = useAppDispatch();
+  const playerCount = useAppSelector(getPlayerCount);
 
-  // const playerCount = useAppSelector(getPlayerCount);
-  //
-  // if (playerCount == -1) {
-  //   setPlayerCount()
-  // }
+  useEffect(() => {
+    if (playerCount === 0) {
+      let urlPlayerCount = getPlayerCountFromUrl();
+      console.log(urlPlayerCount);
+      dispatch(setPlayerCount(urlPlayerCount));
+    }
+  }, [dispatch, playerCount]);
 
   return (
     <>
       <section id="center">
-        {/* <DebugStats  */}
-        {/*   cells={cells} */}
-        {/*   selectedCell={selectedCell} */}
-        {/*   selectedElement={selectedElement} */}
-        {/*   zoom={zoom} */}
-        {/*   offset={offset} */}
-        {/* /> */}
-
-
         <Board />
         <ElementActionsMenu />
       </section>
