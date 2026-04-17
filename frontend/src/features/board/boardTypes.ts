@@ -62,15 +62,42 @@ export type Element = {
   team: TeamColor|null,
   position: HexPosition|null,
   id: string,
-  count: number|null,
+  count: number,
 
   // Person only
   heldElements: Element[],
-  health: number|null,
+  health: number,
   armor: number|null,
   weight: number|null,
   hasActionAvailable: boolean|null,
   isWorking: boolean|null,
+}
+
+export function objectToElement(obj: any): Element {
+  if (obj.type == undefined || obj.subType == undefined) {
+    throw new Error("objectToElement requires obj to have at least type and subtype.");
+  }
+  if (obj.team === undefined) {
+    obj.team = null;
+  }
+  if (obj.position === undefined) {
+    obj.position = null;
+  }
+  if (obj.id === undefined) {
+    obj.id = "";
+  }
+  if (obj.count === undefined) {
+    obj.count = 1;
+  }
+  if (obj.heldElements === undefined) {
+    obj.heldElements = [];
+  }
+  if (obj.hasActionAvailable === undefined) {
+    obj.hasActionAvailable = null;
+  } if (obj.health === undefined) {
+    obj.health = 0;
+  }
+  return obj
 }
 
 // maybe make this hve a coordinate inside? 

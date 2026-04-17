@@ -3,7 +3,7 @@ import type {
 } from "./boardTypes"
 
 import {
-  CellType, ElementType, ElementSubType, ElementAction
+  CellType, ElementType, ElementSubType
 } from "./boardTypes"
 
 import {
@@ -157,7 +157,7 @@ export class BoardRenderer {
     ctx: CanvasRenderingContext2D, radius: number, 
     origin: Coordinate, points: any, 
     cell: Cell, cellHighlighted: boolean, 
-    selectedCell: Cell|null, selectedElement: Cell|null,
+    selectedCell: Cell|null, selectedElement: Element|null,
     offsetX: number, offsetY: number
   ) {
     ctx.save();
@@ -244,7 +244,7 @@ export class BoardRenderer {
     isSelected: boolean
   ) {
 
-    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
+    let { objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
 
     drawSvgToCanvas(elemSvg, ctx,
       elemPos.x, elemPos.y,
@@ -341,8 +341,8 @@ export class BoardRenderer {
     }
   }
 
-  static drawItemElements(ctx, itemElements, origin, radius) {
-    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
+  static drawItemElements(ctx: CanvasRenderingContext2D, itemElements: Element[], origin: Coordinate, radius: number) {
+    let { itemSize } = BoardUtils.getElemSizes(radius);
 
     let itemElementsCount = itemElements.length;
 
@@ -393,13 +393,13 @@ export class BoardRenderer {
     }
   }
 
-  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number, selectedElement: Element) {
-    let { buildingSize, objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
+  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number, selectedElement: Element|null) {
+    let { buildingSize } = BoardUtils.getElemSizes(radius);
     let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
     let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
 
     for (var element of nonItemElements) {
-      let isSelected = selectedElement && selectedElement.id == element.id;
+      let isSelected = selectedElement ? selectedElement.id == element.id : false;
 
       let elemPos = BoardUtils.getElementPosition(element, origin, radius);
 

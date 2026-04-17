@@ -1,18 +1,21 @@
-import React, {useState } from "react";
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
+
+import type { Element, Cell } from "../board/boardTypes"
 
 import {
   ElementType,
   ElementSubType,
-  ElementAction
+  ElementAction,
+  objectToElement
 } from "../board/boardTypes"
 
 import {
   getCells, setCells,
-  getSelectedCell, setSelectedCell,
+  setSelectedCell,
   getSelectedElement, setSelectedElement,
 
-  getShowMoveInfo, setShowMoveInfo,
+  setShowMoveInfo,
   getPlayerTurn,
   setActionHandling, getActionHandling,
   setActionItemsToSelectFrom, getActionItemsToSelectFrom,
@@ -30,28 +33,25 @@ import {
 import { BoardUtils } from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
-export function ElementActionsMenu() {
-  const dispatch = useAppDispatch();
+function ElementActionOptions() {
+  const dispatch =          useAppDispatch();
   const cells =             useAppSelector(getCells);
-  const selectedCell =      useAppSelector(getSelectedCell);
   const selectedElement =   useAppSelector(getSelectedElement);
-  const showMoveInfo =      useAppSelector(getShowMoveInfo);
-  const playerTurn =        useAppSelector(getPlayerTurn);
 
   const actionHandling =    useAppSelector(getActionHandling);
   const itemsToSelectFrom = useAppSelector(getActionItemsToSelectFrom);
 
-  // TODOz
-  //Move these two to redux state so that clicking off of them during action doesn't break things
+  const [tradeOfferingChosen, setTradeOfferingChosen] = useState(null);
+
+  if (!selectedElement) { return <></> }
+
+  let parentCell: Cell = BoardUtils.getElementParentCell(selectedElement, cells);
 
   // ==========================================
-  let remainingCarryWeight = 0;
-  let maxTakeAmount = 0;
 
-  let availableActions: ElementType[] = [];
+  let availableActions: ElementAction[] = [];
   if (selectedElement && selectedElement.type == ElementType.Person) {
     availableActions = BoardActions.getAvailableActions(selectedElement, cells);
-    remainingCarryWeight = BoardUtils.getPersonRemainingCarryWeight(selectedElement);
   };
 
   let availableActionsInfo = [];
@@ -60,56 +60,54 @@ export function ElementActionsMenu() {
     availableActionsInfo.push(details);
   };
 
-  // ==========================================
+  const clearActionData = () => {
+    dispatch(setShowMoveInfo(false));
+    dispatch(setActionItemsToSelectFrom([]));
+    dispatch(setSelectedElement(null));
+    dispatch(setSelectedCell(null));
+    dispatch(setActionHandling(""));
+  }
 
-  const itemTransferHandler = (transferType, itemId, itemCount) => {
+  const itemTransferHandler = (transferType: string, itemId: string, itemCount: string) => {
     let newCells;
 
     if (transferType == "drop") {
 
-      let dropAmount;
+      let dropAmount = 1;
 
-      let relevantItem = selectedElement.heldElements.filter(el => el.id == itemId)[0];
+      // let relevantItem: Element = selectedElement.heldElements.filter(el => el.id == itemId)[0];
 
       if (itemCount == "one") {
         dropAmount = 1;
-      } else if (itemCount == "max") {
-        dropAmount = relevantItem.count;
+      } else {
+        dropAmount = 2;
       }
 
       newCells = BoardActions.dropItem(selectedElement, itemId, cells, dropAmount);
 
-    } else if (transferType == "take") {
-      let takeAmount;
+    } else { // take
+      let takeAmount = 1;
 
-      let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-      let parentCellRelevantItem = parentCell.elements.filter(el => el.id == itemId)[0];
+      // let parentCellRelevantItem: Element = parentCell.elements.filter(el => el.id == itemId)[0];
 
       if (itemCount == "one") {
         takeAmount = 1;
-      } else if (itemCount == "max") {
-        takeAmount = Math.min(remainingCarryWeight, parentCellRelevantItem.count);
+      } else {
+        takeAmount = 2;//Math.min(BoardUtils.getPersonRemaingCarryWeight(selectedElement), parentCellRelevantItem.count);
       }
 
       newCells = BoardActions.takeItem(selectedElement, itemId, cells, takeAmount);
     }
 
     dispatch(setCells(newCells));
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([]));
+    clearActionData();
   }
 
   const dropHandler = () => {
-    dispatch(setShowMoveInfo(false));
-    dispatch(setActionHandling("drop"));
     dispatch(setActionItemsToSelectFrom(selectedElement.heldElements));
   }
 
   const takeHandler = () => {
-    dispatch(setShowMoveInfo(false));
-    dispatch(setActionHandling("take"));
     dispatch(setActionItemsToSelectFrom(BoardUtils.getItemsPersonCanTake(selectedElement, cells)));
   }
 
@@ -120,16 +118,10 @@ export function ElementActionsMenu() {
   const workHandler = () => {
     let newCells = BoardActions.makePersonWork(selectedElement, cells);
     dispatch(setCells(newCells));
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([]));
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
   const buildHandler = () => {
-    dispatch(setShowMoveInfo(false));
-    dispatch(setActionHandling("build"));
-    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let thingsToBuild = BoardUtils.getAvailableThingsToBuild(parentCell);
 
     dispatch(setActionItemsToSelectFrom(thingsToBuild));
@@ -138,159 +130,120 @@ export function ElementActionsMenu() {
   const destroyHandler = () => {
     let newCells = BoardActions.destroyBuilding(selectedElement, cells);
     dispatch(setCells(newCells));
-
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([]));
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
-  const buildElem = (type, subType) => {
+  const buildElem = (type: ElementType, subType: ElementSubType) => {
     dispatch(setShowMoveInfo(false));
     const newCells = BoardActions.build(selectedElement, type, subType, cells);
     dispatch(setCells(newCells));
 
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([]));
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
-  const getBuildingDisabled = (buildingType) => {
+  const getBuildingDisabled = (buildingType: ElementSubType) => {
     return !BoardUtils.elementsToBuildExistOnTile(buildingType, selectedElement, cells);
   }
 
   const fightHandler = () => {
-    dispatch(setShowMoveInfo(false));
-    dispatch(setActionHandling("fight"));
-    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
     let enemyPersons = BoardUtils.getEnemyPersons(selectedElement, parentCell);
     dispatch(setActionItemsToSelectFrom(enemyPersons));
   }
 
   const tradeHandler = () => {
-    dispatch(setShowMoveInfo(false));
-    dispatch(setActionHandling("trade"));
     dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings()));
   }
 
-  const handleTrade = (giveType, receiveType) => {
-    let depletingResource = {type: ElementType.Item, subType: giveType, count: 2};
-    let receivingResource = {type: ElementType.Item, subType: receiveType, count: 1}
+  const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType) => {
+    let depletingResource: Element = objectToElement({type: ElementType.Item, subType: giveType, count: 2});
+    let receivingResource: Element = objectToElement({type: ElementType.Item, subType: receiveType, count: 1});
     let newCells = BoardActions.trade(selectedElement, depletingResource, receivingResource, cells);
 
+    setTradeOfferingChosen(null);
     dispatch(setCells(newCells));
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([]));   
+    clearActionData();
   }
 
-  const fight = (enemyId) => {
+  const fight = (enemyId: string) => {
     dispatch(setShowMoveInfo(false));
-    let parentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-    let enemyElem = parentCell.elements.filter(e => e.id == enemyId)[0];
+    let enemyElem: Element = parentCell.elements.filter(e => e.id == enemyId)[0];
     const newCells = BoardActions.makePersonsFight(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
-
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([])); 
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
   const healHandler = () => {
     const newCells = BoardActions.healPerson(selectedElement, cells);
     dispatch(setCells(newCells));
-
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([])); 
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
   const reproduceHandler = () => {
     const newCells = BoardActions.reproducePerson(selectedElement, cells);
     dispatch(setCells(newCells));
-
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([])); 
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
   const shootHandler = () => {
-    dispatch(setActionHandling("shoot"));
-    dispatch(setActionItemsToSelectFrom(BoardUtils.getPersonsThatCanBeShot(selectedElement, cells)));
+    dispatch(setActionItemsToSelectFrom(
+      BoardUtils.getPersonsThatCanBeShot(selectedElement, cells))
+    );
   }
 
-  const shoot = (enemyElem) => {
+  const shoot = (enemyElem: Element) => {
     let newCells = BoardActions.shoot(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
-
-    dispatch(setActionHandling(null));
-    dispatch(setActionItemsToSelectFrom([])); 
-    dispatch(setSelectedElement(null));
-    dispatch(setSelectedCell(null));
+    clearActionData();
   }
 
-  const getActionHandler = (title) => {
+  const getActionHandler = (title: string) => {
+
+    let actionFunc;
 
     if (title == "move") {
-      return moveHandler
+      actionFunc = moveHandler
+    }
+    else if (title == "drop") {
+      actionFunc = dropHandler
+    }
+    else if (title == "take") {
+      actionFunc = takeHandler
+    }
+    else if (title == "build") {
+      actionFunc = buildHandler
+    }
+    else if (title == "destroy") {
+      actionFunc = destroyHandler
+    }
+    else if (title == "fight") {
+      actionFunc = fightHandler
+    }
+    else if (title == "work") {
+      actionFunc = workHandler
+    }
+    else if (title == "heal") {
+      actionFunc = healHandler
+    }
+    else if (title == "reproduce") {
+      actionFunc = reproduceHandler
+    }
+    else if (title == "trade") {
+      actionFunc = tradeHandler
+    }
+    else if (title == "shoot") {
+      actionFunc = shootHandler
+    } else {
+      throw new Error(`Non handled action: ${title}`)
     }
 
-    if (title == "drop") {
-      return dropHandler
+    return () => {
+      dispatch(setActionHandling(title));
+      actionFunc();
     }
-    if (title == "take") {
-      return takeHandler
-    }
-    if (title == "build") {
-      return buildHandler
-    }
-    if (title == "destroy") {
-      return destroyHandler
-    }
-    if (title == "fight") {
-      return fightHandler
-    }
-    if (title == "work") {
-      return workHandler
-    }
-    if (title == "heal") {
-      return healHandler
-    }
-    if (title == "reproduce") {
-      return reproduceHandler
-    }
-    if (title == "trade") {
-      return tradeHandler
-    }
-    if (title == "shoot") {
-      return shootHandler
-    }
-    throw new Error(`Non handled action: ${title}`)
-  }
-
-  const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
-  const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
-  const [tradeOfferingChosen, setTradeOfferingChosen] = useState(null);
-
-  const endTurnHandler = () => {
-    dispatch(endTurn());
-    setConfirmingEndTurn(false);
-  }
-
-  const resetTurnHandler = () => {
-    dispatch(revertToBeginningOfTurn());
-    setConfirmingResetTurn(false);
   }
 
   return (
-    <div className="element-actions-menu">
-      <p style={{color: colorForTeam(playerTurn)}}>Color: {nameForTeamColor(playerTurn)}</p>
-
+    <div className="element-action-options">
       { availableActionsInfo.map(aai => {
         return (<div key={aai.title}>
           <button onClick={getActionHandler(aai.title)}>{aai.title}</button>
@@ -310,7 +263,7 @@ export function ElementActionsMenu() {
                 {actionHandling} {nameForElementSubType(item.subType)} (MAX:
                 {
                   actionHandling == "take" ? <>
-                  {Math.min(remainingCarryWeight, item.count)}
+                  1
                   </>
                   :
                   <>{item.count}</>
@@ -362,12 +315,12 @@ export function ElementActionsMenu() {
       }
 
       {
-        actionHandling == "trade" &&
+        actionHandling == "trade" && 
 
         <div>
         {
         !tradeOfferingChosen ?
-          itemsToSelectFrom.map(getOffering => {
+          itemsToSelectFrom.map((getOffering: any) => {
             return (
               <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }}>
                 Trade for {nameForElementSubType(getOffering.subType)}
@@ -375,7 +328,6 @@ export function ElementActionsMenu() {
             )
           })
         :
-          
           BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
             return (<button key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen) }}>
               Give 2 {nameForElementSubType(giveOffering)}
@@ -385,7 +337,35 @@ export function ElementActionsMenu() {
         }
         </div>
       }
-  
+    </div>
+  )
+}
+
+export function ElementActionsMenu() {
+  const dispatch = useAppDispatch();
+  const playerTurn =        useAppSelector(getPlayerTurn);
+
+  // ==========================================
+
+  const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
+  const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
+
+  const endTurnHandler = () => {
+    dispatch(endTurn());
+    setConfirmingEndTurn(false);
+  }
+
+  const resetTurnHandler = () => {
+    dispatch(revertToBeginningOfTurn());
+    setConfirmingResetTurn(false);
+  }
+
+  return (
+    <div className="element-actions-menu">
+      <p style={{color: colorForTeam(playerTurn)}}>Color: {nameForTeamColor(playerTurn)}</p>
+
+      <ElementActionOptions />
+
       {
         confirmingEndTurn ? <div>
           <button onClick={endTurnHandler}>Really End Turn?</button>

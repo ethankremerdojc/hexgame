@@ -1,53 +1,53 @@
 import { Board } from '@/features/board/Board';
 import { ElementActionsMenu } from '@/features/elementActionsMenu/Menu';
 
-import {
-  getCells,
-  getSelectedCell,
-  getSelectedElement,
-  getBoardZoom,
-  getBoardOffset,
-
-  getPlayerCount,
-  setPlayerCount
-
-} from "@/features/board/boardSlice"
-
-import { useAppDispatch, useAppSelector } from '@/app/hooks'
+// import {
+//   getCells,
+//   getSelectedCell,
+//   getSelectedElement,
+//   getBoardZoom,
+//   getBoardOffset,
+//
+//   getPlayerCount,
+//   setPlayerCount
+//
+// } from "@/features/board/boardSlice"
+//
+// import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import './App.css'
 
-function DebugStats({cells, selectedCell, selectedElement, zoom, offset}) {
-  let selectedCellString = "null";
-  if (selectedCell) {
-    selectedCellString = `\{x: ${selectedCell.x}, y: ${selectedCell.y}, type: ${selectedCell.type}, elements: [ ${selectedCell.elements.length} items `;
-    selectedCellString += "]";
-  };
-
-  let selectedElemString = "null";
-  if (selectedElement) {
-    selectedElemString = `\{id: ${selectedElement.id}, type: ${selectedElement.type}, position: ${selectedElement.position}, team: ${selectedElement.team} \}`;
-  }
-  return (
-    <div className="debug-stats">
-      <p>Cells Count: {cells.length}</p>
-      <p>Selected Cell: {selectedCellString}</p>
-      <p>Selected Element: {selectedElemString}</p>
-      <p>Zoom: {zoom}</p>
-      <p>Offset: {`\{x: ${offset.x}, y: ${offset.y} \}`}</p>
-    </div>
-  )
-}
+// function DebugStats({cells, selectedCell, selectedElement, zoom, offset}) {
+//   let selectedCellString = "null";
+//   if (selectedCell) {
+//     selectedCellString = `\{x: ${selectedCell.x}, y: ${selectedCell.y}, type: ${selectedCell.type}, elements: [ ${selectedCell.elements.length} items `;
+//     selectedCellString += "]";
+//   };
+//
+//   let selectedElemString = "null";
+//   if (selectedElement) {
+//     selectedElemString = `\{id: ${selectedElement.id}, type: ${selectedElement.type}, position: ${selectedElement.position}, team: ${selectedElement.team} \}`;
+//   }
+//   return (
+//     <div className="debug-stats">
+//       <p>Cells Count: {cells.length}</p>
+//       <p>Selected Cell: {selectedCellString}</p>
+//       <p>Selected Element: {selectedElemString}</p>
+//       <p>Zoom: {zoom}</p>
+//       <p>Offset: {`\{x: ${offset.x}, y: ${offset.y} \}`}</p>
+//     </div>
+//   )
+// }
 
 function App() {
 
-  const dispatch = useAppDispatch();
-
-  const cells = useAppSelector(getCells);
-  const selectedCell = useAppSelector(getSelectedCell);
-  const selectedElement = useAppSelector(getSelectedElement);
-  const zoom = useAppSelector(getBoardZoom);
-  const offset = useAppSelector(getBoardOffset);
+  // const dispatch = useAppDispatch();
+  //
+  // const cells = useAppSelector(getCells);
+  // const selectedCell = useAppSelector(getSelectedCell);
+  // const selectedElement = useAppSelector(getSelectedElement);
+  // const zoom = useAppSelector(getBoardZoom);
+  // const offset = useAppSelector(getBoardOffset);
 
   // const playerCount = useAppSelector(getPlayerCount);
   //

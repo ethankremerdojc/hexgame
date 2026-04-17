@@ -4,11 +4,10 @@ import { createSlice } from "@reduxjs/toolkit"
 
 import {
   TeamColor,
-  HexPosition,
   ElementType,
   ElementSubType,
   CellType,
-  ElementAction
+  objectToElement
 } from "./boardTypes"
 
 import type {
@@ -20,19 +19,18 @@ import type {
 import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
-  PERSON_BASE_HEALTH,
   itemTypeForCellType
 } from "./vars"
 
 import { BoardUtils } from "./boardUtils"
 
+function getElementId(elem: any, cell: Cell): string {
+  return `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
+}
+
 function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
-  newElem.id = `${cell.x},${cell.y}|null|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`; 
-  
-  if (newElem.count === undefined) {
-    newElem.count = 1;
-  }
+  newElem.id = getElementId(elem, cell);
 
   if (newElem.type == ElementType.Person) {
     if (!newElem.heldElements) {
@@ -97,8 +95,8 @@ function updateCellElementPositions(elements: Element[]): Element[] {
 }
 
 function updateCellElements(cell: Cell): Element[] {
-
   let newElements = [...cell.elements];
+  newElements = newElements.map(el => objectToElement(el));
   newElements = updateCellElementPositions(newElements);
 
   let result = [];
@@ -133,6 +131,9 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
     let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
 
     for (var person of persons) {
+      if (person.health === null) {
+        throw new Error(`Person had no health attribute.`)
+      }
 
       let foodElementsOnTile = cell.elements.filter(el => el.subType == ElementSubType.Food);
 
@@ -201,6 +202,11 @@ export interface BoardState {
   zoom: number,
   showMoveInfo: boolean,
   playerTurn: TeamColor,
+
+  actionHandling: string,
+  actionItemsToSelectFrom: any[],
+
+  backupCells: Cell[]
 }
 
 const initialState: BoardState = {
@@ -215,10 +221,10 @@ const initialState: BoardState = {
   showMoveInfo: false,
 
   playerTurn: TeamColor.White,
-  actionHandling: null,
+  actionHandling: "",
   actionItemsToSelectFrom: [],
 
-  backupCells: null
+  backupCells: []
 };
 
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
@@ -246,7 +252,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
       itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
     };
 
-    cell.elements.push({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount});
+    cell.elements.push(objectToElement({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount}));
   }
 
   newCells = prepareCellsForStateSave(newCells);
@@ -295,7 +301,7 @@ const boardSlice = createSlice({
     setPlayerCount(state, action: PayloadAction<number>) {
       state.playerCount = action.payload;
     },
-    setActionHandling(state, action: PayloadAction<string|null>) {
+    setActionHandling(state, action: PayloadAction<string>) {
       state.actionHandling = action.payload;
     },
     setActionItemsToSelectFrom(state, action: PayloadAction<any[]>) {
@@ -316,7 +322,7 @@ const boardSlice = createSlice({
       let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
       cells = makePersonsWithActionOnTeamWork(currentPlayerTurn, state.cells);
 
-      state.cells = setupNewTurn(state.cells, state.playerTurn);
+      state.cells = setupNewTurn(cells, state.playerTurn);
       state.backupCells = state.cells;
     }
   },
@@ -330,8 +336,8 @@ export const getBoardOffset = (state: RootState): Coordinate => state.board.offs
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
 export const getPlayerTurn = (state: RootState): TeamColor => state.board.playerTurn;
 export const getPlayerCount = (state: RootState): number => state.board.playerCount;
-export const getActionHandling = (state: RootState): number => state.board.actionHandling;
-export const getActionItemsToSelectFrom = (state: RootState): number => state.board.actionItemsToSelectFrom;
+export const getActionHandling = (state: RootState): string => state.board.actionHandling;
+export const getActionItemsToSelectFrom = (state: RootState): any[] => state.board.actionItemsToSelectFrom;
 
 export const { 
   setCells,

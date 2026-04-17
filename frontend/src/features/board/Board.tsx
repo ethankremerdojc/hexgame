@@ -17,8 +17,8 @@ import {
   getBoardOffset, setBoardOffset,
   getShowMoveInfo, setShowMoveInfo,
   getPlayerTurn, getPlayerCount,
-  setActionHandling, getActionHandling,
-  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
+  setActionHandling,
+  setActionItemsToSelectFrom,
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -255,7 +255,7 @@ export function Board() {
         if (selectedElement) {
           // selected an element while there was already one selected, reset menu things.
           dispatch(setShowMoveInfo(false));
-          dispatch(setActionHandling(null));
+          dispatch(setActionHandling(""));
           dispatch(setActionItemsToSelectFrom([]));
         }
 
@@ -267,7 +267,7 @@ export function Board() {
         //
         // below only make sense when person is selected
         dispatch(setShowMoveInfo(false));
-        dispatch(setActionHandling(null));
+        dispatch(setActionHandling(""));
         dispatch(setActionItemsToSelectFrom([]));
 
         if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {

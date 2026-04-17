@@ -1,5 +1,7 @@
+import type { TeamColor } from "./boardTypes"
+
 import {
-  ElementType, ElementSubType, CellType
+  ElementSubType, CellType
 } from "./boardTypes"
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
@@ -80,7 +82,7 @@ export const ELEMENT_ACTION_DETAILS: object[] = [
   }
 ]
 
-export function getBuildingCost(elemSubType: ElementType) {
+export function getBuildingCost(elemSubType: ElementSubType) {
   let ingredients = [];
 
   switch (elemSubType) {
@@ -145,6 +147,7 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 5
       })
+      break;
     case ElementSubType.Cart:
       ingredients.push({
         subType: ElementSubType.Wood,
@@ -154,16 +157,8 @@ export function getBuildingCost(elemSubType: ElementType) {
         subType: ElementSubType.Ore,
         count: 1
       })
+      break;
 
-
-
-
-
-    case ElementSubType.Villager:
-      ingredients.push({
-        subType: ElementSubType.Food,
-        count: 10
-      })
     default:
       break;
   }
@@ -171,7 +166,7 @@ export function getBuildingCost(elemSubType: ElementType) {
   return ingredients
 }
 
-export function nameForElementSubType(elemSubType: ElementType): string {
+export function nameForElementSubType(elemSubType: ElementSubType): string {
   return [
     "Capital",
     "Village",
@@ -193,7 +188,7 @@ export function nameForElementSubType(elemSubType: ElementType): string {
   ][elemSubType]
 }
 
-export function getActionDetails(actionType: number): ActionDetails {
+export function getActionDetails(actionType: number): any {
   return ELEMENT_ACTION_DETAILS[actionType]
 }
 
@@ -224,7 +219,7 @@ export function nameForTeamColor(color: TeamColor): string {
   ][color]
 }
 
-export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
+export function itemTypeForCellType(cellType: CellType): ElementSubType {
   if (cellType == CellType.Field) {
     return ElementSubType.Food
   }
@@ -234,6 +229,5 @@ export function itemTypeForCellType(cellType: CellType): ElementSubType|null {
   if (cellType == CellType.Mountain) {
     return ElementSubType.Ore
   }
-
-  return null
+  throw new Error(`unhandled cell type`)
 }

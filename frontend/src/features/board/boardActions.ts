@@ -1,19 +1,18 @@
 import type {
-  Cell, Element, Coordinate
+  Cell, Element
 } from "./boardTypes"
 
 import {
-  HexPosition, ElementType, ElementSubType, ElementAction, CellType,
+  ElementType, ElementSubType, ElementAction, CellType,
+  objectToElement,
 } from "./boardTypes"
 
 import {
-  PERSON_MAX_CARRY_WEIGHT,
   PERSON_BASE_DAMAGE,
   SHIELD_ARMOR_INCREASE_AMOUNT,
   SWORD_DAMAGE_INCREASE_AMOUNT,
   PERSON_BASE_HEALTH,
-  getBuildingCost,
-  nameForElementSubType
+  getBuildingCost
 } from "./vars"
 
 import { BoardUtils } from "./boardUtils"
@@ -69,15 +68,22 @@ export default class BoardActions {
       }
     }
 
+    if (!elemParentCell) {
+      throw new Error("Could not find parent in clone")
+    }
+
     for (var elem of elemParentCell.elements) {
       if (elem.id == personElem.id) {
         newPersonElem = elem;
       }
     }
+    if (!newPersonElem) {
+      throw new Error("Could not find person in clone")
+    }
 
     // if count is max
 
-    let elementToDrop = newPersonElem.heldElements.filter(e => e.id == droppedItemId)[0];
+    let elementToDrop = newPersonElem.heldElements.filter((e: Element) => e.id == droppedItemId)[0];
 
     // create new element on the tile, will be combined automatically in the slice
     let copiedDroppedElement = structuredClone(elementToDrop);
@@ -86,7 +92,7 @@ export default class BoardActions {
     elementToDrop.count -= count;
 
     if (elementToDrop.count < 1) {
-      newPersonElem.heldElements = newPersonElem.heldElements.filter(e => e.id != elementToDrop.id);
+      newPersonElem.heldElements = newPersonElem.heldElements.filter((e: Element) => e.id != elementToDrop.id);
     }
 
     if (copiedDroppedElement.subType == ElementSubType.Cart) {
@@ -108,25 +114,31 @@ export default class BoardActions {
         elemParentCell = cell; 
       }
     }
+    if (!elemParentCell) {
+      throw new Error("Could not find parent in clone")
+    }
 
     for (var elem of elemParentCell.elements) {
       if (elem.id == personElem.id) {
         newPersonElem = elem;
       }
     }
+    if (!newPersonElem) {
+      throw new Error("Could not find person in clone")
+    }
 
-    let elementToTake = elemParentCell.elements.filter(e => e.id == takenItemId)[0];
+    let elementToTake = elemParentCell.elements.filter((e: Element) => e.id == takenItemId)[0];
 
     if (count == elementToTake.count) {
       // just take actual item and move it
       newPersonElem.heldElements.push(elementToTake);
-      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+      elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
     } else {
       let copiedTakenElement = structuredClone(elementToTake);
       copiedTakenElement.count = count;
       newPersonElem.heldElements.push(copiedTakenElement);
 
-      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != takenItemId);
+      elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
       let newParentChild = structuredClone(elementToTake);
       newParentChild.count -= count;
       elemParentCell.elements.push(newParentChild);
@@ -139,7 +151,7 @@ export default class BoardActions {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
 
-    let newEl = {type: elementType, subType: elementSubType};
+    let newEl: any = {type: elementType, subType: elementSubType};
 
     if (elementType == ElementType.Person || elementSubType == ElementSubType.Village) {
       newEl.team = personElem.team;
@@ -151,9 +163,9 @@ export default class BoardActions {
       newEl.hasActionAvailable = false;
     }
 
-    elemParentCell.elements.push(newEl);
+    elemParentCell.elements.push(objectToElement(newEl));
 
-    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    let newPerson = elemParentCell.elements.filter((e: Element) => e.id == personElem.id)[0];
     newPerson.hasActionAvailable = false;
 
     let resourcesRequired = getBuildingCost(elementSubType);
@@ -164,20 +176,20 @@ export default class BoardActions {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
     elemParentCell.elements = elemParentCell.elements.filter(e => e.type != ElementType.Building);
-    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    let newPerson = elemParentCell.elements.filter((e: Element) => e.id == personElem.id)[0];
     newPerson.hasActionAvailable = false;
     return newCells
   }
 
   static doDamage(agressor: Element, defender: Element) {
 
-    function getShieldFactor(person) {
-      let isHoldingShield = person.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+    function getShieldFactor(person: Element) {
+      let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Shield).length > 0;
       return isHoldingShield ? SHIELD_ARMOR_INCREASE_AMOUNT : 0
     }
 
-    function getSwordFactor(person) {
-      let isHoldingShield = person.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
+    function getSwordFactor(person: Element) {
+      let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Sword).length > 0;
       return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
     }
 
@@ -258,7 +270,7 @@ export default class BoardActions {
   static trade(personElem: Element, givenItem: Element, receivedItem: Element, cells: Cell[]): Cell[] {
     let newCells = BoardUtils.depleteResources([givenItem], personElem, cells);
     let parentCell = BoardUtils.getElementParentCell(personElem, newCells);
-    let newPerson = parentCell.elements.filter(el => el.id == personElem.id)[0];
+    let newPerson = parentCell.elements.filter((el: Element) => el.id == personElem.id)[0];
 
     newPerson.heldElements.push(receivedItem);
 
@@ -270,15 +282,15 @@ export default class BoardActions {
     let parentCell = BoardUtils.getElementParentCell(personToShoot, newCells);
 
     let shooterParentCell = BoardUtils.getElementParentCell(personShooting, newCells);
-    let newPersonShooting = shooterParentCell.elements.filter(el => el.id == personShooting.id)[0];
+    let newPersonShooting = shooterParentCell.elements.filter((el: Element) => el.id == personShooting.id)[0];
     newPersonShooting.hasActionAvailable = false;
 
-    let newPersonToShoot = parentCell.elements.filter(el => el.id == personToShoot.id)[0];
-    let hurtTargetElem = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
+    let newPersonToShoot = parentCell.elements.filter((el: Element) => el.id == personToShoot.id)[0];
+    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
 
-    if (!hurtTargetElem) {
-      parentCell.elements = [...elemParentCell.elements, ...newPerson.heldElements];
-      parentCell.elements = elemParentCell.elements.filter(e => e.id != newPerson.id);
+    if (!hurtPerson) {
+      parentCell.elements = [...parentCell.elements, ...newPersonToShoot.heldElements];
+      parentCell.elements = parentCell.elements.filter((e: Element) => e.id != newPersonToShoot.id);
     }
     return newCells
   }
@@ -294,28 +306,12 @@ export default class BoardActions {
     }
 
     const elementParent = BoardUtils.getElementParentCell(personElem, cells);
-    let personElements = [], buildingElements = [], itemElements = [];
-
-    for (var elem of elementParent.elements) {
-      if (elem.type == ElementType.Person) {
-        personElements.push(elem);
-      }
-      if (elem.type == ElementType.Building) {
-        buildingElements.push(elem);
-      }
-      if (elem.type == ElementType.Item) {
-        itemElements.push(elem);
-      }
-    }
 
     let result = [ElementAction.Move];
 
-    let capitalExists = buildingElements[0] && buildingElements[0].subType == ElementSubType.Capital;
-    let villageExists = buildingElements[0] && buildingElements[0].subType == ElementSubType.Village;
-
     result.push(ElementAction.Build);
 
-    if (!capitalExists && elementParent.elements.filter(el => el.type == ElementType.Building).length > 0) {
+    if (BoardUtils.personCanDestroy(personElem, cells)) {
       result.push(ElementAction.Destroy);
     }
     
@@ -328,7 +324,6 @@ export default class BoardActions {
       result.push(ElementAction.Drop)
     };
 
-    // also if itemElements are not too much weight
     if (BoardUtils.personCanTakeAnyItem(personElem, cells)) {
       result.push(ElementAction.Take)
     }
@@ -341,7 +336,7 @@ export default class BoardActions {
     if (personElem.health < PERSON_BASE_HEALTH && BoardUtils.resourcesExistForPerson(resourcesForHealing, personElem, cells)) {
       result.push(ElementAction.Heal)
     }
-
+    
     if (BoardUtils.personCanReproduce(personElem, cells)) {
       result.push(ElementAction.Reproduce)
     }
