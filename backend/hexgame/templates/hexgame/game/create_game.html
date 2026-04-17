@@ -6,10 +6,75 @@
 <body>
     <h1>Create Game</h1>
 
-    <form method="post">
+    <form method="post" id="createGameForm">
         {% csrf_token %}
         {{ form.as_p }}
+
+        <h1>Preview</h1>
+        <button onclick="generatePreview()" type="button">Generate</button>
+        <div id="iframeContainer">
+        </div>
+
         <button type="submit">Create game</button>
     </form>
+    <script defer>
+
+      let generatedData = null;
+
+      function generatePreview() {
+        let usernames = document.getElementById("id_usernames").value;
+        console.log(usernames);
+        if (!usernames) {
+          alert("please place at least one player that isn't you.")
+          return
+        }
+        let playerCount = 1 + usernames.split(",").length;
+        let newIframePath = `/game/iframe/?view_only=1&player_count=${playerCount}`;
+        let iframeContainer = document.getElementById("iframeContainer");
+        iframeContainer.innerHTML = `<iframe id="previewIframe" width="720px" height="720px" src="${newIframePath}"></iframe>`;
+
+
+        setTimeout(() => {requestData().then(response => {
+          console.log("received", response, "from iframe");
+          let cellDataInput = document.getElementById("id_celldata");
+          cellDataInput.value = response.cells;
+        })}, 100);
+      }
+
+      function requestData() {
+        const iframe = document.getElementById("previewIframe");
+        const requestId = crypto.randomUUID();
+
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            window.removeEventListener("message", onMessage);
+            reject(new Error("Timed out waiting for iframe response"));
+          }, 5000);
+
+          function onMessage(event) {
+            const msg = event.data;
+            if (
+              msg?.type === "APP_DATA_RESPONSE" &&
+              msg?.requestId === requestId
+            ) {
+              clearTimeout(timeout);
+              window.removeEventListener("message", onMessage);
+              resolve(msg.payload);
+            }
+          }
+
+          window.addEventListener("message", onMessage);
+
+          iframe.contentWindow.postMessage(
+            {
+              type: "APP_DATA_REQUEST",
+              requestId,
+            },
+            "http://localhost:8001"
+          );
+        });
+      }
+
+    </script>
 </body>
 </html>

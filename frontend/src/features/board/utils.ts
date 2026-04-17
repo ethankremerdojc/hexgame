@@ -8,6 +8,19 @@ export const randomItem = (arr: any[]): any => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+export function getCSRFToken(): string {
+  const name = "csrftoken=";
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.startsWith(name)) {
+      return cookie.substring(name.length);
+    }
+  }
+
+  return "";
+}
 
 // Below two have both the names and numbers if you do values, otherwise reversed
 // White, Purple, Red, 0, 1, 2

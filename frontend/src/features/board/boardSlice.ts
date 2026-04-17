@@ -24,6 +24,8 @@ import {
 
 import { BoardUtils } from "./boardUtils"
 
+import { getCSRFToken } from "./utils"
+
 function getElementId(elem: any, cell: Cell): string {
   return `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
 }
@@ -206,7 +208,9 @@ export interface BoardState {
   actionHandling: string,
   actionItemsToSelectFrom: any[],
 
-  backupCells: Cell[]
+  backupCells: Cell[],
+  viewOnly: boolean,
+  gameId: number
 }
 
 const initialState: BoardState = {
@@ -224,7 +228,9 @@ const initialState: BoardState = {
   actionHandling: "",
   actionItemsToSelectFrom: [],
 
-  backupCells: []
+  backupCells: [],
+  viewOnly: false,
+  gameId: -1
 };
 
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
@@ -259,6 +265,30 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   return newCells
 }
 
+async function postUpdateToBackend(cells: Cell[], playerTurn: TeamColor, gameId: number) {
+  const formData = new URLSearchParams();
+
+  formData.append("game_id", String(gameId));
+  formData.append("cells", JSON.stringify(cells));
+  formData.append("playerTurn", String(playerTurn));
+
+  const response = await fetch("/game/update/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": getCSRFToken(), // required for Django
+    },
+    body: formData.toString(),
+    credentials: "include", // ensures cookies (session + CSRF) are sent
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  return await response.json(); // or .text() depending on your view
+}
+
 const boardSlice = createSlice({
   name: "board",
   initialState,
@@ -268,8 +298,6 @@ const boardSlice = createSlice({
       let newCells = prepareCellsForStateSave(cells);
       state.cells = newCells;
     },
-
-
     setBackupCells(state, action: PayloadAction<Cell[]>) {
       state.backupCells = action.payload;
     },
@@ -324,6 +352,16 @@ const boardSlice = createSlice({
 
       state.cells = setupNewTurn(cells, state.playerTurn);
       state.backupCells = state.cells;
+
+      postUpdateToBackend(state.cells, state.playerTurn, state.gameId).then((resp: object) => {
+        console.log("successfully posted update to server!", resp)
+      });
+    },
+    setViewOnly(state, action: PayloadAction<boolean>) {
+      state.viewOnly = action.payload;
+    },
+    setGameId(state, action: PayloadAction<number>) {
+      state.gameId = action.payload;
     }
   },
 });
@@ -338,6 +376,8 @@ export const getPlayerTurn = (state: RootState): TeamColor => state.board.player
 export const getPlayerCount = (state: RootState): number => state.board.playerCount;
 export const getActionHandling = (state: RootState): string => state.board.actionHandling;
 export const getActionItemsToSelectFrom = (state: RootState): any[] => state.board.actionItemsToSelectFrom;
+export const getViewOnly = (state: RootState): boolean => state.board.viewOnly;
+export const getGameId = (state: RootState): number => state.board.gameId;
 
 export const { 
   setCells,
@@ -351,7 +391,10 @@ export const {
   setActionHandling,
   setActionItemsToSelectFrom,
   revertToBeginningOfTurn,
-  endTurn
+  endTurn,
+  setViewOnly,
+  setGameId,
+  setPlayerTurn
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

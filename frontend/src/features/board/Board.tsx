@@ -10,7 +10,7 @@ import {
 } from "./boardTypes"
 
 import {
-  getCells, setCells, setBackupCells,
+  getCells, setCells,
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
@@ -26,10 +26,6 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import {
   BoardRenderer
 } from "./boardRenderer.ts";
-
-import {
-  BoardGenerator
-} from "./boardGenerator.ts";
 
 import {
   BoardUtils
@@ -81,7 +77,7 @@ function getSelectedElementFromMousePos(
   return null
 }
 
-export function Board() {
+export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasHeight: number}) {
 
   const dispatch = useAppDispatch();
 
@@ -98,8 +94,6 @@ export function Board() {
   const playerCount =       useAppSelector(getPlayerCount);
 
   let initialRadius =   35;
-  let canvasWidth =     700;
-  let canvasHeight =    700;
 
   let hexRadius = initialRadius*zoom;
   let qcw = canvasWidth / 4;
@@ -110,17 +104,6 @@ export function Board() {
 
   let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
   let maxOffsetY = 0.5*hexRadius+qch;
-
-  useEffect(() => {
-    if (cells.length === 0 && playerCount !== 0) {
-      const BG = new BoardGenerator();
-      const newBoard = BG.generateBoard(
-        hexRadius, canvasWidth, canvasHeight, playerCount
-      );
-      dispatch(setCells(newBoard));
-      dispatch(setBackupCells(newBoard));
-    }
-  }, [cells, dispatch, playerCount]);
 
   useEffect(() => {
     if (cells.length === 0) return;

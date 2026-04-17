@@ -4,64 +4,124 @@ import { Board } from '@/features/board/Board';
 import { ElementActionsMenu } from '@/features/elementActionsMenu/Menu';
 
 import {
+  BoardGenerator
+} from "@/features/board/boardGenerator.ts";
+
+import {
+  getCells,
+  setCells, setBackupCells,
   getPlayerCount,
-  setPlayerCount
+  setPlayerCount,
+  setPlayerTurn,
+  setViewOnly, getViewOnly,
+  setGameId
 } from "@/features/board/boardSlice"
+
+import {
+nameForTeamColor
+} from "@/features/board/vars"
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import './App.css'
 
-function getPlayerCountFromUrl(): number {
-  const params = new URLSearchParams(window.location.search);
-  const playerCount = params.get('playerCount');
-  if (!playerCount) {
-    console.log("no player count provided.")
-    return 4
+declare global {
+  interface Window {
+    __REACT_CONTEXT__?: {
+      game: any | null;
+      playerCount: number | null;
+      viewOnly: boolean;
+    };
   }
-  return Number(playerCount)
 }
 
-// function DebugStats({cells, selectedCell, selectedElement, zoom, offset}) {
-//   let selectedCellString = "null";
-//   if (selectedCell) {
-//     selectedCellString = `\{x: ${selectedCell.x}, y: ${selectedCell.y}, type: ${selectedCell.type}, elements: [ ${selectedCell.elements.length} items `;
-//     selectedCellString += "]";
-//   };
-//
-//   let selectedElemString = "null";
-//   if (selectedElement) {
-//     selectedElemString = `\{id: ${selectedElement.id}, type: ${selectedElement.type}, position: ${selectedElement.position}, team: ${selectedElement.team} \}`;
-//   }
-//   return (
-//     <div className="debug-stats">
-//       <p>Cells Count: {cells.length}</p>
-//       <p>Selected Cell: {selectedCellString}</p>
-//       <p>Selected Element: {selectedElemString}</p>
-//       <p>Zoom: {zoom}</p>
-//       <p>Offset: {`\{x: ${offset.x}, y: ${offset.y} \}`}</p>
-//     </div>
-//   )
-// }
+const BACKEND_CONTEXT = window.__REACT_CONTEXT__;
 
 function App() {
 
   const dispatch = useAppDispatch();
   const playerCount = useAppSelector(getPlayerCount);
+  const cells = useAppSelector(getCells);
+  const viewOnly = useAppSelector(getViewOnly);
+
+  let canvasSize = 800;
+  let hexRadius = 40;
 
   useEffect(() => {
-    if (playerCount === 0) {
-      let urlPlayerCount = getPlayerCountFromUrl();
-      console.log(urlPlayerCount);
-      dispatch(setPlayerCount(urlPlayerCount));
+    if (cells.length === 0 || playerCount == 0) {
+      let newPlayerCount = 4;
+
+      console.log("BACKEND CONTEXT", BACKEND_CONTEXT)
+
+      if (BACKEND_CONTEXT !== undefined) {
+
+        if (BACKEND_CONTEXT.viewOnly) {
+          dispatch(setViewOnly(true));
+        }
+
+        if (BACKEND_CONTEXT.game) {
+          console.log(nameForTeamColor(BACKEND_CONTEXT.game.current_player_turn))
+
+          dispatch(setCells(BACKEND_CONTEXT.game.board_state));
+          dispatch(setBackupCells(BACKEND_CONTEXT.game.board_state));
+          dispatch(setPlayerCount(BACKEND_CONTEXT.game.players.length));
+          dispatch(setPlayerTurn(BACKEND_CONTEXT.game.current_player_turn));
+          dispatch(setGameId(BACKEND_CONTEXT.game.id));
+          return
+        } else if (BACKEND_CONTEXT.playerCount) {
+          newPlayerCount = BACKEND_CONTEXT.playerCount;
+        }
+      }
+
+      console.log(BACKEND_CONTEXT)
+      dispatch(setPlayerCount(newPlayerCount))
+
+      const BG = new BoardGenerator();
+      const newBoard = BG.generateBoard(
+        hexRadius, canvasSize, canvasSize, newPlayerCount
+      );
+
+      dispatch(setCells(newBoard));
+      dispatch(setBackupCells(newBoard));
     }
-  }, [dispatch, playerCount]);
+  }, [cells, dispatch, playerCount]);
+
+  console.log("View only: ", viewOnly);
+
+
+  useEffect(() => {
+    function onMessage(event: any) {
+      const msg = event.data;
+      if (msg?.type === "APP_DATA_REQUEST") {
+        const data = {
+          cells: JSON.stringify(cells)
+        };
+
+        event.source.postMessage(
+          {
+            type: "APP_DATA_RESPONSE",
+            requestId: msg.requestId,
+            payload: data,
+          },
+          event.origin
+        );
+      }
+    }
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [dispatch, cells]);
+
+  console.log(window.innerWidth, window.screen.width);
 
   return (
     <>
       <section id="center">
-        <Board />
-        <ElementActionsMenu />
+        <Board 
+          canvasWidth={Math.min(document.documentElement.clientWidth-50, 900)} 
+          canvasHeight={document.documentElement.clientHeight-300} 
+        />
+        { !viewOnly && <ElementActionsMenu /> }
       </section>
     </>
   )

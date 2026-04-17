@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .views import home_view, register_view, game_view, create_game_view, game_iframe
+from .views import *
 
 urlpatterns = [
     path("", home_view, name="home"),
@@ -15,5 +15,6 @@ urlpatterns = [
     # Game
     path("game/<int:game_id>/", game_view, name="game"),
     path("game/iframe/", game_iframe, name="game_iframe"),
+    path("game/update/", update_game, name="update_game"),
     path("game/create/", create_game_view, name="create_game"),
 ]

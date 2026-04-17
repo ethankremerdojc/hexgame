@@ -8,7 +8,8 @@ class CreateGameForm(forms.Form):
         help_text="Enter usernames separated by commas."
     )
     minutes_per_turn = forms.IntegerField(min_value=1, max_value=200)
-    kick_if_inactive = forms.BooleanField()
+    kick_if_inactive = forms.BooleanField(required=False)
+    celldata = forms.CharField(widget=forms.HiddenInput(), required=True)
 
     def clean_usernames(self):
         raw_value = self.cleaned_data["usernames"]

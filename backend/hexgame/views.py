@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 
 from backend.settings import BASE_DIR
@@ -46,11 +46,12 @@ def create_game_view(request):
             users = form.cleaned_data["usernames"]
             minutes_per_turn = form.cleaned_data["minutes_per_turn"]
             kick_if_inactive = form.cleaned_data["kick_if_inactive"]
+            celldata = form.cleaned_data["celldata"]
 
             with transaction.atomic():
                 game = Game.objects.create(
                     current_player_turn=0,
-                    board_state={},   # or whatever your initial board state should be
+                    board_state=json.loads(celldata),   # or whatever your initial board state should be
                     minutes_per_turn=minutes_per_turn,
                     kick_if_inactive=kick_if_inactive,
                 )
@@ -76,16 +77,22 @@ def game_view(request, game_id):
     return render(request, "hexgame/game/game.html", {"game": game})
 
 @login_required
-def game_iframe(request, game_id=None, player_count=None):
+def game_iframe(request):
+
+    game_id = request.GET.get("game_id")
+    player_count = request.GET.get("player_count")
+    view_only = request.GET.get("view_only", False)
+
     if game_id:
-        game = get_object_or_404(Game)
+        game = get_object_or_404(Game, pk=game_id)
         game = GameSerializer(game).data
     else:
         game = None
 
     react_context = json.dumps({
         "game": game,
-        "player_count": player_count
+        "playerCount": player_count,
+        "viewOnly": view_only,
     })
 
     index_file = os.path.join(BASE_DIR, "hexgame/static/gameBuild/index.html")
@@ -95,5 +102,20 @@ def game_iframe(request, game_id=None, player_count=None):
 
     html = html.replace(
         "</head>",
-        f"<script>window.__GAME_CONTEXT__ = {context_data};</script></head>"
+        f"<script>window.__REACT_CONTEXT__ = {react_context};</script></head>"
     )
+
+    return HttpResponse(html)
+
+@login_required
+def update_game(request):
+    game_id = request.POST.get("game_id")
+    game = get_object_or_404(Game, pk=game_id)
+
+    new_cells = request.POST.get("cells")
+    new_player_turn = request.POST.get("playerTurn")
+
+    game.board_state = json.loads(new_cells)
+    game.current_player_turn = new_player_turn
+    game.save()
+    return JsonResponse({'result': 'success'})

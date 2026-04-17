@@ -112,3 +112,8 @@ STATIC_URL = 'assets/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "hexgame/static/gameBuild/assets")
 ]
+
+
+
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
