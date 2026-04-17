@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game {{ game.id }}</title>
+</head>
+<body>
+    <h1>Game {{ game.id }}</h1>
+
+    <p><strong>Current Player Turn:</strong> {{ game.current_player_turn }}</p>
+    <p><strong>Minutes Per Turn:</strong> {{ game.minutes_per_turn }}</p>
+    <p><strong>Kick If Inactive:</strong> {{ game.kick_if_inactive }}</p>
+    <p><strong>Created:</strong> {{ game.creation_time }}</p>
+
+    <h2>Players</h2>
+    <ul>
+        {% for player in game.players %}
+            <li>{{ player.user.username }}</li>
+        {% empty %}
+            <li>No players</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Board State</h2>
+    <pre>{{ game.board_state|safe }}</pre>
+</body>
+</html>
