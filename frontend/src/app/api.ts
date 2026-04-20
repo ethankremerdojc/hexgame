@@ -9,7 +9,7 @@ function getAPILocation() {
   if (window.location.host === "localhost:5173") {
     return "http://localhost:8001"
   }
-  return "http://" + window.location.host
+  return "https://" + window.location.host
 }
 
 let API_HOST = getAPILocation();
