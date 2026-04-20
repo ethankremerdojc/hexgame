@@ -25,6 +25,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://hexgame.ethankremer.com"
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://hexgame.ethankremer.com",
+    "http://localhost:5173",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
