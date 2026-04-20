@@ -45,7 +45,7 @@ declare global {
   }
 }
 
-export const TESTING = true;
+export const TESTING = false;
 
 let TEST_GAME_ID = 6;
 
