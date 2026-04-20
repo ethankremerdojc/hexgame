@@ -19,7 +19,7 @@ export const SWORD_DAMAGE_INCREASE_AMOUNT = 3;
 export const CELL_INFO_BY_TYPE = {
   0: { // Field
     color: "rgb(16 108 14)",
-    weight: 1
+    weight: 0.5
   },
   1: { // Desert
     color: "rgb(32 35 196)",
