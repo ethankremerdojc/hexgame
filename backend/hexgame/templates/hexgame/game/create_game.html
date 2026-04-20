@@ -69,7 +69,7 @@
               requestId,
             },
 
-            window.location.includes("local") ? "http://localhost:8001" : "https://hexgame.ethankremer.com"
+            window.location.host.includes("local") ? "http://localhost:8001" : "https://hexgame.ethankremer.com"
           );
         });
       }
