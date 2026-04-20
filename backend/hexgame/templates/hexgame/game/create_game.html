@@ -68,7 +68,8 @@
               type: "APP_DATA_REQUEST",
               requestId,
             },
-            "http://localhost:8001"
+
+            window.location.includes("local") ? "http://localhost:8001" : "https://hexgame.ethankremer.com"
           );
         });
       }
