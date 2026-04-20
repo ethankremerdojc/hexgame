@@ -2,12 +2,24 @@ from rest_framework import serializers
 from .models import Game, Player
 from django.contrib.auth.models import User
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username"
+        ]
+
 class PlayerSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()  # or use UserSerializer if needed
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Player
-        fields = ["id", "user", "game"]
+        fields = [
+            "id",
+            "user",
+            "game"
+        ]
 
 
 class GameSerializer(serializers.ModelSerializer):

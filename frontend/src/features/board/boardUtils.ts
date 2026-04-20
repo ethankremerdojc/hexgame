@@ -399,6 +399,9 @@ export class BoardUtils {
     if (cellType == CellType.Mountain) {
       return ElementSubType.Quarry
     }
+    if (cellType == CellType.ClayField) {
+      return ElementSubType.BrickFactory
+    }
 
     return null
   }
@@ -459,6 +462,7 @@ export class BoardUtils {
 
       if (!relevantItemElement) {
         requirementsAfterTile.push({...resourceRequired});
+        continue
       }
 
       let rrc: number = resourceRequired.count ? resourceRequired.count : 1; 

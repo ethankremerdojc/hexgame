@@ -23,7 +23,6 @@
 
       function generatePreview() {
         let usernames = document.getElementById("id_usernames").value;
-        console.log(usernames);
         if (!usernames) {
           alert("please place at least one player that isn't you.")
           return
@@ -35,7 +34,6 @@
 
 
         setTimeout(() => {requestData().then(response => {
-          console.log("received", response, "from iframe");
           let cellDataInput = document.getElementById("id_celldata");
           cellDataInput.value = response.cells;
         })}, 100);

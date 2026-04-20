@@ -31,6 +31,7 @@ export enum ElementSubType {
   Farm,
   SawMill,
   Quarry,
+  BrickFactory,
 
   // persons
   Villager,
@@ -40,6 +41,7 @@ export enum ElementSubType {
   Food,
   Wood,
   Ore,
+  Clay,
   Gold,
 
   Sword,
@@ -52,7 +54,8 @@ export enum CellType {
   Field,
   Desert,
   Forest,
-  Mountain
+  Mountain,
+  ClayField
 }
 
 export type Element = {

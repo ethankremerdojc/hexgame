@@ -16,12 +16,19 @@ SECRET_KEY = 'django-insecure-qa!@v7welh(0b079!e^a@kzzcpn89#%t%)a$^azkie688qmfa@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost", "0.0.0.0",
+]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173"
+]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,6 +43,7 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -112,8 +120,5 @@ STATIC_URL = 'assets/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "hexgame/static/gameBuild/assets")
 ]
-
-
-
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

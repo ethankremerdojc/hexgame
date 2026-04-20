@@ -76,34 +76,36 @@ def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     return render(request, "hexgame/game/game.html", {"game": game})
 
-@login_required
-def game_iframe(request):
+# @login_required
+def get_game_context(request, game_id):
+    game = get_object_or_404(Game, pk=game_id)
+    game = GameSerializer(game).data
 
-    game_id = request.GET.get("game_id")
-    player_count = request.GET.get("player_count")
-    view_only = request.GET.get("view_only", False)
-
-    if game_id:
-        game = get_object_or_404(Game, pk=game_id)
-        game = GameSerializer(game).data
-    else:
-        game = None
-
-    react_context = json.dumps({
+    return JsonResponse({
         "game": game,
-        "playerCount": player_count,
-        "viewOnly": view_only,
+        "logged_in_user": request.user.username
     })
 
+@login_required
+def game_iframe(request):
     index_file = os.path.join(BASE_DIR, "hexgame/static/gameBuild/index.html")
 
     with open(index_file, "r") as f:
         html = f.read()
 
-    html = html.replace(
-        "</head>",
-        f"<script>window.__REACT_CONTEXT__ = {react_context};</script></head>"
-    )
+    player_count = request.GET.get("player_count")
+    view_only = request.GET.get("view_only", False)
+
+    if player_count or view_only:
+        react_context = json.dumps({
+            "playerCount": player_count,
+            # "viewOnly": view_only,
+        })
+
+        html = html.replace(
+            "</head>",
+            f"<script>window.__IFRAME_CONTEXT__ = {react_context};</script></head>"
+        )
 
     return HttpResponse(html)
 

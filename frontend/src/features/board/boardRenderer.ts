@@ -18,7 +18,8 @@ import {
   getGrassCanvas,
   getForestCanvas,
   getMountainCanvas,
-  getDesertCanvas
+  getDesertCanvas,
+  getClayfieldCanvas
 } from "./canvasPatterns.ts";
 import { drawSvgToCanvas } from "./utils.js";
 
@@ -28,6 +29,7 @@ import villageSvg from "./svg/house.svg?raw";
 import farmSvg from "./svg/farm.svg?raw";
 import sawmillSvg from "./svg/sawmill.svg?raw";
 import quarrySvg from "./svg/quarry.svg?raw";
+import brickFactorySvg from "./svg/brickFactory.svg?raw";
 
 //persons
 import personSvg from "./svg/person.svg?raw";
@@ -45,6 +47,7 @@ import foodSvg from "./svg/bread.svg?raw";
 import goldSvg from "./svg/coin.svg?raw";
 import woodSvg from "./svg/log.svg?raw";
 import oreSvg from "./svg/rock.svg?raw";
+import claySvg from "./svg/clay.svg?raw";
 
 function getSvgForElement(elem: Element) {
   switch (elem.subType) {
@@ -63,6 +66,9 @@ function getSvgForElement(elem: Element) {
       break;
     case ElementSubType.SawMill:
       return sawmillSvg;
+      break;
+    case ElementSubType.BrickFactory:
+      return brickFactorySvg;
       break;
 
 
@@ -86,6 +92,9 @@ function getSvgForElement(elem: Element) {
       break;
     case ElementSubType.Ore:
       return oreSvg;
+      break;
+    case ElementSubType.Clay:
+      return claySvg;
       break;
 
     case ElementSubType.Sword:
@@ -201,6 +210,9 @@ export class BoardRenderer {
       case CellType.Desert:
         canvasEl = getDesertCanvas(radius);
         break;
+      case CellType.ClayField:
+        canvasEl = getClayfieldCanvas(radius);
+        break
       default:
         throw new Error(`Can't fill cell by cell type ${cellType}`);
         break;

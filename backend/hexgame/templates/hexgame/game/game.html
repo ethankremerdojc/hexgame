@@ -6,16 +6,42 @@
 
       iframe {
         width: calc(100vw - 30px);
-        height: calc(100vh - 100px);
+        height: calc(100vh - 200px);
       }
 
+
+
     </style>
+    <!---->
+    <!-- <script defer> -->
+    <!--   window.onload = () => { -->
+    <!--     let iframe = document.getElementById("gameIframe"); -->
+    <!---->
+    <!--     function preventScroll(e) { -->
+    <!--       console.log("preventing scroll") -->
+    <!--       e.preventDefault(); -->
+    <!--     } -->
+    <!---->
+    <!--     iframe.addEventListener("mouseenter", () => { -->
+    <!--       console.log("enter") -->
+    <!--       window.addEventListener("wheel", preventScroll, { passive: false }); -->
+    <!--       window.addEventListener("touchmove", preventScroll, { passive: false }); -->
+    <!--     }); -->
+    <!---->
+    <!--     iframe.addEventListener("mouseleave", () => { -->
+    <!--       console.log("leave") -->
+    <!--       window.removeEventListener("wheel", preventScroll); -->
+    <!--       window.removeEventListener("touchmove", preventScroll); -->
+    <!--     }); -->
+    <!--   } -->
+    <!---->
+    <!-- </script> -->
 </head>
 <body>
     <h1>Game {{ game.id }}</h1>
     <p>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</p>
 
-    <iframe src="/game/iframe/?game_id={{game.id}}" />
+    <iframe src="/game/iframe/?game_id={{game.id}}" id="gameIframe" />
 
     <!-- Create Game -->
     <p>
@@ -23,5 +49,6 @@
             <button>Back Home</button>
         </a>
     </p>
+
 </body>
 </html>

@@ -19,6 +19,7 @@ import {
   getPlayerTurn, getPlayerCount,
   setActionHandling,
   setActionItemsToSelectFrom,
+  getCurrentPlayerName, getLoggedInUsername
 } from "./boardSlice.ts";
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -30,6 +31,8 @@ import {
 import {
   BoardUtils
 } from "./boardUtils.ts";
+
+import { TESTING } from "@/App.tsx"
 
 import BoardActions from "./boardActions";
 
@@ -104,6 +107,11 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
   let maxOffsetY = 0.5*hexRadius+qch;
+
+  const currentPlayerName = useAppSelector(getCurrentPlayerName);
+  const loggedInUsername = useAppSelector(getLoggedInUsername);
+
+  const thisPlayersTurn = currentPlayerName == loggedInUsername;
 
   useEffect(() => {
     if (cells.length === 0) return;
@@ -228,6 +236,8 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
+    if (!thisPlayersTurn && !TESTING) { return }
+
     let potentialSelectedCell: Cell|null = getSelectedCellFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
     if (potentialSelectedCell) {
@@ -256,8 +266,8 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
         if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 
-          let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);
-          let adjacentCells = BoardUtils.getAdjacentCells(cells, elemParentCell);
+          // let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);
+          let adjacentCells = BoardUtils.getCellsPersonCanMoveTo(selectedElement, cells);
 
           let newCells = null;
           for (var ac of adjacentCells) {
@@ -291,7 +301,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       }
     }
 
-
   };
 
   const handleMouseLeave = () => {
@@ -314,7 +323,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      style={{ border: "1px solid #ccc", background: "#898989" }}
     />
   );
 }

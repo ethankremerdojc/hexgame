@@ -1,0 +1,10 @@
+.element-actions-menu {
+  position: absolute;
+  width: min(100vw, 900px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: black;
+  bottom: 0;
+}

@@ -3,6 +3,7 @@ import grassTileSvg from "./svg/grassTile.svg?raw";
 import forestTileSvg from "./svg/forestTile.svg?raw";
 import rockTileSvg from "./svg/rockTile.svg?raw";
 import desertTileSvg from "./svg/desertTile.svg?raw";
+import clayTileSvg from "./svg/clayTile.svg?raw";
 
 function getPatternCanvas(img: string, tileWidth: number, tileHeight: number): HTMLCanvasElement {
   const tile = document.createElement("canvas");
@@ -39,4 +40,8 @@ export function getDesertCanvas(radius: number): HTMLCanvasElement {
 
 export function getForestCanvas(radius: number): HTMLCanvasElement {
   return getPatternCanvas(forestTileSvg, radius, radius);
+}
+
+export function getClayfieldCanvas(radius: number): HTMLCanvasElement {
+  return getPatternCanvas(clayTileSvg, radius, radius);
 }

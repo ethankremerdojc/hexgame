@@ -31,7 +31,11 @@ export const CELL_INFO_BY_TYPE = {
   },
   3: { // Mountain
     color: "rgb(75 69 66)",
-    weight: 0.25
+    weight: 0.3
+  },
+  4: { // Mountain
+    color: "rgb(75 69 66)",
+    weight: 0.3
   }
 }
 
@@ -91,17 +95,35 @@ export function getBuildingCost(elemSubType: ElementSubType) {
     case ElementSubType.Farm:
       ingredients.push({
         subType: ElementSubType.Wood,
-        count: 5
+        count: 3
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
+        count: 2
       })
       break;
     case ElementSubType.Quarry:
       ingredients.push({
         subType: ElementSubType.Wood,
-        count: 2
+        count: 1
       })
       ingredients.push({
         subType: ElementSubType.Ore,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
+        count: 2
+      })
+      break;
+    case ElementSubType.BrickFactory:
+      ingredients.push({
+        subType: ElementSubType.Wood,
         count: 3
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
+        count: 2
       })
       break;
     case ElementSubType.SawMill:
@@ -117,7 +139,11 @@ export function getBuildingCost(elemSubType: ElementSubType) {
     case ElementSubType.Village:
       ingredients.push({
         subType: ElementSubType.Wood,
-        count: 4
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
+        count: 2
       })
       break;
 
@@ -151,11 +177,11 @@ export function getBuildingCost(elemSubType: ElementSubType) {
     case ElementSubType.Cart:
       ingredients.push({
         subType: ElementSubType.Wood,
-        count: 2
+        count: 4
       })
       ingredients.push({
         subType: ElementSubType.Ore,
-        count: 1
+        count: 2
       })
       break;
 
@@ -173,6 +199,7 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
     "Farm",
     "SawMill",
     "Quarry",
+    "BrickFactory",
 
     "Villager",
     "Trader",
@@ -180,6 +207,7 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
     "Food",
     "Wood",
     "Ore",
+    "Clay",
     "Gold",
     "Sword",
     "Bow",
@@ -228,6 +256,9 @@ export function itemTypeForCellType(cellType: CellType): ElementSubType {
   }
   if (cellType == CellType.Mountain) {
     return ElementSubType.Ore
+  }
+  if (cellType == CellType.ClayField) {
+    return ElementSubType.Clay
   }
   throw new Error(`unhandled cell type`)
 }

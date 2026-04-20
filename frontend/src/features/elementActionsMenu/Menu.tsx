@@ -19,6 +19,8 @@ import {
   getPlayerTurn,
   setActionHandling, getActionHandling,
   setActionItemsToSelectFrom, getActionItemsToSelectFrom,
+  getCurrentPlayerName,
+  getLoggedInUsername,
   endTurn, revertToBeginningOfTurn
 } from "../board/boardSlice.ts";
 
@@ -32,6 +34,10 @@ import {
 
 import { BoardUtils } from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
+
+import { TESTING } from "@/App.tsx"
+
+import './Menu.css'
 
 function ElementActionOptions() {
   const dispatch =          useAppDispatch();
@@ -68,35 +74,19 @@ function ElementActionOptions() {
     dispatch(setActionHandling(""));
   }
 
-  const itemTransferHandler = (transferType: string, itemId: string, itemCount: string) => {
+  const itemTransferHandler = (transferType: string, itemId: string, inputId: string) => {
     let newCells;
 
+    let input: any = document.getElementById(inputId);
+    if (!input) {
+      throw new Error(`Missing input`)
+    }
+    let val = Number(input.value);
+
     if (transferType == "drop") {
-
-      let dropAmount = 1;
-
-      // let relevantItem: Element = selectedElement.heldElements.filter(el => el.id == itemId)[0];
-
-      if (itemCount == "one") {
-        dropAmount = 1;
-      } else {
-        dropAmount = 2;
-      }
-
-      newCells = BoardActions.dropItem(selectedElement, itemId, cells, dropAmount);
-
-    } else { // take
-      let takeAmount = 1;
-
-      // let parentCellRelevantItem: Element = parentCell.elements.filter(el => el.id == itemId)[0];
-
-      if (itemCount == "one") {
-        takeAmount = 1;
-      } else {
-        takeAmount = 2;//Math.min(BoardUtils.getPersonRemaingCarryWeight(selectedElement), parentCellRelevantItem.count);
-      }
-
-      newCells = BoardActions.takeItem(selectedElement, itemId, cells, takeAmount);
+      newCells = BoardActions.dropItem(selectedElement, itemId, cells, val);
+    } else {
+      newCells = BoardActions.takeItem(selectedElement, itemId, cells, val);
     }
 
     dispatch(setCells(newCells));
@@ -254,21 +244,30 @@ function ElementActionOptions() {
       { ["drop", "take"].includes(actionHandling) &&
         itemsToSelectFrom &&
         <div>{itemsToSelectFrom.map(item => {
-            return (<div id={item.key}>
-              <button onClick={() => itemTransferHandler(actionHandling, item.id, "one")}>
-                {actionHandling} {nameForElementSubType(item.subType)} (1)
-              </button>
+            
+            let maxItems;
+            if (actionHandling == "drop") {
+              maxItems = item.count
+            } else {
+              maxItems = Math.min(
+                BoardUtils.getPersonRemainingCarryWeight(selectedElement),
+                item.count
+              )
+            }
 
-              <button onClick={() => itemTransferHandler(actionHandling, item.id, "max")}>
-                {actionHandling} {nameForElementSubType(item.subType)} (MAX:
-                {
-                  actionHandling == "take" ? <>
-                  1
-                  </>
-                  :
-                  <>{item.count}</>
-                }
-                )
+            return (<div id={item.id} key={item.id} style={{
+              display: "flex",
+              flexDirection: "column",
+            }}>
+              <p>
+                {actionHandling} {nameForElementSubType(item.subType)}
+                (1 - {maxItems})
+              </p>
+              <input type="range" defaultValue={1} min={1} max={maxItems} id={`${item.id}-rangeinput`} />
+              <button
+                onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)}
+              >
+                Submit
               </button>
             </div>
             )
@@ -345,6 +344,7 @@ export function ElementActionsMenu() {
   const dispatch = useAppDispatch();
   const playerTurn =        useAppSelector(getPlayerTurn);
 
+
   // ==========================================
 
   const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
@@ -360,9 +360,19 @@ export function ElementActionsMenu() {
     setConfirmingResetTurn(false);
   }
 
+  const currentPlayerName = useAppSelector(getCurrentPlayerName);
+  const loggedInUsername = useAppSelector(getLoggedInUsername);
+
+
+  if (currentPlayerName !== loggedInUsername && !TESTING) {
+    return (<div className="element-actions-menu">
+      <p style={{color: colorForTeam(playerTurn)}}>Current Player's Turn: {currentPlayerName}</p> 
+    </div>)
+  }
+
   return (
     <div className="element-actions-menu">
-      <p style={{color: colorForTeam(playerTurn)}}>Color: {nameForTeamColor(playerTurn)}</p>
+      <p style={{color: colorForTeam(playerTurn)}}>Current Player's Turn: You</p>
 
       <ElementActionOptions />
 

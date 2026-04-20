@@ -1,6 +1,9 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
+import {
+  postUpdateToBackend 
+} from "@/app/api"
 
 import {
   TeamColor,
@@ -24,7 +27,7 @@ import {
 
 import { BoardUtils } from "./boardUtils"
 
-import { getCSRFToken } from "./utils"
+// import { getCSRFToken } from "./utils"
 
 function getElementId(elem: any, cell: Cell): string {
   return `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
@@ -193,46 +196,6 @@ function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): 
   return cells
 }
 
-export interface BoardState {
-  playerCount: number,
-  turnNumber: number,
-
-  cells: Cell[],
-  selectedCell: Cell|null,
-  selectedElement: Element|null,
-  offset: Coordinate,
-  zoom: number,
-  showMoveInfo: boolean,
-  playerTurn: TeamColor,
-
-  actionHandling: string,
-  actionItemsToSelectFrom: any[],
-
-  backupCells: Cell[],
-  viewOnly: boolean,
-  gameId: number
-}
-
-const initialState: BoardState = {
-  playerCount: 0,
-  turnNumber: 1,
-
-  cells: [],
-  selectedCell: null,
-  selectedElement: null,
-  offset: {x: 0, y: 0},
-  zoom: 1.0,
-  showMoveInfo: false,
-
-  playerTurn: TeamColor.White,
-  actionHandling: "",
-  actionItemsToSelectFrom: [],
-
-  backupCells: [],
-  viewOnly: false,
-  gameId: -1
-};
-
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
     cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
@@ -265,29 +228,49 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   return newCells
 }
 
-async function postUpdateToBackend(cells: Cell[], playerTurn: TeamColor, gameId: number) {
-  const formData = new URLSearchParams();
+export interface BoardState {
+  playerCount: number,
+  turnNumber: number,
 
-  formData.append("game_id", String(gameId));
-  formData.append("cells", JSON.stringify(cells));
-  formData.append("playerTurn", String(playerTurn));
+  cells: Cell[],
+  selectedCell: Cell|null,
+  selectedElement: Element|null,
+  offset: Coordinate,
+  zoom: number,
+  showMoveInfo: boolean,
+  playerTurn: TeamColor,
 
-  const response = await fetch("/game/update/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-CSRFToken": getCSRFToken(), // required for Django
-    },
-    body: formData.toString(),
-    credentials: "include", // ensures cookies (session + CSRF) are sent
-  });
+  actionHandling: string,
+  actionItemsToSelectFrom: any[],
 
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
-  }
-
-  return await response.json(); // or .text() depending on your view
+  backupCells: Cell[],
+  viewOnly: boolean,
+  gameId: number,
+  usernames: string[],
+  loggedInUsername: string
 }
+
+const initialState: BoardState = {
+  playerCount: 0,
+  turnNumber: 1,
+
+  cells: [],
+  selectedCell: null,
+  selectedElement: null,
+  offset: {x: 0, y: 0},
+  zoom: 1.0,
+  showMoveInfo: false,
+
+  playerTurn: TeamColor.White,
+  actionHandling: "",
+  actionItemsToSelectFrom: [],
+
+  backupCells: [],
+  viewOnly: false,
+  gameId: -1,
+  usernames: [],
+  loggedInUsername: ""
+};
 
 const boardSlice = createSlice({
   name: "board",
@@ -362,7 +345,13 @@ const boardSlice = createSlice({
     },
     setGameId(state, action: PayloadAction<number>) {
       state.gameId = action.payload;
-    }
+    },
+    setUsernames(state, action: PayloadAction<string[]>) {
+      state.usernames = action.payload;
+    },
+    setLoggedInUsername(state, action: PayloadAction<string>) {
+      state.loggedInUsername = action.payload;
+    },
   },
 });
 
@@ -378,6 +367,9 @@ export const getActionHandling = (state: RootState): string => state.board.actio
 export const getActionItemsToSelectFrom = (state: RootState): any[] => state.board.actionItemsToSelectFrom;
 export const getViewOnly = (state: RootState): boolean => state.board.viewOnly;
 export const getGameId = (state: RootState): number => state.board.gameId;
+export const getUsernames = (state: RootState): string[] => state.board.usernames;
+export const getCurrentPlayerName = (state: RootState): string => state.board.usernames[state.board.playerTurn];
+export const getLoggedInUsername = (state: RootState): string => state.board.loggedInUsername;
 
 export const { 
   setCells,
@@ -394,7 +386,9 @@ export const {
   endTurn,
   setViewOnly,
   setGameId,
-  setPlayerTurn
+  setPlayerTurn,
+  setUsernames,
+  setLoggedInUsername
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

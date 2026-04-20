@@ -181,3 +181,14 @@ export function drawSvgToCanvas(svgData: any, ctx: CanvasRenderingContext2D, x: 
   let svgImageData = svgToPath2Ds(svgData, teamColor);
   drawSvgPath2Ds(ctx, svgImageData, x, y, width, height);
 }
+
+export function getUsernamesFromGameObj(game: any): string[] {
+  let players = game.players;
+  let result: string[] = [];
+
+  for (var player of players) {
+    result.push(player.user.username);
+  }
+
+  return result
+}
