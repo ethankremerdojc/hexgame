@@ -17,10 +17,11 @@ SECRET_KEY = 'django-insecure-qa!@v7welh(0b079!e^a@kzzcpn89#%t%)a$^azkie688qmfa@
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost", "0.0.0.0", "hexgame.ethankremer.com"
+    "localhost", "0.0.0.0", "hexgame.ethankremer.com", "10.0.0.178"
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "http://10.0.0.178:5173",
     "http://localhost:5173",
     "https://hexgame.ethankremer.com"
 ]

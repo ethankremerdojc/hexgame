@@ -587,6 +587,9 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
+      <div className="nav">
+        <a href="/">Home</a>
+      </div>
       <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
       <ElementActionOptions />

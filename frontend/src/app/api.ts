@@ -10,6 +10,10 @@ function getAPILocation() {
     return "http://localhost:8001"
   }
 
+  if (window.location.host == "10.0.0.178:5173") {
+    return "http://10.0.0.178:8001"
+  }
+
   return "https://" + window.location.host
 }
 

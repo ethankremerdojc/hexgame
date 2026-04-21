@@ -101,14 +101,14 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
   let initialRadius =   35;
 
   let hexRadius = initialRadius*zoom;
-  let qcw = canvasWidth / 4;
-  let qch = canvasHeight / 4;
+  let qcw = canvasWidth;
+  let qch = canvasHeight;
 
   let minOffsetX = (-0.5*hexRadius)+(canvasWidth - canvasWidth*zoom)-qcw;
-  let maxOffsetX = 0.5*hexRadius + qcw;
+  let maxOffsetX = 0.5*hexRadius + qcw / 2;
 
   let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
-  let maxOffsetY = 0.5*hexRadius+qch;
+  let maxOffsetY = 0.5*hexRadius+qch / 2;
 
   const currentPlayerName = useAppSelector(getCurrentPlayerName);
   const loggedInUsername = useAppSelector(getLoggedInUsername);
@@ -151,6 +151,8 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
   const firstMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
   const lastMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
 
+  const lastPinchDistance = useRef<number | null>(null);
+
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current; if (!canvas) return;
 
@@ -173,20 +175,43 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     dispatch(setBoardOffset({x: newOffsetX, y: newOffsetY}));
     dispatch(setBoardZoom(newZoom))
   }
-  
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    if (!mouseIsDown.current) {
-      return
-    }
-
+  const getCanvasPoint = (
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement
+  ) => {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  };
 
+  const getTouchDistance = (touches: React.TouchList) => {
+    const [t1, t2] = [touches[0], touches[1]];
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const getTouchMidpoint = (
+    touches: React.TouchList,
+    canvas: HTMLCanvasElement
+  ) => {
+    const rect = canvas.getBoundingClientRect();
+
+    const mx =
+      ((touches[0].clientX + touches[1].clientX) / 2) - rect.left;
+    const my =
+      ((touches[0].clientY + touches[1].clientY) / 2) - rect.top;
+
+    return { mx, my };
+  };
+
+  // Mouse Move / Touch Move
+
+  const updateOffset = (mx: number, my: number) => {
     const dx = mx - lastMouseRef.current.x;
     const dy = my - lastMouseRef.current.y;
 
@@ -208,7 +233,63 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     }));
 
     lastMouseRef.current = { x: mx, y: my };
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !mouseIsDown.current) return;
+
+    const { x, y } = getCanvasPoint(e.clientX, e.clientY, canvas);
+    updateOffset(x, y);
   };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // ----- PINCH ZOOM -----
+    if (e.touches.length === 2) {
+      console.log("pinching")
+      e.preventDefault();
+
+      const dist = getTouchDistance(e.touches);
+
+      if (lastPinchDistance.current === null) {
+        lastPinchDistance.current = dist;
+        return;
+      }
+
+      const scaleFactor = dist / lastPinchDistance.current;
+      lastPinchDistance.current = dist;
+
+      let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 5);
+      newZoom = Math.round(newZoom * 10) / 10;
+
+      const zoomDif = Math.round((newZoom - zoom) * 10) / 10;
+
+      const { mx, my } = getTouchMidpoint(e.touches, canvas);
+
+      const newX = Math.round((offset.x - mx * zoomDif) * 10) / 10;
+      const newY = Math.round((offset.y - my * zoomDif) * 10) / 10;
+
+      const newOffsetX = Math.max(minOffsetX, Math.min(newX, maxOffsetX));
+      const newOffsetY = Math.max(minOffsetY, Math.min(newY, maxOffsetY));
+
+      dispatch(setBoardOffset({ x: newOffsetX, y: newOffsetY }));
+      dispatch(setBoardZoom(newZoom));
+
+      return;
+    }
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const { x, y } = getCanvasPoint(touch.clientX, touch.clientY, canvas);
+    updateOffset(x, y);
+  };
+
+
+  // Mouse Down / Touch Start
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -223,23 +304,26 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     firstMouseRef.current = { x: mx, y: my };
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    mouseIsDown.current = false;
-
-    let wasDragging = isDraggingRef.current;
-    isDraggingRef.current = false;
-
-    if (wasDragging) { return };
-
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    mouseIsDown.current = true;
+
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const mx = touch.clientX - rect.left;
+    const my = touch.clientY - rect.top;
 
-    if (!thisPlayersTurn && !TESTING) { return }
+    lastMouseRef.current = { x: mx, y: my };
+    firstMouseRef.current = { x: mx, y: my };
+  };
 
+  // Mouse up / touch end
+
+  const doSelectionStuffs = (mx: number, my: number) => {
     let potentialSelectedCell: Cell|null = getSelectedCellFromMousePos(mx, my, hexRadius, offset.x, offset.y, cells);
 
     if (potentialSelectedCell) {
@@ -288,7 +372,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
         dispatch(setSelectedElement(null));
       }
 
-
       let cellSetNull = false;
 
       if (selectedCell) {
@@ -302,8 +385,54 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
         dispatch(setSelectedCell(potentialSelectedCell));
       }
     }
+  }
 
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    mouseIsDown.current = false;
+
+    let wasDragging = isDraggingRef.current;
+    isDraggingRef.current = false;
+
+    if (wasDragging) { return };
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if (!thisPlayersTurn && !TESTING) { return }
+
+    doSelectionStuffs(mx, my);
   };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    lastPinchDistance.current = null;
+    mouseIsDown.current = false;
+
+    const wasDragging = isDraggingRef.current;
+    isDraggingRef.current = false;
+
+    if (wasDragging) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    if (!thisPlayersTurn && !TESTING) return;
+
+    // touchend has no active touches left, so use changedTouches
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = touch.clientX - rect.left;
+    const my = touch.clientY - rect.top;
+
+    doSelectionStuffs(mx, my);
+  };
+
+  // Mouse Leave
 
   const handleMouseLeave = () => {
     isDraggingRef.current = false;
@@ -320,11 +449,20 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       ref={canvasRef}
       width={canvasWidth}
       height={canvasHeight}
+
+      // DESKTOP
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+
+      // MOBILE
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      style={{ touchAction: "none" }}
     />
   );
 }
