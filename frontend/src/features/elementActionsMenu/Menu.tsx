@@ -266,8 +266,8 @@ function ElementActionOptions() {
     dispatch(setActionHandling(""));
   }
 
-  const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType) => {
-    let depletingResource: Element = objectToElement({type: ElementType.Item, subType: giveType, count: 2});
+  const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType, giveAmount: number) => {
+    let depletingResource: Element = objectToElement({type: ElementType.Item, subType: giveType, count: giveAmount});
     let receivingResource: Element = objectToElement({type: ElementType.Item, subType: receiveType, count: 1});
     let newCells = BoardActions.trade(selectedElement, depletingResource, receivingResource, cells);
 
@@ -528,8 +528,12 @@ function ElementActionOptions() {
               })
             :
               BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
-                return (<button key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen) }}>
-                  Give 2 {nameForElementSubType(giveOffering)}
+                return (<button className="fullwidth-option" key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2) }} 
+                          disabled={
+                            giveOffering == ElementSubType.Horse && 
+                              BoardUtils.elWithHighestCount(selectedElement) &&
+                              BoardUtils.elWithHighestCount(selectedElement).count < 7 }>
+                  Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2} {nameForElementSubType(giveOffering)}
                 </button>)
               })
               

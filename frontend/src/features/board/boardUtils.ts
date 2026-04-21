@@ -682,6 +682,7 @@ export class BoardUtils {
       { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Ore, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Gold, count: 1 },
+      { type: ElementType.Item, subType: ElementSubType.Horse, count: 1 },
     ]
   }
 
@@ -714,6 +715,29 @@ export class BoardUtils {
     }
 
     return result
+  }
+
+  static elWithHighestCount(personElem: Element|null): Element {
+    if (personElem == null) {
+      throw new Error("Can't get count without person")
+    }
+    let highest: Element|null = null;
+    
+    for (var el of personElem.heldElements) {
+      if (highest === null) {
+        highest = el;
+        continue
+      }
+      if (highest.count < el.count) {
+        highest = el;
+      }
+    }
+
+    if (!highest) {
+      throw new Error(`couldnt find element`)
+    }
+
+    return highest
   }
 
   static personCanShoot(personElem: Element, cells: Cell[]): boolean {
