@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock title %}</title>
+    <style>
+      h1 {
+        font-size: clamp(1rem, 4vh, 5rem);
+      }
+      p, input, button, a, li {
+        font-size: clamp(0.8rem, 2.8vh, 2.8rem);
+      }
+
+      input:placeholder, input:autofill {
+        font-size: clamp(0.8rem, 2.8vh, 2.8rem);
+      }
+    </style>
+</head>
+<body>
+  {% block content %}
+  {% endblock content %}
+</body>
+</html>
