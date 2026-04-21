@@ -519,7 +519,11 @@ export class BoardUtils {
 
     for (var ie of cloned) {
       if (previousSubTypes.includes(ie.subType)) { continue }
-
+      if (ie.subType == ElementSubType.Horse) {
+        let copied = {...ie};
+        result.push(copied);
+        continue
+      }
       previousSubTypes.push(ie.subType);
 
       let matchingElems = cloned.filter(re => re.subType == ie.subType);
@@ -608,8 +612,11 @@ export class BoardUtils {
     let holdingBow = personElem.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
     let holdingShield = personElem.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
 
+    let ridingHorse = personElem.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
+
+
     if (elementSubType == ElementSubType.Cart) {
-      if (holdingSword || holdingBow || holdingShield || holdingCart) {
+      if (holdingSword || holdingBow || holdingShield || holdingCart || ridingHorse) {
         return false
       }
     } else if (elementSubType == ElementSubType.Bow) {
@@ -622,6 +629,10 @@ export class BoardUtils {
       }
     } else if (elementSubType == ElementSubType.Shield) {
       if (holdingCart || holdingBow || holdingShield) {
+        return false
+      }
+    } else if (elementSubType == ElementSubType.Horse) {
+      if (holdingCart || ridingHorse || holdingShield) {
         return false
       }
     }

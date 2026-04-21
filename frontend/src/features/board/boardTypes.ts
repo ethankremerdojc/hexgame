@@ -47,7 +47,8 @@ export enum ElementSubType {
   Sword,
   Bow,
   Shield,
-  Cart
+  Cart,
+  Horse
 }
 
 export enum CellType {
@@ -76,7 +77,10 @@ export type Element = {
   isWorking: boolean|null,
 }
 
-export function objectToElement(obj: any): Element {
+export function objectToElement(_obj: any): Element {
+
+  let obj = {..._obj};
+
   if (obj.type == undefined || obj.subType == undefined) {
     throw new Error("objectToElement requires obj to have at least type and subtype.");
   }
@@ -95,11 +99,22 @@ export function objectToElement(obj: any): Element {
   if (obj.heldElements === undefined) {
     obj.heldElements = [];
   }
+
+  if (obj.subType == 17) { // horse
+    if (obj.hasActionAvailable === undefined || obj.hasActionAvailable === null) {
+      console.log("setting true")
+      obj.hasActionAvailable = true;
+    }
+  }
+
   if (obj.hasActionAvailable === undefined) {
     obj.hasActionAvailable = null;
-  } if (obj.health === undefined) {
+  }
+
+  if (obj.health === undefined) {
     obj.health = 0;
   }
+
   return obj
 }
 

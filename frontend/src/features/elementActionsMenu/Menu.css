@@ -5,6 +5,103 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: black;
+  gap: 10px;
+  padding: 14px 0;
   bottom: 0;
+}
+
+.element-actions-menu-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  background: black;
+  padding: 15px 25px;
+  border-radius: 12px;
+  border: solid white 2px;
+}
+
+.element-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 15px 0;
+
+  .element-action-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+
+
+
+    #backButton {
+      grid-column: 2;
+    }
+  }
+}
+
+.fullwidth-option {
+  grid-column: 1 / span 2;
+}
+
+.element-action-options, .element-action-items {
+  button {
+    min-width: 100px;
+    span {
+      font-size: 20px;
+      color: black;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      img {
+        /* background: darkgray; */
+        padding: 4px;
+        width: 20px;
+        height: 20px;
+      }
+
+      div {
+
+      }
+    }
+  }
+}
+
+.element-action-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px; 
+}
+
+.element-turn-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-turn-text {
+  width: 100%;
+  text-align: center;
+  font-size: 20px;
+  color: white;
+
+  span {
+    font-weight: 600;
+  }
+}
+
+.action-handling-text {
+  font-size: 16px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.warning-text {
+  color: red;
 }

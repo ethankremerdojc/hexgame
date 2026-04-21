@@ -183,6 +183,8 @@ export class BoardGenerator {
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 4});
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Clay, count: 4});
     randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 4});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Horse, count: 1});
+    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Horse, count: 1});
     return newBoard;
   }
 

@@ -6,9 +6,10 @@ import {
 } from "@/features/board/utils"
 
 function getAPILocation() {
-  if (window.location.host === "localhost:5173") {
+  if (window.location.host.includes("localhost:")) {
     return "http://localhost:8001"
   }
+
   return "https://" + window.location.host
 }
 

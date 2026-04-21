@@ -45,6 +45,7 @@ function getSelectedCellFromMousePos(
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
+      console.log("selected cell: ", cell)
       return cell
     }
   }
@@ -72,6 +73,7 @@ function getSelectedElementFromMousePos(
 
       let intersects = BoardUtils.pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
       if (intersects) {
+        console.log("selected elem: ", elem)
         return elem;
       }
     }

@@ -39,57 +39,10 @@ export const CELL_INFO_BY_TYPE = {
   }
 }
 
-export const ELEMENT_ACTION_DETAILS: object[] = [
-  { // Move
-    title: "move",
-    helpText: "Move to an adjacent tile.",
-  },
-  { // Take
-    title: "take",
-    helpText: "Pickup an item at the current cell position.",
-  },
-  { // Drop
-    title: "drop",
-    helpText: "Drop an item at the current cell position.",
-  },
-  { // Fight
-    title: "fight",
-    helpText: "Do damage to another team's person."
-  },
-  { // Build
-    title: "build",
-    helpText: "Build a structure with the resources at the current tile."
-  },
-  { // Destroy
-    title: "destroy",
-    helpText: "Destroy a structure at the current tile."
-  },
-  { // Work
-    title: "work",
-    helpText: "Work on the current tile for more resources."
-  },
-  { // Heal
-    title: "heal",
-    helpText: "Use 1 food to heal person by 1 health."
-  },
-  { // Reproduce
-    title: "reproduce",
-    helpText: "Create another person with two persons."
-  },
-  { // trade
-    title: "trade",
-    helpText: "Trade with the desert trader"
-  },
-  { // shoot
-    title: "shoot",
-    helpText: "Shoot someone in adjacent tile"
-  }
-]
-
-export function getBuildingCost(elemSubType: ElementSubType) {
+export function getBuildingCost(elementToBuildType: ElementSubType) {
   let ingredients = [];
 
-  switch (elemSubType) {
+  switch (elementToBuildType) {
 
     // Buildings
     case ElementSubType.Farm:
@@ -185,11 +138,31 @@ export function getBuildingCost(elemSubType: ElementSubType) {
       })
       break;
 
+    case ElementSubType.Villager:
+      ingredients.push({
+        subType: ElementSubType.Food,
+        count: 10
+      })
+      break;
+
     default:
+      throw new Error(`Unhandled subtype: ${elementToBuildType}`)
       break;
   }
 
   return ingredients
+}
+
+export function getSpecificItemBuildingCost(elementToBuildType: ElementSubType, ingredient: ElementSubType) {
+  let buildingCost = getBuildingCost(elementToBuildType);
+
+  for (var item of buildingCost) {
+    if (item.subType == ingredient) {
+      return item.count;
+    }
+  }
+
+  throw new Error("Ingredient requested not part of building cost.");
 }
 
 export function nameForElementSubType(elemSubType: ElementSubType): string {
@@ -212,13 +185,14 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
     "Sword",
     "Bow",
     "Shield",
-    "Cart"
+    "Cart",
+    "Horse"
   ][elemSubType]
 }
 
-export function getActionDetails(actionType: number): any {
-  return ELEMENT_ACTION_DETAILS[actionType]
-}
+// export function getActionDetails(actionType: number): any {
+//   return ELEMENT_ACTION_DETAILS[actionType]
+// }
 
 export function colorForTeam(teamVal: TeamColor|null): string {
 

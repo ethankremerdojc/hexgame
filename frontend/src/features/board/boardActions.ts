@@ -43,10 +43,34 @@ export default class BoardActions {
         let newElements = [...cell.elements];
         let newElem = structuredClone(elem);
 
-        //TODO Add this back
+        let horseElems = elem.heldElements.filter(el => el.subType == ElementSubType.Horse);
+        let ridingHorse = horseElems.length > 0;
 
-        newElem.hasActionAvailable = false;
+        let horseUsedAction = false;
+
+        if (ridingHorse) {
+          let horse = horseElems[0];
+          console.log("oldhorse", horse);
+
+          if (horse.hasActionAvailable) {
+            let newHorseElem = structuredClone(horse);
+            newHorseElem.hasActionAvailable = false;
+
+            newElem.heldElements = newElem.heldElements.filter((el: Element) => el.id != newHorseElem.id);
+            newElem.heldElements.push(newHorseElem);
+
+            horseUsedAction = true;
+          }
+        }
+
+        if (!horseUsedAction) {
+          newElem.hasActionAvailable = false;
+        }
+
         newElements.push(newElem);
+
+        console.log("new elem", structuredClone(newElem));
+
         newCell.elements = newElements;
       }
       newCells.push(newCell);
@@ -87,6 +111,7 @@ export default class BoardActions {
 
     // create new element on the tile, will be combined automatically in the slice
     let copiedDroppedElement = structuredClone(elementToDrop);
+    console.log("elem to drop", copiedDroppedElement);
     copiedDroppedElement.count = count;
     elemParentCell.elements.push(copiedDroppedElement);
     elementToDrop.count -= count;
@@ -129,9 +154,13 @@ export default class BoardActions {
 
     let elementToTake = elemParentCell.elements.filter((e: Element) => e.id == takenItemId)[0];
 
+    console.log("elem to take", elementToTake);
+
     if (count == elementToTake.count) {
       // just take actual item and move it
-      newPersonElem.heldElements.push(elementToTake);
+      let copiedElem = structuredClone(elementToTake);
+      console.log("copied elem", copiedElem);
+      newPersonElem.heldElements.push(copiedElem);
       elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
     } else {
       let copiedTakenElement = structuredClone(elementToTake);

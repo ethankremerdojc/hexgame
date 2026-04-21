@@ -21,15 +21,16 @@ import {
   setActionItemsToSelectFrom, getActionItemsToSelectFrom,
   getCurrentPlayerName,
   getLoggedInUsername,
-  endTurn, revertToBeginningOfTurn
+  endTurn, revertToBeginningOfTurn,
+  updateElemAttributes
 } from "../board/boardSlice.ts";
 
 import { 
   getBuildingCost,
   nameForElementSubType,
-  getActionDetails,
   nameForTeamColor,
-  colorForTeam
+  colorForTeam,
+  getSpecificItemBuildingCost
 } from "../board/vars"
 
 import { BoardUtils } from "../board/boardUtils"
@@ -37,7 +38,105 @@ import BoardActions from "../board/boardActions"
 
 import { TESTING } from "@/App.tsx"
 
+import { getSvgForSubType } from "../board/boardRenderer"
+
 import './Menu.css'
+
+import buildSvg from "../board/svg/actions/buildIcon.svg";
+import dropSvg from "../board/svg/actions/dropIcon.svg";
+import fightSvg from "../board/svg/actions/fightIcon.svg";
+import moveSvg from "../board/svg/actions/moveIcon.svg";
+import reproduceSvg from "../board/svg/actions/reproduceIcon.svg";
+import shootSvg from "../board/svg/actions/shootIcon.svg";
+import takeSvg from "../board/svg/actions/takeIcon.svg";
+import tradeSvg from "../board/svg/actions/tradeIcon.svg";
+import workSvg from "../board/svg/actions/workIcon.svg";
+import backSvg from "../board/svg/actions/backIcon.svg";
+
+export const ELEMENT_ACTION_DETAILS: object[] = [
+  { // Move
+    title: "move",
+    helpText: "Move to an adjacent tile.",
+  },
+  { // Take
+    title: "take",
+    helpText: "Pickup an item at the current cell position.",
+  },
+  { // Drop
+    title: "drop",
+    helpText: "Drop an item at the current cell position.",
+  },
+  { // Fight
+    title: "fight",
+    helpText: "Do damage to another team's person."
+  },
+  { // Build
+    title: "build",
+    helpText: "Build a structure with the resources at the current tile."
+  },
+  { // Destroy
+    title: "destroy",
+    helpText: "Destroy a structure at the current tile."
+  },
+  { // Work
+    title: "work",
+    helpText: "Work on the current tile for more resources."
+  },
+  { // Heal
+    title: "heal",
+    helpText: "Use 1 food to heal person by 1 health."
+  },
+  { // Reproduce
+    title: "clone",
+    helpText: "Create another person with two persons."
+  },
+  { // trade
+    title: "trade",
+    helpText: "Trade with the desert trader"
+  },
+  { // shoot
+    title: "shoot",
+    helpText: "Shoot someone in adjacent tile"
+  }
+]
+
+export function getActionDetails(actionType: number): any {
+  return ELEMENT_ACTION_DETAILS[actionType]
+}
+
+function iconForActionType(actionType: string) {
+  switch (actionType) {
+    case "build":
+      return buildSvg
+      break;
+    case "drop":
+      return dropSvg
+      break;
+    case "fight":
+      return fightSvg
+      break;
+    case "move":
+      return moveSvg
+      break;
+    case "clone":
+      return reproduceSvg
+      break;
+    case "shoot":
+      return shootSvg
+      break;
+    case "take":
+      return takeSvg
+      break;
+    case "trade":
+      return tradeSvg
+      break;
+    case "work":
+      return workSvg
+      break;
+    default:
+      break;
+  }
+}
 
 function ElementActionOptions() {
   const dispatch =          useAppDispatch();
@@ -63,15 +162,29 @@ function ElementActionOptions() {
   let availableActionsInfo = [];
   for (var aa of availableActions) {
     let details = getActionDetails(aa);
+    details.icon = iconForActionType(details.title);
     availableActionsInfo.push(details);
   };
 
-  const clearActionData = () => {
+  const clearActionData = (newCells: Cell[]) => {
     dispatch(setShowMoveInfo(false));
     dispatch(setActionItemsToSelectFrom([]));
-    dispatch(setSelectedElement(null));
     dispatch(setSelectedCell(null));
     dispatch(setActionHandling(""));
+
+
+    // need to re-get selected element since it has new info
+    let newParent = newCells.filter((c: Cell) => c.x == parentCell.x && c.y == parentCell.y)[0];
+
+    let newSelEl = newParent.elements.filter((el: Element) => el.id == selectedElement.id)[0];
+
+    newSelEl = updateElemAttributes(newSelEl, newParent);
+
+    if (newSelEl.hasActionAvailable) {
+      dispatch(setSelectedElement(newSelEl));
+    } else {
+      dispatch(setSelectedElement(null));
+    }
   }
 
   const itemTransferHandler = (transferType: string, itemId: string, inputId: string) => {
@@ -90,7 +203,7 @@ function ElementActionOptions() {
     }
 
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const dropHandler = () => {
@@ -106,9 +219,13 @@ function ElementActionOptions() {
   }
 
   const workHandler = () => {
+    dispatch(setActionItemsToSelectFrom(["Make Villager work?"]));
+  }
+
+  const work = () => {
     let newCells = BoardActions.makePersonWork(selectedElement, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const buildHandler = () => {
@@ -120,7 +237,7 @@ function ElementActionOptions() {
   const destroyHandler = () => {
     let newCells = BoardActions.destroyBuilding(selectedElement, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const buildElem = (type: ElementType, subType: ElementSubType) => {
@@ -128,7 +245,7 @@ function ElementActionOptions() {
     const newCells = BoardActions.build(selectedElement, type, subType, cells);
     dispatch(setCells(newCells));
 
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const getBuildingDisabled = (buildingType: ElementSubType) => {
@@ -144,6 +261,11 @@ function ElementActionOptions() {
     dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings()));
   }
 
+  const backHandler = () => {
+    dispatch(setActionItemsToSelectFrom([]));
+    dispatch(setActionHandling(""));
+  }
+
   const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType) => {
     let depletingResource: Element = objectToElement({type: ElementType.Item, subType: giveType, count: 2});
     let receivingResource: Element = objectToElement({type: ElementType.Item, subType: receiveType, count: 1});
@@ -151,7 +273,7 @@ function ElementActionOptions() {
 
     setTradeOfferingChosen(null);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const fight = (enemyId: string) => {
@@ -159,19 +281,23 @@ function ElementActionOptions() {
     let enemyElem: Element = parentCell.elements.filter(e => e.id == enemyId)[0];
     const newCells = BoardActions.makePersonsFight(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const healHandler = () => {
     const newCells = BoardActions.healPerson(selectedElement, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
-  const reproduceHandler = () => {
+  const cloneHandler = () => {
+    dispatch(setActionItemsToSelectFrom(["Clone Villager?"]));
+  }
+
+  const clone = () => {
     const newCells = BoardActions.reproducePerson(selectedElement, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const shootHandler = () => {
@@ -183,7 +309,7 @@ function ElementActionOptions() {
   const shoot = (enemyElem: Element) => {
     let newCells = BoardActions.shoot(selectedElement, enemyElem, cells);
     dispatch(setCells(newCells));
-    clearActionData();
+    clearActionData(newCells);
   }
 
   const getActionHandler = (title: string) => {
@@ -214,15 +340,20 @@ function ElementActionOptions() {
     else if (title == "heal") {
       actionFunc = healHandler
     }
-    else if (title == "reproduce") {
-      actionFunc = reproduceHandler
+    else if (title == "clone") {
+      actionFunc = cloneHandler
     }
     else if (title == "trade") {
       actionFunc = tradeHandler
     }
     else if (title == "shoot") {
       actionFunc = shootHandler
-    } else {
+    }
+
+    else if (title == "back") {
+      actionFunc = backHandler
+    }
+    else {
       throw new Error(`Non handled action: ${title}`)
     }
 
@@ -232,110 +363,194 @@ function ElementActionOptions() {
     }
   }
 
+  const getActionVerb = (actionHandling: string) => {
+    let verb = actionHandling;
+    if (verb.endsWith("e")) {
+      verb = verb.slice(0, -1);
+    }
+    if (verb == "drop") {
+      return "dropping"
+    }
+    return verb + "ing"
+  }
+
+  function DropTakeInput({actionHandling, item}: {actionHandling: string, item: any}) {
+
+    if (!selectedElement) {
+      throw new Error("Can't render droptake without selectedElement");
+    }
+
+    let maxItems;
+
+    if (actionHandling == "drop") {
+      maxItems = item.count
+    } else {
+      maxItems = Math.min(
+        BoardUtils.getPersonRemainingCarryWeight(selectedElement),
+        item.count
+      )
+    }
+
+    let [labelCount, setLabelCount] = useState(0);
+
+    let inputOnchange = (e: any) => {
+      setLabelCount(e.target.value);
+    }
+
+    let justOne = item.count == 1;
+
+    if (justOne) {
+      return (
+        <div id={item.id} key={item.id} style={{
+          display: "flex",
+          flexDirection: "column",
+        }}>
+          <label>{nameForElementSubType(item.subType)}</label>
+
+          <input hidden={true} id={`${item.id}-rangeinput`} value={1} readOnly={true} />
+          <button onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)}>
+            {actionHandling}
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <div id={item.id} key={item.id} style={{
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        <label htmlFor={`${item.id}-rangeinput`}>{nameForElementSubType(item.subType)} (0 - {maxItems})</label>
+        <input onChange={inputOnchange} type="range" defaultValue={0} min={0} max={maxItems} id={`${item.id}-rangeinput`} name={`${item.id}-rangeinput`} />
+
+        <button onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)} disabled={labelCount == 0}>
+          {actionHandling} {labelCount}
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="element-action-options">
-      { availableActionsInfo.map(aai => {
-        return (<div key={aai.title}>
-          <button onClick={getActionHandler(aai.title)}>{aai.title}</button>
-          <span>{aai.helpText}</span>
-        </div>)
-      }) }
+    <div className="element-actions">
 
-      { ["drop", "take"].includes(actionHandling) &&
-        itemsToSelectFrom &&
-        <div>{itemsToSelectFrom.map(item => {
-            
-            let maxItems;
-            if (actionHandling == "drop") {
-              maxItems = item.count
-            } else {
-              maxItems = Math.min(
-                BoardUtils.getPersonRemainingCarryWeight(selectedElement),
-                item.count
-              )
+      {
+        actionHandling ? <>
+        <p className="action-handling-text">{getActionVerb(actionHandling)}</p>
+        <div className="element-action-options">
+          <div key={"back-button"} id="backButton">
+            <button onClick={getActionHandler("back")}>
+              <span key="span1"><img src={backSvg} /></span><span key="span2">Back</span>
+            </button>
+          </div>
+        </div>
+
+
+        <div className="element-action-items">
+          { ["drop", "take"].includes(actionHandling) && itemsToSelectFrom &&
+            <>{itemsToSelectFrom.map(item => <DropTakeInput key={item.id} actionHandling={actionHandling} item={item} />)}</>
+          }
+
+          {
+            actionHandling == "build" &&
+            <>
+              {itemsToSelectFrom.map(item => {
+                return (
+                  <button key={item[1]+item[0]} onClick={() => { buildElem(item[0], item[1]) }} disabled={getBuildingDisabled(item[1])}>
+                      <span>
+                        {
+                          getBuildingCost(item[1]).map(ing => {
+                            return (
+                                <div>
+                                  <img src={getSvgForSubType(ing.subType, false)} />
+                                  <p>{getSpecificItemBuildingCost(item[1], ing.subType)}</p>
+                                </div>
+                              )
+                          })
+                        }
+                        <p>►</p>
+                        <img src={getSvgForSubType(item[1], false)} />
+                      </span>
+                  </button>
+                )
+              })}
+            </>
+          }
+          {
+            actionHandling == "fight" &&
+            <>
+              {itemsToSelectFrom.map(person => {
+                return (
+                  <button key={person.id} onClick={() => { fight(person.id) }}>
+                    Fight: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
+                  </button>
+                )
+              })}
+            </>
+          }
+          {
+            actionHandling == "work" &&
+            <button className="fullwidth-option" key={"workbutton"} onClick={() => { work() }}>
+              {/* First item is just a message based on current villager */}
+              {itemsToSelectFrom[0]} 
+            </button>
+          }
+          {
+            actionHandling == "clone" &&
+            <button className="fullwidth-option" key={"clonebutton"} onClick={() => { clone() }}>
+              {/* First item is just a message based on current villager */}
+              {itemsToSelectFrom[0]} 
+            </button>
+          }
+          {
+            actionHandling == "shoot" &&
+            <>
+              {itemsToSelectFrom.map(person => {
+                return (
+                  <button key={person.id} onClick={() => { shoot(person) }}>
+                    Shoot: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
+                  </button>
+                )
+              })}
+            </>
+          }
+
+          {
+            actionHandling == "trade" && 
+            <>
+            {
+            !tradeOfferingChosen ?
+              itemsToSelectFrom.map((getOffering: any) => {
+                return (
+                  <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }}>
+                    Trade for {nameForElementSubType(getOffering.subType)}
+                  </button>
+                )
+              })
+            :
+              BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
+                return (<button key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen) }}>
+                  Give 2 {nameForElementSubType(giveOffering)}
+                </button>)
+              })
+              
             }
-
-            return (<div id={item.id} key={item.id} style={{
-              display: "flex",
-              flexDirection: "column",
-            }}>
-              <p>
-                {actionHandling} {nameForElementSubType(item.subType)}
-                (1 - {maxItems})
-              </p>
-              <input type="range" defaultValue={1} min={1} max={maxItems} id={`${item.id}-rangeinput`} />
-              <button
-                onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)}
-              >
-                Submit
+            </>
+          }
+        </div>
+      </>
+      :
+        <div className="element-action-options">
+          { availableActionsInfo.map(aai => {
+            return (<div key={aai.title}>
+              <button onClick={getActionHandler(aai.title)}>
+                <span><img src={aai.icon} /></span><span>{aai.title}</span>
               </button>
-            </div>
-            )
-          })
-        }
+              {/* <span>{aai.helpText}</span> */}
+            </div>)
+          }) }
         </div>
       }
-
-      {
-        actionHandling == "build" &&
-        <div>
-          {itemsToSelectFrom.map(item => {
-            return (
-              <button key={item[1]+item[0]} onClick={() => { buildElem(item[0], item[1]) }} disabled={getBuildingDisabled(item[1])}>
-                {nameForElementSubType(item[1])} | COST: {BoardUtils.buildingCostToString(getBuildingCost(item[1]))}
-              </button>
-            )
-          })}
-        </div>
-      }
-      {
-        actionHandling == "fight" &&
-        <div>
-          {itemsToSelectFrom.map(person => {
-            return (
-              <button key={person.id} onClick={() => { fight(person.id) }}>
-                Fight: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
-              </button>
-            )
-          })}
-        </div>
-      }
-      {
-        actionHandling == "shoot" &&
-        <div>
-          {itemsToSelectFrom.map(person => {
-            return (
-              <button key={person.id} onClick={() => { shoot(person) }}>
-                Shoot: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
-              </button>
-            )
-          })}
-        </div>
-      }
-
-      {
-        actionHandling == "trade" && 
-
-        <div>
-        {
-        !tradeOfferingChosen ?
-          itemsToSelectFrom.map((getOffering: any) => {
-            return (
-              <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }}>
-                Trade for {nameForElementSubType(getOffering.subType)}
-              </button>
-            )
-          })
-        :
-          BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
-            return (<button key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen) }}>
-              Give 2 {nameForElementSubType(giveOffering)}
-            </button>)
-          })
-          
-        }
-        </div>
-      }
+      
     </div>
   )
 }
@@ -366,33 +581,41 @@ export function ElementActionsMenu() {
 
   if (currentPlayerName !== loggedInUsername && !TESTING) {
     return (<div className="element-actions-menu">
-      <p style={{color: colorForTeam(playerTurn)}}>Current Player's Turn: {currentPlayerName}</p> 
+      <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>{currentPlayerName}</span></p>
     </div>)
   }
 
   return (
-    <div className="element-actions-menu">
-      <p style={{color: colorForTeam(playerTurn)}}>Current Player's Turn: You</p>
+    <div className="element-actions-menu"><div className="element-actions-menu-inner">
+      <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
       <ElementActionOptions />
 
-      {
-        confirmingEndTurn ? <div>
-          <button onClick={endTurnHandler}>Really End Turn?</button>
-          <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
-        </div>
-        :
-        <div><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></div>
-      }
+      <div className="element-turn-actions">
+        {
+          !confirmingResetTurn && 
+          <> 
+          { confirmingEndTurn ? <>
+            <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
+            <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
+          </>
+          :
+          <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
+          } </>
+        }
 
-      {
-        confirmingResetTurn ? <div>
-          <button onClick={resetTurnHandler}>Really Reset Turn?</button>
-          <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
-        </div>
-        :
-        <div><button onClick={() => setConfirmingResetTurn(true)}>Undo to beginning of turn</button></div>
-      }
-    </div>
+        {
+          !confirmingEndTurn &&
+          <> { confirmingResetTurn ? <>
+              <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
+              <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
+            </>
+            :
+            <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
+          } </>
+        }
+      </div>
+
+    </div></div>
   )
 };

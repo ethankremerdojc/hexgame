@@ -23,99 +23,207 @@ import {
 } from "./canvasPatterns.ts";
 import { drawSvgToCanvas } from "./utils.js";
 
+
+
 //buildings
-import capitalSvg from "./svg/capital.svg?raw";
-import villageSvg from "./svg/house.svg?raw";
-import farmSvg from "./svg/farm.svg?raw";
-import sawmillSvg from "./svg/sawmill.svg?raw";
-import quarrySvg from "./svg/quarry.svg?raw";
-import brickFactorySvg from "./svg/brickFactory.svg?raw";
+import capitalSvgRaw from "./svg/capital.svg?raw";
+import capitalSvg from "./svg/capital.svg";
+
+import villageSvgRaw from "./svg/house.svg?raw";
+import villageSvg from "./svg/house.svg";
+
+import farmSvgRaw from "./svg/farm.svg?raw";
+import farmSvg from "./svg/farm.svg";
+
+import sawmillSvgRaw from "./svg/sawmill.svg?raw";
+import sawmillSvg from "./svg/sawmill.svg";
+
+import quarrySvgRaw from "./svg/quarry.svg?raw";
+import quarrySvg from "./svg/quarry.svg";
+
+import brickFactorySvgRaw from "./svg/brickFactory.svg?raw";
+import brickFactorySvg from "./svg/brickFactory.svg";
+
+
 
 //persons
-import personSvg from "./svg/person.svg?raw";
-import traderSvg from "./svg/trader.svg?raw";
+import personSvgRaw from "./svg/person.svg?raw";
+import personSvg from "./svg/person.svg";
+
+import traderSvgRaw from "./svg/trader.svg?raw";
+import traderSvg from "./svg/trader.svg";
+
+
 
 // held items
-import forkSvg from "./svg/pitchfork.svg?raw";
-import swordSvg from "./svg/sword.svg?raw";
-import bowSvg from "./svg/bow.svg?raw";
-import shieldSvg from "./svg/shield.svg?raw";
-import cartSvg from "./svg/cart.svg?raw";
+import forkSvgRaw from "./svg/pitchfork.svg?raw";
+
+import swordSvgRaw from "./svg/sword.svg?raw";
+import swordSvg from "./svg/sword.svg";
+
+import bowSvgRaw from "./svg/bow.svg?raw";
+import bowSvg from "./svg/bow.svg";
+
+import shieldSvgRaw from "./svg/shield.svg?raw";
+import shieldSvg from "./svg/shield.svg";
+
+import cartSvgRaw from "./svg/cart.svg?raw";
+import cartSvg from "./svg/cart.svg";
+
+import horseSvgRaw from "./svg/horse.svg?raw";
+import horseSvg from "./svg/horse.svg";
 
 //items
-import foodSvg from "./svg/bread.svg?raw";
-import goldSvg from "./svg/coin.svg?raw";
-import woodSvg from "./svg/log.svg?raw";
-import oreSvg from "./svg/rock.svg?raw";
-import claySvg from "./svg/clay.svg?raw";
+import foodSvgRaw from "./svg/bread.svg?raw";
+import foodSvg from "./svg/bread.svg";
 
-function getSvgForElement(elem: Element) {
-  switch (elem.subType) {
+import goldSvgRaw from "./svg/coin.svg?raw";
+import goldSvg from "./svg/coin.svg";
+
+import woodSvgRaw from "./svg/log.svg?raw";
+import woodSvg from "./svg/log.svg";
+
+import oreSvgRaw from "./svg/rock.svg?raw";
+import oreSvg from "./svg/rock.svg";
+
+import claySvgRaw from "./svg/clay.svg?raw";
+import claySvg from "./svg/clay.svg";
+
+import noSvgRaw from "./svg/actions/noIcon.svg?raw";
+
+export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
+  switch (subType) {
+
     // buildings
     case ElementSubType.Capital:
+      if (raw) {
+        return capitalSvgRaw;
+      }
       return capitalSvg;
       break;
     case ElementSubType.Village:
+      if (raw) {
+        return villageSvgRaw;
+      }
       return villageSvg;
       break;
     case ElementSubType.Farm:
+      if (raw) {
+        return farmSvgRaw;
+      }
       return farmSvg;
       break;
     case ElementSubType.Quarry:
+      if (raw) {
+        return quarrySvgRaw;
+      }
       return quarrySvg;
       break;
     case ElementSubType.SawMill:
+      if (raw) {
+        return sawmillSvgRaw;
+      }
       return sawmillSvg;
       break;
     case ElementSubType.BrickFactory:
+      if (raw) {
+        return brickFactorySvgRaw;
+      }
       return brickFactorySvg;
       break;
 
 
+
     // Persons
     case ElementSubType.Villager:
+      if (raw) {
+        return personSvgRaw;
+      }
       return personSvg;
       break;
     case ElementSubType.Trader:
+      if (raw) {
+        return traderSvgRaw;
+      }
       return traderSvg;
       break;
 
+
+
     // items
     case ElementSubType.Food:
+      if (raw) {
+        return foodSvgRaw;
+      }
       return foodSvg;
       break;
     case ElementSubType.Gold:
+      if (raw) {
+        return goldSvgRaw;
+      }
       return goldSvg;
       break;
     case ElementSubType.Wood:
+      if (raw) {
+        return woodSvgRaw;
+      }
       return woodSvg;
       break;
     case ElementSubType.Ore:
+      if (raw) {
+        return oreSvgRaw;
+      }
       return oreSvg;
       break;
     case ElementSubType.Clay:
+      if (raw) {
+        return claySvgRaw;
+      }
       return claySvg;
       break;
 
+
+
     case ElementSubType.Sword:
+      if (raw) {
+        return swordSvgRaw;
+      }
       return swordSvg;
       break;
     case ElementSubType.Bow:
+      if (raw) {
+        return bowSvgRaw;
+      }
       return bowSvg;
       break;
     case ElementSubType.Shield:
+      if (raw) {
+        return shieldSvgRaw;
+      }
       return shieldSvg;
       break;
     case ElementSubType.Cart:
+      if (raw) {
+        return cartSvgRaw;
+      }
       return cartSvg;
       break;
-
+    case ElementSubType.Horse:
+      if (raw) {
+        return horseSvgRaw;
+      }
+      return horseSvg;
+      break;
 
 
     default:
-      throw new Error(`unknown element subtype: ${elem.subType}`);
+      throw new Error(`unknown element subtype: ${subType}`);
       break;
   }
+}
+
+function getSvgForElement(elem: Element): string {
+  return getSvgForSubType(elem.subType, true);
 }
 
 
@@ -257,7 +365,6 @@ export class BoardRenderer {
   ) {
 
     let { objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
-
     drawSvgToCanvas(elemSvg, ctx,
       elemPos.x, elemPos.y,
       objectSize, objectSize,
@@ -273,7 +380,13 @@ export class BoardRenderer {
     // held elements
     for (let i=0; i<element.heldElements.length; i++) {
       let heldElement = element.heldElements[i];
-      if ([ElementSubType.Sword, ElementSubType.Bow, ElementSubType.Shield, ElementSubType.Cart].includes(heldElement.subType)) {
+      if ([
+        ElementSubType.Sword,
+        ElementSubType.Bow,
+        ElementSubType.Shield,
+        ElementSubType.Cart,
+        ElementSubType.Horse
+      ].includes(heldElement.subType)) {
         continue
       }
       let heldElemSvg = getSvgForElement(heldElement);
@@ -294,36 +407,52 @@ export class BoardRenderer {
     let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
     let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
     let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+    let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
 
     if (!holdingSword && !holdingBow) {
-      drawSvgToCanvas(forkSvg, ctx,
+      drawSvgToCanvas(forkSvgRaw, ctx,
         elemPos.x + objectSize, elemPos.y,
         toolSize, objectSize,
       );
     }
     if (holdingSword) {
-      drawSvgToCanvas(swordSvg, ctx,
+      drawSvgToCanvas(swordSvgRaw, ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
     }
     if (holdingBow) {
-      drawSvgToCanvas(bowSvg, ctx,
+      drawSvgToCanvas(bowSvgRaw, ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
     };
     if (holdingShield) {
-      drawSvgToCanvas(shieldSvg, ctx,
+      drawSvgToCanvas(shieldSvgRaw, ctx,
         elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
         toolSize, objectSize*0.8,
       );
     };
     if (holdingCart) {
-      drawSvgToCanvas(cartSvg, ctx,
+      drawSvgToCanvas(cartSvgRaw, ctx,
         elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
         objectSize*0.8, objectSize*0.6,
       );
+    }
+    if (ridingHorse) {
+      drawSvgToCanvas(horseSvgRaw, ctx,
+        elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
+        objectSize*1.5, objectSize,
+      );
+
+      let horse = element.heldElements.filter(el => el.subType == ElementSubType.Horse)[0];
+
+      if (horse.hasActionAvailable === false) {
+        drawSvgToCanvas(noSvgRaw, ctx,
+          elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
+          objectSize*1.5, objectSize,
+        );
+      }
     }
 
     //todo determine better 'has actions'

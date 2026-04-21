@@ -30,10 +30,16 @@ import { BoardUtils } from "./boardUtils"
 // import { getCSRFToken } from "./utils"
 
 function getElementId(elem: any, cell: Cell): string {
-  return `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
+  let result = `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
+  if (elem.subType == ElementSubType.Horse) {
+    result += "|" + genRanHex(4);
+  }
+  return result
 }
 
-function updateElemAttributes(elem: Element, cell: Cell): Element {
+const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+
+export function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
   newElem.id = getElementId(elem, cell);
 
@@ -41,16 +47,18 @@ function updateElemAttributes(elem: Element, cell: Cell): Element {
     if (!newElem.heldElements) {
       newElem.heldElements = [];
     } else {
+
       let newHeldElements = [];
+
       for (let h = 0; h < newElem.heldElements.length; h++) {
         let he = {...newElem.heldElements[h]};
         if (!he.count) {
           he.count = 1;
         }
-
-        he.id = `${cell.x},${cell.y}|${h}|${newElem.position}|${newElem.type}|${newElem.subType}|${newElem.count}`;
+        he.id = getElementId(he, cell);
         newHeldElements.push(he);
       }
+
       newElem.heldElements = BoardUtils.mergeItemElements(newHeldElements);
     }
 
@@ -113,7 +121,8 @@ function updateCellElements(cell: Cell): Element[] {
   return result;
 }
 
-function prepareCellsForStateSave(cells: Cell[]): Cell[] {
+export function prepareCellsForStateSave(cells: Cell[]): Cell[] {
+  console.log("preparing cells")
   let newCells = [];
 
   for (var cell of cells) {
@@ -208,6 +217,11 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
     for (var p of ownPersons) {
       p.hasActionAvailable = true;
       p.isWorking = false;
+
+      let horses = p.heldElements.filter((el: Element) => el.subType == ElementSubType.Horse);
+      for (var horse of horses) {
+        horse.hasActionAvailable = true;
+      }
     }
 
     if (workers.length < 1) { continue }
