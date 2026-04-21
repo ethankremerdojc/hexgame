@@ -38,8 +38,9 @@
     <!-- </script> -->
 </head>
 <body>
-    <h1>Game {{ game.id }}</h1>
-    <p>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</p>
+    <a href="/">Home</a>
+    <!-- <h1>Game {{ game.id }}</h1> -->
+    <h1>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</h1>
 
     <iframe src="/game/iframe/?game_id={{game.id}}" id="gameIframe" />
 
