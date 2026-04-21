@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
+{% extends 'hexgame/base.html' %}
+{% block title %}Login{% endblock title %}
+
+{% block content %}
     <h1>Login</h1>
 
     {% if form.errors %}
@@ -17,5 +15,5 @@
     </form>
 
     <p><a href="{% url 'register' %}">Create an account</a></p>
-</body>
-</html>
+
+{% endblock content %}

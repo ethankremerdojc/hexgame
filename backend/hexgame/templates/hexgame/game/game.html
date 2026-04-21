@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Game {{ game.id }}</title>
+{% extends 'hexgame/base.html' %}
+{% block title %}Game{% endblock title %}
+
+{% block content %}
     <style>
 
       iframe {
@@ -9,35 +9,8 @@
         height: calc(100vh - 200px);
       }
 
-
-
     </style>
-    <!---->
-    <!-- <script defer> -->
-    <!--   window.onload = () => { -->
-    <!--     let iframe = document.getElementById("gameIframe"); -->
-    <!---->
-    <!--     function preventScroll(e) { -->
-    <!--       console.log("preventing scroll") -->
-    <!--       e.preventDefault(); -->
-    <!--     } -->
-    <!---->
-    <!--     iframe.addEventListener("mouseenter", () => { -->
-    <!--       console.log("enter") -->
-    <!--       window.addEventListener("wheel", preventScroll, { passive: false }); -->
-    <!--       window.addEventListener("touchmove", preventScroll, { passive: false }); -->
-    <!--     }); -->
-    <!---->
-    <!--     iframe.addEventListener("mouseleave", () => { -->
-    <!--       console.log("leave") -->
-    <!--       window.removeEventListener("wheel", preventScroll); -->
-    <!--       window.removeEventListener("touchmove", preventScroll); -->
-    <!--     }); -->
-    <!--   } -->
-    <!---->
-    <!-- </script> -->
-</head>
-<body>
+
     <a href="/">Home</a>
     <!-- <h1>Game {{ game.id }}</h1> -->
     <h1>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</h1>
@@ -50,6 +23,4 @@
             <button>Back Home</button>
         </a>
     </p>
-
-</body>
-</html>
+{% endblock content %}

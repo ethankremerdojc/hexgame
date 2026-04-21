@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-</head>
-<body>
-    <h1>Create account</h1>
+{% extends 'hexgame/base.html' %}
+{% block title %}Game{% endblock title %}
+
+{% block content %}
+    <h1>Register</h1>
 
     <form method="post">
         {% csrf_token %}
@@ -13,5 +11,4 @@
     </form>
 
     <p><a href="{% url 'login' %}">Already have an account?</a></p>
-</body>
-</html>
+{% endblock content %}

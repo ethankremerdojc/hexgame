@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Game</title>
-</head>
-<body>
+{% extends 'hexgame/base.html' %}
+{% block title %}Game{% endblock title %}
+
+{% block content %}
     <a href="/">Home</a>
     <h1>Create Game</h1>
 
@@ -76,5 +74,4 @@
       }
 
     </script>
-</body>
-</html>
+{% endblock content %}

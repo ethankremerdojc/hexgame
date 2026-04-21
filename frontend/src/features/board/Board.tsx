@@ -162,7 +162,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
     const scaleFactor = e.deltaY < 0 ? 1.1 : 0.9;
 
-    let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 5);
+    let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 12);
     newZoom = Math.round(newZoom * 10) / 10;
 
     let zoomDif = Math.round((newZoom - zoom) * 10) / 10;
@@ -262,7 +262,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       const scaleFactor = dist / lastPinchDistance.current;
       lastPinchDistance.current = dist;
 
-      let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 5);
+      let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 12);
       newZoom = Math.round(newZoom * 10) / 10;
 
       const zoomDif = Math.round((newZoom - zoom) * 10) / 10;

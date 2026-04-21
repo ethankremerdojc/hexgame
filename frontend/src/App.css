@@ -1,3 +1,8 @@
+* {
+  
+  font-size: clamp(1rem, 3vh, 3rem);
+}
+
 p {
   margin: 0;
 }
@@ -22,7 +27,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 16px;
+
+  font-size: clamp(1rem, 3vh, 3rem);
 
   &:hover:not(:disabled) {
     cursor: pointer;

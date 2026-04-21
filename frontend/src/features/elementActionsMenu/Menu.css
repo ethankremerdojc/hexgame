@@ -5,7 +5,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(1rem, 3vh, 3rem);
   padding: 14px 0;
   top: 0;
 }
@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(1rem, 3vh, 3rem);
   background: black;
   padding: 15px 25px;
   border-radius: 12px;
@@ -27,16 +27,14 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(1rem, 3vh, 3rem);
   width: 100%;
   margin: 15px 0;
 
   .element-action-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-
-
+    gap: clamp(1rem, 3vh, 3rem);
 
     #backButton {
       grid-column: 2;
@@ -52,16 +50,18 @@
   button {
     min-width: 100px;
     span {
-      font-size: 20px;
+
+      font-size: clamp(1rem, 3vh, 3rem);
       color: black;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: clamp(0.5rem, 1.5vh, 1.5rem);
       img {
         /* background: darkgray; */
+
+        width: clamp(1rem, 3vh, 3rem);
+        height: clamp(1rem, 3vh, 3rem);
         padding: 4px;
-        width: 20px;
-        height: 20px;
       }
 
       div {
@@ -74,20 +74,20 @@
 .element-action-items {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px; 
+  gap: clamp(1rem, 3vh, 3rem);
 }
 
 .element-turn-actions {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: clamp(1rem, 3vh, 3rem);
 }
 
 .player-turn-text {
   width: 100%;
   text-align: center;
-  font-size: 20px;
+  font-size: clamp(1rem, 3vh, 3rem);
   color: white;
 
   span {
@@ -96,7 +96,7 @@
 }
 
 .action-handling-text {
-  font-size: 16px;
+  font-size: clamp(1rem, 3vh, 3rem);
   color: white;
   text-transform: uppercase;
   font-weight: bold;
