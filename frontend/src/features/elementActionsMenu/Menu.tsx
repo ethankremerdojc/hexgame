@@ -405,7 +405,10 @@ function ElementActionOptions() {
           display: "flex",
           flexDirection: "column",
         }}>
-          <label>{nameForElementSubType(item.subType)}</label>
+          <label>
+            <span class="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
+            <span class="droptake-label-text-span">{nameForElementSubType(item.subType)}</span>
+          </label>
 
           <input hidden={true} id={`${item.id}-rangeinput`} value={1} readOnly={true} />
           <button onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)}>
@@ -420,7 +423,10 @@ function ElementActionOptions() {
         display: "flex",
         flexDirection: "column",
       }}>
-        <label htmlFor={`${item.id}-rangeinput`}>{nameForElementSubType(item.subType)} (0 - {maxItems})</label>
+        <label htmlFor={`${item.id}-rangeinput`} class="droptake-label">
+          <span class="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
+          <span class="droptake-label-text-span">{nameForElementSubType(item.subType)} (0 - {maxItems})</span>
+        </label>
         <input onChange={inputOnchange} type="range" defaultValue={0} min={0} max={maxItems} id={`${item.id}-rangeinput`} name={`${item.id}-rangeinput`} />
 
         <button onClick={() => itemTransferHandler(actionHandling, item.id, `${item.id}-rangeinput`)} disabled={labelCount == 0}>
@@ -461,6 +467,7 @@ function ElementActionOptions() {
                           getBuildingCost(item[1]).map(ing => {
                             return (
                                 <div>
+                                  <p>{nameForElementSubType(ing.subType)}</p>
                                   <img src={getSvgForSubType(ing.subType, false)} />
                                   <p>{getSpecificItemBuildingCost(item[1], ing.subType)}</p>
                                 </div>
@@ -521,8 +528,11 @@ function ElementActionOptions() {
             !tradeOfferingChosen ?
               itemsToSelectFrom.map((getOffering: any) => {
                 return (
-                  <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }}>
-                    Trade for {nameForElementSubType(getOffering.subType)}
+                  <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }} className="trade-button">
+                    <span>
+                      Trade for {nameForElementSubType(getOffering.subType)}
+                    </span>
+                    <img src={getSvgForSubType(getOffering.subType, false)} />
                   </button>
                 )
               })

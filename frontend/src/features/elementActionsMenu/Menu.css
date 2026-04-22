@@ -1,3 +1,13 @@
+.element-actions-menu,
+.element-actions-menu-inner,
+.element-actions,
+.element-action-items,
+.element-turn-actions,
+.element-action-options
+{
+  gap: var(--font-size-xsmall);
+}
+
 .element-actions-menu {
   position: absolute;
   width: min(100vw, 900px);
@@ -5,8 +15,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: clamp(1rem, 3vh, 3rem);
-  padding: 14px 0;
+  padding: var(--font-size-xsmall) 0;
   top: 0;
 }
 
@@ -15,10 +24,9 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: clamp(1rem, 3vh, 3rem);
   background: black;
-  padding: 15px 25px;
-  border-radius: 12px;
+  padding: var(--font-size-xsmall) calc(var(--font-size-xsmall) * 1.25);
+  border-radius: var(--font-size-xsmall);
   border: solid white 2px;
 }
 
@@ -27,14 +35,12 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: clamp(1rem, 3vh, 3rem);
   width: 100%;
-  margin: 15px 0;
+  margin: var(--font-size-xsmall) 0;
 
   .element-action-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1rem, 3vh, 3rem);
 
     #backButton {
       grid-column: 2;
@@ -51,7 +57,6 @@
     min-width: 100px;
     span {
 
-      font-size: clamp(1rem, 3vh, 3rem);
       color: black;
       display: flex;
       align-items: center;
@@ -74,20 +79,17 @@
 .element-action-items {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: clamp(1rem, 3vh, 3rem);
 }
 
 .element-turn-actions {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(1rem, 3vh, 3rem);
 }
 
 .player-turn-text {
   width: 100%;
   text-align: center;
-  font-size: clamp(1rem, 3vh, 3rem);
   color: white;
 
   span {
@@ -96,7 +98,6 @@
 }
 
 .action-handling-text {
-  font-size: clamp(1rem, 3vh, 3rem);
   color: white;
   text-transform: uppercase;
   font-weight: bold;
@@ -104,4 +105,26 @@
 
 .warning-text {
   color: red;
+}
+
+.droptake-label {
+  display: flex;
+  gap: var(--font-size-xsmall);
+
+  .droptake-label-image-span {
+    img {
+      width: clamp(1rem, 3vh, 3rem);
+      height: clamp(1rem, 3vh, 3rem);
+    }
+  }
+  .droptake-label-text-span {
+    font-size: var(--font-size-small);
+  }
+}
+
+.trade-button {
+  img {
+    width: clamp(1rem, 3vh, 3rem);
+    height: clamp(1rem, 3vh, 3rem);
+  }
 }
