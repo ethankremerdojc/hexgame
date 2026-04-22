@@ -406,8 +406,8 @@ function ElementActionOptions() {
           flexDirection: "column",
         }}>
           <label>
-            <span class="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
-            <span class="droptake-label-text-span">{nameForElementSubType(item.subType)}</span>
+            <span className="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
+            <span className="droptake-label-text-span">{nameForElementSubType(item.subType)}</span>
           </label>
 
           <input hidden={true} id={`${item.id}-rangeinput`} value={1} readOnly={true} />
@@ -423,9 +423,9 @@ function ElementActionOptions() {
         display: "flex",
         flexDirection: "column",
       }}>
-        <label htmlFor={`${item.id}-rangeinput`} class="droptake-label">
-          <span class="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
-          <span class="droptake-label-text-span">{nameForElementSubType(item.subType)} (0 - {maxItems})</span>
+        <label htmlFor={`${item.id}-rangeinput`} className="droptake-label">
+          <span className="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
+          <span className="droptake-label-text-span">{nameForElementSubType(item.subType)} (0 - {maxItems})</span>
         </label>
         <input onChange={inputOnchange} type="range" defaultValue={0} min={0} max={maxItems} id={`${item.id}-rangeinput`} name={`${item.id}-rangeinput`} />
 
