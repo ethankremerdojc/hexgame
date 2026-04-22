@@ -13,6 +13,10 @@ import type {
 } from "./boardTypes"
 
 import {
+  BoardUtils
+} from "./boardUtils"
+
+import {
   CellType, ElementType, ElementSubType, TeamColor
 } from "./boardTypes"
 

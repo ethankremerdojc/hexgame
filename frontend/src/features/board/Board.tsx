@@ -101,8 +101,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
   let initialRadius =   BoardUtils.getInitialRadius(canvasWidth, cells);
 
   let hexRadius = initialRadius*zoom;
-  let qcw = canvasWidth;
-  let qch = canvasHeight;
 
   let minOffsetX = -0.8*canvasWidth*zoom*zoom;
   let maxOffsetX = canvasWidth*zoom*zoom;
@@ -194,20 +192,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     const dx = t1.clientX - t2.clientX;
     const dy = t1.clientY - t2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  const getTouchMidpoint = (
-    touches: React.TouchList,
-    canvas: HTMLCanvasElement
-  ) => {
-    const rect = canvas.getBoundingClientRect();
-
-    const mx =
-      ((touches[0].clientX + touches[1].clientX) / 2) - rect.left;
-    const my =
-      ((touches[0].clientY + touches[1].clientY) / 2) - rect.top;
-
-    return { mx, my };
   };
 
   // Mouse Move / Touch Move
