@@ -24,7 +24,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: black;
+  background: #252525;
   padding: var(--font-size-xsmall) calc(var(--font-size-xsmall) * 1.25);
   border-radius: var(--font-size-xsmall);
   border: solid white 2px;
@@ -57,7 +57,7 @@
     min-width: 100px;
     span {
 
-      color: black;
+      color: #252525;
       display: flex;
       align-items: center;
       gap: clamp(0.5rem, 1.5vh, 1.5rem);
@@ -90,7 +90,7 @@
 .player-turn-text {
   width: 100%;
   text-align: center;
-  color: white;
+  color: #e3e3e3;
 
   span {
     font-weight: 600;
@@ -98,7 +98,7 @@
 }
 
 .action-handling-text {
-  color: white;
+  color: #e3e3e3;
   text-transform: uppercase;
   font-weight: bold;
 }
