@@ -5,7 +5,7 @@ import {
   getCSRFToken
 } from "@/features/board/utils"
 
-function getAPILocation() {
+export function getAPILocation() {
   if (window.location.host.includes("localhost:")) {
     return "http://localhost:8001"
   }

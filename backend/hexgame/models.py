@@ -23,3 +23,10 @@ class Player(models.Model):
 class GameEvent(models.Model):
     player = models.ForeignKey('Player', on_delete=models.CASCADE)
     timestsamp = models.DateTimeField(auto_now_add=True)
+
+class PushSubscription(models.Model):
+    endpoint = models.TextField(unique=True)
+    p256dh = models.TextField()
+    auth = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

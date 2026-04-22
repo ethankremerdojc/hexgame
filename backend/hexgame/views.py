@@ -4,15 +4,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect, render, get_object_or_404
-
+from django.views.decorators.http import require_POST
 from backend.settings import BASE_DIR
 
 from .forms import CreateGameForm
-from .models import Game, Player
-
+from .models import Game, Player, PushSubscription
+from django.contrib.auth.models import User
+from pywebpush import webpush, WebPushException
 from .serializers import GameSerializer
+from backend import settings
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -118,6 +121,94 @@ def update_game(request):
     new_player_turn = request.POST.get("playerTurn")
 
     game.board_state = json.loads(new_cells)
-    game.current_player_turn = new_player_turn
+    game.current_player_turn = int(new_player_turn)
     game.save()
+
+    player = list(game.players)[game.current_player_turn]
+
+    if PushSubscription.objects.filter(user=player.user).exists():
+        # print(player.user)
+        # print("sending push to above")
+        send_test_push(player.user, game.id)
+
     return JsonResponse({'result': 'success'})
+
+#------------- Notifications -------------------
+
+@csrf_exempt
+def notification_subscribe_view(request):
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST required")
+
+    try:
+        data = json.loads(request.body)
+        username = data["username"]
+
+        sub = data["subscription"]
+
+        print(sub)
+        endpoint = sub["endpoint"]
+        keys = sub["keys"]
+        p256dh = keys["p256dh"]
+        auth = keys["auth"]
+
+
+
+    except (KeyError, json.JSONDecodeError):
+
+        return HttpResponseBadRequest("Invalid subscription payload")
+
+    #HACK
+    if not username:
+        username = "admin"
+
+    PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={
+            "p256dh": p256dh,
+            "auth": auth,
+        },
+        user=User.objects.get(username=username)
+    )
+
+    return JsonResponse({"status": "success"})
+
+def send_test_push(user, game_id):
+    payload = json.dumps({
+        "title": "Your Turn in game " + str(game_id),
+        "body": "Last player made their move.",
+        "url": "/",
+    })
+
+    sent = 0
+    failed = 0
+
+    for sub in PushSubscription.objects.filter(user=user):
+        subscription_info = {
+            "endpoint": sub.endpoint,
+            "keys": {
+                "p256dh": sub.p256dh,
+                "auth": sub.auth,
+            },
+        }
+
+        try:
+            webpush(
+                subscription_info=subscription_info,
+                data=payload,
+                vapid_private_key=settings.WEBPUSH_VAPID_PRIVATE_KEY,
+                vapid_claims={
+                    "sub": settings.WEBPUSH_VAPID_ADMIN_EMAIL,
+                },
+            )
+            sent += 1
+        except WebPushException:
+            failed += 1
+    resp = {"sent": sent, "failed": failed}
+    print(resp)
+    return JsonResponse(resp)
+
+
+
+
+

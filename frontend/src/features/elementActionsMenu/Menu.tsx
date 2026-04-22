@@ -37,7 +37,10 @@ import { BoardUtils } from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
 import { TESTING } from "@/App.tsx"
-
+import { getAPILocation } from "@/app/api"
+import {
+  getCSRFToken
+} from "@/features/board/utils"
 import { getSvgForSubType } from "../board/boardRenderer"
 
 import './Menu.css'
@@ -52,6 +55,8 @@ import takeSvg from "../board/svg/actions/takeIcon.svg";
 import tradeSvg from "../board/svg/actions/tradeIcon.svg";
 import workSvg from "../board/svg/actions/workIcon.svg";
 import backSvg from "../board/svg/actions/backIcon.svg";
+
+import { signupForNotifications } from "@/app/notifications";
 
 export const ELEMENT_ACTION_DETAILS: object[] = [
   { // Move
@@ -603,6 +608,31 @@ export function ElementActionsMenu() {
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
       <div className="nav">
         <a href="/">Home</a>
+        <button onClick={
+          async () => {
+            try {
+              await signupForNotifications({
+                vapidPublicKey: "BL33qr07Zgt-RZIj0YK346IrtEzqL9osLQvPLDcVijxsGudk9xIPBASP9Nm1GNUYbFo86fBoZlZhhr6F-AX9gJ4",
+                saveSubscription: async (subscription) => {
+                  await fetch(getAPILocation() + "/api/notifications/subscribe/", {
+                    method: "POST",
+                    headers: { 
+                      "Content-Type": "application/json",
+                      "X-CSRFToken": getCSRFToken()
+                    },
+
+                    credentials: "include",
+                    body: JSON.stringify({"subscription": subscription, "username": loggedInUsername}),
+                  });
+                },
+              });
+
+              console.log("User signed up for notifications");
+            } catch (error) {
+              console.error("Notification signup failed:", error);
+            }
+          }
+        }>Subscribe</button>
       </div>
       <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
