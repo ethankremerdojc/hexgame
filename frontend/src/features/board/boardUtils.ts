@@ -410,7 +410,9 @@ export class BoardUtils {
     let result = [];
 
     if (cell.elements.filter(el => el.type == ElementType.Building).length == 0) {
-      result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
+      if (cell.type != CellType.Desert) {
+        result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
+      }
       result.push([ElementType.Building, ElementSubType.Village]);
     }
     result.push([ElementType.Item, ElementSubType.Bow]);

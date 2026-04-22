@@ -42,6 +42,8 @@ export const CELL_INFO_BY_TYPE = {
 export function getBuildingCost(elementToBuildType: ElementSubType) {
   let ingredients = [];
 
+  console.log("to build", elementToBuildType);
+
   switch (elementToBuildType) {
 
     // Buildings

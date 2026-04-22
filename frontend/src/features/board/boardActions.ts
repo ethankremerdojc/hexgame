@@ -299,10 +299,7 @@ export default class BoardActions {
   static trade(personElem: Element, givenItem: Element, receivedItem: Element, cells: Cell[]): Cell[] {
     let newCells = BoardUtils.depleteResources([givenItem], personElem, cells);
     let parentCell = BoardUtils.getElementParentCell(personElem, newCells);
-    let newPerson = parentCell.elements.filter((el: Element) => el.id == personElem.id)[0];
-
-    newPerson.heldElements.push(receivedItem);
-
+    parentCell.elements.push(receivedItem);
     return newCells
   }
 

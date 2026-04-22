@@ -224,6 +224,11 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
       }
     }
 
+    let horses = cell.elements.filter(el => el.subType == ElementSubType.Horse);
+    for (var horse of horses) {
+      horse.hasActionAvailable = true;
+    }
+
     if (workers.length < 1) { continue }
 
     let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital).length > 0;
