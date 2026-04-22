@@ -266,7 +266,9 @@ export interface BoardState {
   viewOnly: boolean,
   gameId: number,
   usernames: string[],
-  loggedInUsername: string
+  loggedInUsername: string,
+
+  userSubscribed: boolean
 }
 
 const initialState: BoardState = {
@@ -288,7 +290,8 @@ const initialState: BoardState = {
   viewOnly: false,
   gameId: -1,
   usernames: [],
-  loggedInUsername: ""
+  loggedInUsername: "",
+  userSubscribed: false
 };
 
 const boardSlice = createSlice({
@@ -371,6 +374,9 @@ const boardSlice = createSlice({
     setLoggedInUsername(state, action: PayloadAction<string>) {
       state.loggedInUsername = action.payload;
     },
+    setUserSubscribed(state, action: PayloadAction<boolean>) {
+      state.userSubscribed = action.payload;
+    },
   },
 });
 
@@ -389,6 +395,7 @@ export const getGameId = (state: RootState): number => state.board.gameId;
 export const getUsernames = (state: RootState): string[] => state.board.usernames;
 export const getCurrentPlayerName = (state: RootState): string => state.board.usernames[state.board.playerTurn];
 export const getLoggedInUsername = (state: RootState): string => state.board.loggedInUsername;
+export const getUserSubscribed = (state: RootState): boolean => state.board.userSubscribed;
 
 export const { 
   setCells,
@@ -407,7 +414,8 @@ export const {
   setGameId,
   setPlayerTurn,
   setUsernames,
-  setLoggedInUsername
+  setLoggedInUsername,
+  setUserSubscribed
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

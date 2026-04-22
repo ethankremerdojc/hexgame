@@ -79,14 +79,20 @@ def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     return render(request, "hexgame/game/game.html", {"game": game})
 
+
+def user_has_subscribed(user):
+    return PushSubscription.objects.filter(user=user).exists()
+
 # @login_required
 def get_game_context(request, game_id):
     game = get_object_or_404(Game, pk=game_id)
     game = GameSerializer(game).data
 
+
     return JsonResponse({
         "game": game,
-        "logged_in_user": request.user.username
+        "logged_in_user": request.user.username,
+        "subscribed": user_has_subscribed(request.user)
     })
 
 @login_required
