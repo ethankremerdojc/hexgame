@@ -98,17 +98,17 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
   const playerTurn =        useAppSelector(getPlayerTurn);
   const playerCount =       useAppSelector(getPlayerCount);
 
-  let initialRadius =   35;
+  let initialRadius =   BoardUtils.getInitialRadius(canvasWidth, cells);
 
   let hexRadius = initialRadius*zoom;
   let qcw = canvasWidth;
   let qch = canvasHeight;
 
-  let minOffsetX = (-0.5*hexRadius)+(canvasWidth - canvasWidth*zoom)-qcw;
-  let maxOffsetX = 0.5*hexRadius + qcw / 2;
+  let minOffsetX = -0.8*canvasWidth*zoom*zoom;
+  let maxOffsetX = canvasWidth*zoom*zoom;
 
-  let minOffsetY = (-0.5*hexRadius)+(canvasHeight - canvasHeight*zoom)-qch;
-  let maxOffsetY = 0.5*hexRadius+qch / 2;
+  let minOffsetY = -0.8*canvasHeight*zoom*zoom;
+  let maxOffsetY = canvasHeight*zoom*zoom;
 
   const currentPlayerName = useAppSelector(getCurrentPlayerName);
   const loggedInUsername = useAppSelector(getLoggedInUsername);
@@ -148,6 +148,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseIsDown = useRef<boolean>(false);
   const isDraggingRef = useRef<boolean>(false);
+  const isPinchingRef = useRef<boolean>(false);
   const firstMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
   const lastMouseRef = useRef<Coordinate>({ x: 0, y: 0 });
 
@@ -155,19 +156,19 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current; if (!canvas) return;
+    const scaleFactor = e.deltaY < 0 ? 0.1 : -0.1;
 
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
-    const scaleFactor = e.deltaY < 0 ? 1.1 : 0.9;
-
-    let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 12);
+    let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 5);
     newZoom = Math.round(newZoom * 10) / 10;
 
-    let zoomDif = Math.round((newZoom - zoom) * 10) / 10;
-    let newX = Math.round((offset.x - (mx*zoomDif)) * 10) / 10;
-    let newY = Math.round((offset.y - (my*zoomDif)) * 10) / 10;
+    if (zoom == newZoom) { return }
+
+    let zoomDif = scaleFactor == 0.1 ? 1 : -1;
+
+    let offsetDif = Math.round(zoomDif * initialRadius);
+
+    let newX = Math.round(offset.x - offsetDif);
+    let newY = Math.round(offset.y - offsetDif);
 
     let newOffsetX = Math.max(minOffsetX, Math.min(newX, maxOffsetX));
     let newOffsetY = Math.max(minOffsetY, Math.min(newY, maxOffsetY));
@@ -249,28 +250,36 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
     // ----- PINCH ZOOM -----
     if (e.touches.length === 2) {
-      console.log("pinching")
-      e.preventDefault();
 
-      const dist = getTouchDistance(e.touches);
+      e.preventDefault();
+      isPinchingRef.current = true;
+
+      const distance = getTouchDistance(e.touches);
 
       if (lastPinchDistance.current === null) {
-        lastPinchDistance.current = dist;
+        lastPinchDistance.current = distance;
         return;
       }
 
-      const scaleFactor = dist / lastPinchDistance.current;
-      lastPinchDistance.current = dist;
+      if (Math.abs(distance - lastPinchDistance.current) < 8) {
+        return;
+      }
 
-      let newZoom = Math.min(Math.max(zoom * scaleFactor, 0.8), 12);
+      const scaleFactor = distance > lastPinchDistance.current ? 0.1 : -0.1;
+
+      let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 5);
       newZoom = Math.round(newZoom * 10) / 10;
 
-      const zoomDif = Math.round((newZoom - zoom) * 10) / 10;
+      if (zoom === newZoom) {
+        lastPinchDistance.current = distance;
+        return;
+      }
 
-      const { mx, my } = getTouchMidpoint(e.touches, canvas);
+      const zoomDif = scaleFactor === 0.1 ? 1 : -1;
+      const offsetDif = Math.round(zoomDif * initialRadius);
 
-      const newX = Math.round((offset.x - mx * zoomDif) * 10) / 10;
-      const newY = Math.round((offset.y - my * zoomDif) * 10) / 10;
+      const newX = Math.round(offset.x - offsetDif);
+      const newY = Math.round(offset.y - offsetDif);
 
       const newOffsetX = Math.max(minOffsetX, Math.min(newX, maxOffsetX));
       const newOffsetY = Math.max(minOffsetY, Math.min(newY, maxOffsetY));
@@ -278,6 +287,12 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       dispatch(setBoardOffset({ x: newOffsetX, y: newOffsetY }));
       dispatch(setBoardZoom(newZoom));
 
+      lastPinchDistance.current = distance;
+      return;
+    }
+
+    if (isPinchingRef.current) {
+      // lifted one finger up
       return;
     }
 
@@ -409,6 +424,17 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
     lastPinchDistance.current = null;
+
+    // if one finger is still down after a pinch, do nothing yet
+    if (isPinchingRef.current) {
+      if (e.touches.length === 0) {
+        isPinchingRef.current = false;
+        mouseIsDown.current = false;
+        isDraggingRef.current = false;
+      }
+      return;
+    }
+
     mouseIsDown.current = false;
 
     const wasDragging = isDraggingRef.current;
@@ -425,11 +451,13 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     const touch = e.changedTouches[0];
     if (!touch) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const mx = touch.clientX - rect.left;
-    const my = touch.clientY - rect.top;
+    if (e.touches.length == 1) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = touch.clientX - rect.left;
+      const my = touch.clientY - rect.top;
 
-    doSelectionStuffs(mx, my);
+      doSelectionStuffs(mx, my);
+    }
   };
 
   // Mouse Leave

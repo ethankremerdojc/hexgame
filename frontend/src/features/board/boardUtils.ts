@@ -290,6 +290,33 @@ export class BoardUtils {
     throw new Error("unable to find element parent.")
   }
 
+  static getBoardWidthAndHeight(canvasWidth: number, canvasHeight: number, radius: number) {
+    const hexWidth = radius * 2;
+    const colStep = radius * 1.5;
+    const rowStep = Math.sqrt(3) * radius;
+    const rowOffset = rowStep / 2;
+
+    const cols = Math.floor((canvasWidth - hexWidth) / colStep);
+    const rows = Math.floor((canvasHeight - hexWidth - rowOffset) / rowStep) + 1;
+
+    return {
+      boardWidth: Math.max(0, cols),
+      boardHeight: Math.max(0, rows),
+    };
+  }
+
+  static getInitialRadius(canvasWidth: number, cells: Cell[]) {
+    // inverse of above func
+    let boardWidth = 0;
+    for (var cell of cells) {
+      if (cell.x > boardWidth) {
+        boardWidth = cell.x;
+      }
+    }
+
+    return canvasWidth / (1.5*boardWidth + 2);
+  }
+
   static getPersonCarryingWeight(elem: Element): number {
     let result = 0;
     elem.heldElements.forEach(he => {

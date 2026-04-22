@@ -28,7 +28,7 @@ export class BoardGenerator {
     maxCellAdditionAttemptNum: number=10, // The number of times to try to add before giving up
   )
   {
-    const { boardWidth, boardHeight } = this.getBoardWidthAndHeight(canvasWidth, canvasHeight, hexRadius);
+    const { boardWidth, boardHeight } = BoardUtils.getBoardWidthAndHeight(canvasWidth, canvasHeight, hexRadius);
 
     const startCell = {
       x: Math.floor(boardWidth / 2),
@@ -57,21 +57,6 @@ export class BoardGenerator {
 
     let result: Cell[] = this.addStarterElements(cells, playerCount, traderCount);
     return result
-  }
-
-  getBoardWidthAndHeight(canvasWidth: number, canvasHeight: number, radius: number) {
-    const hexWidth = radius * 2;
-    const colStep = radius * 1.5;
-    const rowStep = Math.sqrt(3) * radius;
-    const rowOffset = rowStep / 2;
-
-    const cols = Math.floor((canvasWidth - hexWidth) / colStep);
-    const rows = Math.floor((canvasHeight - hexWidth - rowOffset) / rowStep) + 1;
-
-    return {
-      boardWidth: Math.max(0, cols),
-      boardHeight: Math.max(0, rows),
-    };
   }
 
   generateRandomNeighborCell(cell: Cell, boardWidth: number, boardHeight: number): any {
