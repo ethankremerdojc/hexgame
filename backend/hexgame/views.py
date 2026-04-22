@@ -175,7 +175,7 @@ def notification_subscribe_view(request):
 
 def send_test_push(user, game_id):
     payload = json.dumps({
-        "title": "Your Turn in game " + str(game_id),
+        "title": f"Your Turn ({user.username}) in game {game_id}",
         "body": "Last player made their move.",
         "url": "/",
     })
