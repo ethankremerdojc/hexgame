@@ -1,2 +1,4 @@
 ./hexvenv/
 *.pyc
+backend/backend/local_settings.py
+backend/db.sqlite3
