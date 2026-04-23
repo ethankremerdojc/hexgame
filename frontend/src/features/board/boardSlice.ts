@@ -235,7 +235,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
 
     if (workers.length < 1) { continue }
 
-    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital).length > 0;
+    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital && el.subType != ElementSubType.Village).length > 0;
 
     let itemCreationCount;
     if (buildingExists) {
