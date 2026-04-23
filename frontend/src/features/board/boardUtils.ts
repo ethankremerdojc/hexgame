@@ -366,7 +366,7 @@ export class BoardUtils {
   static getEnemyPersons(personElem: Element, parentCell: Cell): Element[] {
     let result: Element[] = [];
     parentCell.elements.forEach(elem => {
-      if (elem.type == ElementType.Person && elem.team != personElem.team) {
+      if (elem.subType == ElementSubType.Villager && elem.team != personElem.team) {
         result.push(elem);
       }
     })
