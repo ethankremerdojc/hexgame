@@ -35,4 +35,5 @@ class GameSerializer(serializers.ModelSerializer):
             "creation_time",
             "kick_if_inactive",
             "players",
+            "turn_number"
         ]

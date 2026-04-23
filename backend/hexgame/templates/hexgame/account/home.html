@@ -20,6 +20,7 @@
               <a href="{% url 'game' player.game.id %}">
                   Game {{ player.game.id }}
               </a>
+              - Turn: {{ player.game.turn_number }}
               — Players: [{% for p in player.game.players %}{{p.user.username}}, {% endfor %}]
               - Started: {{ player.game.creation_time }}
           </li>

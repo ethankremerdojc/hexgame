@@ -6,6 +6,7 @@ class Game(models.Model):
     # Should have a time per turn, and timestamps for 
     # creation etc.
 
+    turn_number = models.IntegerField()
     current_player_turn = models.IntegerField()
     board_state = models.JSONField()
     minutes_per_turn = models.IntegerField()

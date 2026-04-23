@@ -19,7 +19,8 @@ import {
   getCurrentPlayerName,
   getLoggedInUsername,
   setLoggedInUsername,
-  setUserSubscribed
+  setUserSubscribed,
+  setTurnNumber
 } from "@/features/board/boardSlice"
 
 // import {
@@ -77,6 +78,7 @@ function App() {
     dispatch(setPlayerCount(game.players.length));
     dispatch(setPlayerTurn(game.current_player_turn));
     dispatch(setGameId(game.id));
+    dispatch(setTurnNumber(game.turn_number));
     dispatch(setUserSubscribed(backendContext.subscribed));
     dispatch(setUsernames(getUsernamesFromGameObj(game)));
   }

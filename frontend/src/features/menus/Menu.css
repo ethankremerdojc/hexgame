@@ -129,3 +129,8 @@
     height: clamp(1rem, 3vh, 3rem);
   }
 }
+
+.nav {
+  display: flex;
+  gap: var(--font-size-xsmall);
+}

@@ -253,7 +253,6 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
 
 export interface BoardState {
   playerCount: number,
-  turnNumber: number,
 
   cells: Cell[],
   selectedCell: Cell|null,
@@ -272,12 +271,12 @@ export interface BoardState {
   usernames: string[],
   loggedInUsername: string,
 
-  userSubscribed: boolean
+  userSubscribed: boolean,
+  turnNumber: number
 }
 
 const initialState: BoardState = {
   playerCount: 0,
-  turnNumber: 1,
 
   cells: [],
   selectedCell: null,
@@ -295,7 +294,8 @@ const initialState: BoardState = {
   gameId: -1,
   usernames: [],
   loggedInUsername: "",
-  userSubscribed: false
+  userSubscribed: false,
+  turnNumber: 0
 };
 
 const boardSlice = createSlice({
@@ -362,15 +362,20 @@ const boardSlice = createSlice({
       state.cells = setupNewTurn(cells, state.playerTurn);
       state.backupCells = state.cells;
 
-      postUpdateToBackend(state.cells, state.playerTurn, state.gameId).then((resp: object) => {
-        console.log("successfully posted update to server!", resp)
-      });
+      if (state.playerTurn == 0) {
+        state.turnNumber += 1;
+      }
+
+      postUpdateToBackend(state.cells, state.playerTurn, state.gameId);
     },
     setViewOnly(state, action: PayloadAction<boolean>) {
       state.viewOnly = action.payload;
     },
     setGameId(state, action: PayloadAction<number>) {
       state.gameId = action.payload;
+    },
+    setTurnNumber(state, action: PayloadAction<number>) {
+      state.turnNumber = action.payload;
     },
     setUsernames(state, action: PayloadAction<string[]>) {
       state.usernames = action.payload;
@@ -400,6 +405,7 @@ export const getUsernames = (state: RootState): string[] => state.board.username
 export const getCurrentPlayerName = (state: RootState): string => state.board.usernames[state.board.playerTurn];
 export const getLoggedInUsername = (state: RootState): string => state.board.loggedInUsername;
 export const getUserSubscribed = (state: RootState): boolean => state.board.userSubscribed;
+export const getTurnNumber = (state: RootState): number => state.board.turnNumber;
 
 export const { 
   setCells,
@@ -419,7 +425,8 @@ export const {
   setPlayerTurn,
   setUsernames,
   setLoggedInUsername,
-  setUserSubscribed
+  setUserSubscribed,
+  setTurnNumber
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

@@ -14,6 +14,7 @@ import {
   getCells, setCells,
   setSelectedCell,
   getSelectedElement, setSelectedElement,
+  getTurnNumber,
 
   setShowMoveInfo,
   getPlayerTurn,
@@ -609,6 +610,7 @@ export function ElementActionsMenu() {
   const currentPlayerName = useAppSelector(getCurrentPlayerName);
   const loggedInUsername = useAppSelector(getLoggedInUsername);
   const userSubscribed = useAppSelector(getUserSubscribed);
+  const turnNumber = useAppSelector(getTurnNumber);
 
 
   if (currentPlayerName !== loggedInUsername && !TESTING) {
@@ -623,6 +625,7 @@ export function ElementActionsMenu() {
         <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
         </>
       }
+      <p>Turn #: {turnNumber}</p>
       <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>{currentPlayerName}</span></p>
     </div></div>)
   }
@@ -669,6 +672,7 @@ export function ElementActionsMenu() {
           </>
         : <>
           <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
+          <p>Turn #: {turnNumber}</p>
           <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
           <ElementActionOptions />

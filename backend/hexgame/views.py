@@ -131,6 +131,10 @@ def update_game(request):
 
     game.board_state = json.loads(new_cells)
     game.current_player_turn = int(new_player_turn)
+
+    if game.current_player_turn == 0:
+        game.turn_number += 1
+
     game.save()
 
     player = list(game.players)[game.current_player_turn]
@@ -140,7 +144,9 @@ def update_game(request):
         # print("sending push to above")
         send_test_push(player.user, game.id)
 
-    return JsonResponse({'result': 'success'})
+    game_data = GameSerializer(game).data
+
+    return JsonResponse({'result': 'success', 'game': game_data})
 
 #------------- Notifications -------------------
 
