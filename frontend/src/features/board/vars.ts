@@ -15,6 +15,7 @@ export const STARTING_GOLD = 10;
 
 export const SHIELD_ARMOR_INCREASE_AMOUNT = 2;
 export const SWORD_DAMAGE_INCREASE_AMOUNT = 3;
+export const NO_FOOD_PENALTY = 3;
 
 export const CELL_INFO_BY_TYPE = {
   0: { // Field

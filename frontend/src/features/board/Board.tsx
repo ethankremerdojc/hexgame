@@ -45,7 +45,7 @@ function getSelectedCellFromMousePos(
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
-      console.log("selected cell: ", cell)
+      // console.log("selected cell: ", cell)
       return cell
     }
   }

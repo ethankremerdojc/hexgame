@@ -545,10 +545,6 @@ export class BoardUtils {
     let previousSubTypes: ElementSubType[] = [];
     let cloned = [...itemElements];
 
-    if (cloned.length > 0) {
-      console.log("ie", itemElements)
-    }
-
     for (var ie of cloned) {
       if (previousSubTypes.includes(ie.subType)) { continue }
       if (ie.subType == ElementSubType.Horse) {

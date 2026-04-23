@@ -22,6 +22,7 @@ import type {
 import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
+  NO_FOOD_PENALTY,
   itemTypeForCellType
 } from "./vars"
 
@@ -175,7 +176,7 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
           foodElem.count -= 1;
         }
       } else {
-        person.health -= 2;
+        person.health -= NO_FOOD_PENALTY;
         if (person.health < 1) {
           cell.elements = [...cell.elements, ...person.heldElements];
           cell.elements = cell.elements.filter(el => el.id != person.id);
