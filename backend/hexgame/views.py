@@ -81,7 +81,10 @@ def game_view(request, game_id):
 
 
 def user_has_subscribed(user):
-    return PushSubscription.objects.filter(user=user).exists()
+    try:
+        return PushSubscription.objects.filter(user=user).exists()
+    except:
+        return False
 
 # @login_required
 def get_game_context(request, game_id):

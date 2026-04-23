@@ -57,6 +57,8 @@ import takeSvg from "../board/svg/actions/takeIcon.svg";
 import tradeSvg from "../board/svg/actions/tradeIcon.svg";
 import workSvg from "../board/svg/actions/workIcon.svg";
 import backSvg from "../board/svg/actions/backIcon.svg";
+import noSvg from "../board/svg/actions/noIcon.svg";
+import healSvg from "../board/svg/actions/healIcon.svg";
 
 import { signupForNotifications } from "@/app/notifications";
 
@@ -139,6 +141,12 @@ function iconForActionType(actionType: string) {
       break;
     case "work":
       return workSvg
+      break;
+    case "heal":
+      return healSvg
+      break;
+    case "destroy":
+      return noSvg
       break;
     default:
       break;
