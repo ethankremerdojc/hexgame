@@ -612,9 +612,19 @@ export function ElementActionsMenu() {
 
 
   if (currentPlayerName !== loggedInUsername && !TESTING) {
-    return (<div className="element-actions-menu">
+    return (<div className="element-actions-menu"><div className="element-actions-menu-inner">
+      {
+      helpMenuOpen ?
+        <>
+          <button className="help-toggle" onClick={() => {setHelpMenuOpen(false)}}>Back</button>
+          <HelpMenu />
+        </>
+      : <>
+        <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
+        </>
+      }
       <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>{currentPlayerName}</span></p>
-    </div>)
+    </div></div>)
   }
 
   return (
