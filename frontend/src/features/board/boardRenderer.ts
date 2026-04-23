@@ -409,12 +409,13 @@ export class BoardRenderer {
     let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
     let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
 
-    if (!holdingSword && !holdingBow) {
+    if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, ctx,
         elemPos.x + objectSize, elemPos.y,
         toolSize, objectSize,
       );
     }
+
     if (holdingSword) {
       drawSvgToCanvas(swordSvgRaw, ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
@@ -457,10 +458,10 @@ export class BoardRenderer {
 
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
-      ctx.fillStyle = "black";
-      ctx.font = `${objectSize/2.5}px serif`;
-
-      ctx.fillText("no actions", elemPos.x - objectSize*0.25, elemPos.y+objectSize*1.4)
+      drawSvgToCanvas(noSvgRaw, ctx,
+        elemPos.x + objectSize*0.25, elemPos.y+objectSize*0.4,
+        objectSize*0.5, objectSize*0.5,
+      );
     }
 
     // Health
@@ -469,13 +470,6 @@ export class BoardRenderer {
     ctx.font = `${miniItemSize*1.5}px serif`;
     let healthStr: string = element.health.toString() + " h";
     ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
-
-    // Working
-    if (element.isWorking) {
-      ctx.fillStyle = "blue";
-      ctx.font = `${miniItemSize*1.5}px serif`;
-      ctx.fillText("Working", elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*2.5);
-    }
 
     if (isSelected) {
       BoardRenderer.drawHighlightBox(ctx, elemPos, objectSize, "yellow");

@@ -47,6 +47,8 @@ import { getSvgForSubType } from "../board/boardRenderer"
 
 import './Menu.css'
 
+import { HelpMenu } from "./HelpMenu"
+
 import buildSvg from "../board/svg/actions/buildIcon.svg";
 import dropSvg from "../board/svg/actions/dropIcon.svg";
 import fightSvg from "../board/svg/actions/fightIcon.svg";
@@ -592,6 +594,7 @@ export function ElementActionsMenu() {
 
   const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
   const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
 
   const endTurnHandler = () => {
     dispatch(endTurn());
@@ -647,34 +650,46 @@ export function ElementActionsMenu() {
             }>Subscribe</button>
         }
       </div>
-      <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
-      <ElementActionOptions />
-
-      <div className="element-turn-actions">
-        {
-          !confirmingResetTurn && 
-          <> 
-          { confirmingEndTurn ? <>
-            <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
-            <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
+      {
+        helpMenuOpen ?
+          <>
+            <button className="help-toggle" onClick={() => {setHelpMenuOpen(false)}}>Back</button>
+            <HelpMenu />
           </>
-          :
-          <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
-          } </>
-        }
+        : <>
+          <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
+          <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
-        {
-          !confirmingEndTurn &&
-          <> { confirmingResetTurn ? <>
-              <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
-              <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
-            </>
-            :
-            <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
-          } </>
-        }
-      </div>
+          <ElementActionOptions />
+
+          <div className="element-turn-actions">
+            {
+              !confirmingResetTurn && 
+              <> 
+              { confirmingEndTurn ? <>
+                <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
+                <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
+              </>
+              :
+              <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
+              } </>
+            }
+
+            {
+              !confirmingEndTurn &&
+              <> { confirmingResetTurn ? <>
+                  <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
+                  <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
+                </>
+                :
+                <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
+              } </>
+            }
+          </div>
+        </>
+      }
+
 
     </div></div>
   )

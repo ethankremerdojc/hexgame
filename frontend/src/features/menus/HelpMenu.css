@@ -1,0 +1,49 @@
+.help-menu {
+  max-height: min(900px, 85vh);
+  overflow-y: auto;
+}
+
+.ingredients-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--font-size-medium);
+
+  img {
+    width: var(--font-size-large);
+    height: var(--font-size-large);
+  }
+
+  .build-item {
+    display: flex;
+    gap: var(--font-size-xsmall);
+    flex-direction: column;
+    align-items: center;
+    border: solid white 2px;
+    padding: var(--font-size-xsmall);
+  }
+
+  .ingredients {
+    display: flex;
+    gap: var(--font-size-xsmall);
+  }
+
+  .ingredient {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    i, p {
+      padding: 0;
+      margin: 0;
+    }
+
+    i {
+      font-size: var(--font-size-xsmall);
+      line-height: var(--font-size-xsmall);
+    }
+    p {
+      font-size: var(--font-size-small);
+      line-height: var(--font-size-small);
+    }
+  }
+}

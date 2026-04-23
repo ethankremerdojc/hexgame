@@ -40,9 +40,25 @@ export const CELL_INFO_BY_TYPE = {
   }
 }
 
-export function getBuildingCost(elementToBuildType: ElementSubType) {
-  let ingredients = [];
+export const THINGS_THAT_CAN_BE_BUILT = [
+  ElementSubType.Farm,
+  ElementSubType.Quarry,
+  ElementSubType.BrickFactory,
+  ElementSubType.SawMill,
+  ElementSubType.Village,
+  ElementSubType.Sword,
+  ElementSubType.Bow,
+  ElementSubType.Shield,
+  ElementSubType.Cart,
+  ElementSubType.Villager
+]
 
+export function getBuildingCost(elementToBuildType: ElementSubType) {
+  if (!THINGS_THAT_CAN_BE_BUILT.includes(elementToBuildType)) {
+    throw new Error(`Unhandled subtype: ${elementToBuildType}`)
+  }
+
+  let ingredients = [];
   switch (elementToBuildType) {
 
     // Buildings
@@ -147,7 +163,6 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
       break;
 
     default:
-      throw new Error(`Unhandled subtype: ${elementToBuildType}`)
       break;
   }
 

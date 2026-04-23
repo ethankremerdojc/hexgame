@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Board } from '@/features/board/Board';
-import { ElementActionsMenu } from '@/features/elementActionsMenu/Menu';
+import { ElementActionsMenu } from '@/features/menus/Menu';
 
 import {
   BoardGenerator

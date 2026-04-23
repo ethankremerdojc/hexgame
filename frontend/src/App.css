@@ -93,4 +93,7 @@ button {
   position: relative;
   overflow: clip;
   background: #95a8b5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }

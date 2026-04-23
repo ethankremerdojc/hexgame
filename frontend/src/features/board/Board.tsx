@@ -32,6 +32,8 @@ import {
   BoardUtils
 } from "./boardUtils.ts";
 
+import "./Board.css"
+
 import { TESTING } from "@/App.tsx"
 
 import BoardActions from "./boardActions";
@@ -458,6 +460,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   return (
     <canvas
+      id="game-board-canvas"
       ref={canvasRef}
       width={canvasWidth}
       height={canvasHeight}

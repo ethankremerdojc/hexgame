@@ -9,14 +9,15 @@
 }
 
 .element-actions-menu {
-  position: absolute;
-  width: min(100vw, 900px);
+  /* position: absolute; */
+  /* width: min(100vw, 900px); */
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   padding: var(--font-size-xsmall) 0;
-  top: 0;
+  /* top: 0; */
+  z-index: 1;
 }
 
 .element-actions-menu-inner {
