@@ -22,7 +22,7 @@ import {
   getCurrentPlayerName,
   getLoggedInUsername,
   endTurn, revertToBeginningOfTurn,
-  updateElemAttributes,
+  prepareCellsForStateSave,
 
   setUserSubscribed, getUserSubscribed
 } from "../board/boardSlice.ts";
@@ -187,13 +187,12 @@ function ElementActionOptions() {
     dispatch(setSelectedCell(null));
     dispatch(setActionHandling(""));
 
-
     // need to re-get selected element since it has new info
+
+    newCells = prepareCellsForStateSave(newCells);
+
     let newParent = newCells.filter((c: Cell) => c.x == parentCell.x && c.y == parentCell.y)[0];
-
     let newSelEl = newParent.elements.filter((el: Element) => el.id == selectedElement.id)[0];
-
-    newSelEl = updateElemAttributes(newSelEl, newParent);
 
     if (newSelEl.hasActionAvailable) {
       dispatch(setSelectedElement(newSelEl));

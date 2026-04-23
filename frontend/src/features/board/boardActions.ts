@@ -1,3 +1,7 @@
+import {
+  getElementId
+} from "./boardSlice"
+
 import type {
   Cell, Element
 } from "./boardTypes"
@@ -50,7 +54,6 @@ export default class BoardActions {
 
         if (ridingHorse) {
           let horse = horseElems[0];
-          console.log("oldhorse", horse);
 
           if (horse.hasActionAvailable) {
             let newHorseElem = structuredClone(horse);
@@ -68,8 +71,6 @@ export default class BoardActions {
         }
 
         newElements.push(newElem);
-
-        console.log("new elem", structuredClone(newElem));
 
         newCell.elements = newElements;
       }
@@ -108,10 +109,11 @@ export default class BoardActions {
     // if count is max
 
     let elementToDrop = newPersonElem.heldElements.filter((e: Element) => e.id == droppedItemId)[0];
+    console.log("elem to drop", structuredClone(elementToDrop));
 
     // create new element on the tile, will be combined automatically in the slice
     let copiedDroppedElement = structuredClone(elementToDrop);
-    console.log("elem to drop", copiedDroppedElement);
+    copiedDroppedElement.id = getElementId(copiedDroppedElement, elemParentCell, null); // Give the copied elem a new id
     copiedDroppedElement.count = count;
     elemParentCell.elements.push(copiedDroppedElement);
     elementToDrop.count -= count;
@@ -153,22 +155,19 @@ export default class BoardActions {
     }
 
     let elementToTake = elemParentCell.elements.filter((e: Element) => e.id == takenItemId)[0];
-
-    console.log("elem to take", elementToTake);
+    let copiedElem = structuredClone(elementToTake);
+    copiedElem.id = getElementId(copiedElem, elemParentCell, null); // Give the copied elem a new id
 
     if (count == elementToTake.count) {
       // just take actual item and move it
-      let copiedElem = structuredClone(elementToTake);
-      console.log("copied elem", copiedElem);
       newPersonElem.heldElements.push(copiedElem);
       elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
     } else {
-      let copiedTakenElement = structuredClone(elementToTake);
-      copiedTakenElement.count = count;
-      newPersonElem.heldElements.push(copiedTakenElement);
+      copiedElem.count = count;
+      newPersonElem.heldElements.push(copiedElem);
 
-      elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
       let newParentChild = structuredClone(elementToTake);
+      elemParentCell.elements = elemParentCell.elements.filter((e: Element) => e.id != takenItemId);
       newParentChild.count -= count;
       elemParentCell.elements.push(newParentChild);
     }

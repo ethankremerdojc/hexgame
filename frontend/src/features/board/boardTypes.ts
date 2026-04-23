@@ -102,7 +102,6 @@ export function objectToElement(_obj: any): Element {
 
   if (obj.subType == 17) { // horse
     if (obj.hasActionAvailable === undefined || obj.hasActionAvailable === null) {
-      console.log("setting true")
       obj.hasActionAvailable = true;
     }
   }

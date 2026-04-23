@@ -83,8 +83,7 @@ export class BoardUtils {
       default:
 
         if (element.position === undefined || element.position === null) {
-          console.log(element);
-          throw new Error(`No element.position found for element`);
+          throw new Error(`No element.position found for element ${element}`);
         }
 
         throw new Error(`Unknown Hex position: ${element.position}`);
@@ -546,6 +545,10 @@ export class BoardUtils {
     let previousSubTypes: ElementSubType[] = [];
     let cloned = [...itemElements];
 
+    if (cloned.length > 0) {
+      console.log("ie", itemElements)
+    }
+
     for (var ie of cloned) {
       if (previousSubTypes.includes(ie.subType)) { continue }
       if (ie.subType == ElementSubType.Horse) {
@@ -568,6 +571,8 @@ export class BoardUtils {
       }
       result.push(copied);
     }
+
+    console.log()
     
     return result
   }

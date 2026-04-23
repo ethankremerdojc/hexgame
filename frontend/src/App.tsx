@@ -48,7 +48,7 @@ declare global {
 
 export const TESTING = window.location.host.includes(":5173");
 
-let TEST_GAME_ID = 15;
+let TEST_GAME_ID = 17;
 
 function getGameId(): number {
   let params = new URLSearchParams(document.location.search);

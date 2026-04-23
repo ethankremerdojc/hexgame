@@ -29,9 +29,12 @@ import { BoardUtils } from "./boardUtils"
 
 // import { getCSRFToken } from "./utils"
 
-function getElementId(elem: any, cell: Cell): string {
-  let result = `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`; 
-  if (elem.subType == ElementSubType.Horse) {
+export function getElementId(elem: any, cell: Cell, oldId: string|null): string {
+  let result = `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`;
+  if (oldId !== null && oldId !== undefined && oldId !== "") {
+    let hex = oldId.split("|").pop();
+    result += "|" + hex;
+  } else {
     result += "|" + genRanHex(4);
   }
   return result
@@ -41,7 +44,8 @@ const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.r
 
 export function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
-  newElem.id = getElementId(elem, cell);
+
+  newElem.id = getElementId(elem, cell, newElem.id ? newElem.id : null);
 
   if (newElem.type == ElementType.Person) {
     if (!newElem.heldElements) {
@@ -55,7 +59,7 @@ export function updateElemAttributes(elem: Element, cell: Cell): Element {
         if (!he.count) {
           he.count = 1;
         }
-        he.id = getElementId(he, cell);
+        he.id = getElementId(he, cell, he.id);
         newHeldElements.push(he);
       }
 
@@ -122,7 +126,6 @@ function updateCellElements(cell: Cell): Element[] {
 }
 
 export function prepareCellsForStateSave(cells: Cell[]): Cell[] {
-  console.log("preparing cells")
   let newCells = [];
 
   for (var cell of cells) {

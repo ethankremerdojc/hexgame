@@ -73,7 +73,7 @@ function getSelectedElementFromMousePos(
 
       let intersects = BoardUtils.pointInRectangle({x: mx, y: my}, topLeft, bottomRight);
       if (intersects) {
-        console.log("selected elem: ", elem)
+        // console.log("selected elem: ", elem)
         return elem;
       }
     }
