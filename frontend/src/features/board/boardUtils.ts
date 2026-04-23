@@ -711,6 +711,7 @@ export class BoardUtils {
       { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Ore, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Gold, count: 1 },
+      { type: ElementType.Item, subType: ElementSubType.Clay, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Horse, count: 1 },
     ]
   }
