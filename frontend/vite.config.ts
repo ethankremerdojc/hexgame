@@ -16,11 +16,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Removes hashes from main entry files
-        entryFileNames: `assets/[name].js`,
+        entryFileNames: `static/[name].js`,
         // Removes hashes from split code chunks
-        chunkFileNames: `assets/[name].js`,
+        chunkFileNames: `static/[name].js`,
         // Removes hashes from CSS and other static assets
-        assetFileNames: `assets/[name].[ext]`
+        assetFileNames: `static/[name].[ext]`
       }
     }
   }

@@ -109,10 +109,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'assets/'
+STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "hexgame/static/gameBuild/assets")
+    os.path.join(BASE_DIR, "hexgame/static/gameBuild/assets"),
 ]
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
