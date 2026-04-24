@@ -112,9 +112,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "hexgame/static/gameBuild/assets"),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "hexgame/static/"),
+# ]
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
