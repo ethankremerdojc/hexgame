@@ -224,7 +224,20 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
 
 const TAU = 2 * Math.PI;
 
+
 export class BoardRenderer {
+  ctx: CanvasRenderingContext2D;
+  cells: Cell[];
+  selectedCell: Cell|null;
+  selectedElement: Element|null;
+  opts: {
+    showMoveInfo: boolean;
+    radius: number;
+    offsetX: number;
+    offsetY: number;
+    inset: number;
+  };
+  elemSizes: any;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -249,11 +262,15 @@ export class BoardRenderer {
       offsetY: offsetY,
       inset: inset
     };
+
+    this.elemSizes = BoardUtils.getElemSizes(radius);
   }
 
   render(): void { // Only function that should be called
     // INITIAL: 15-30ms per render
-    const hexPoints: Coordinate[] = this.createPoly(this.opts.radius, this.opts.inset);
+    // AFTER: 0.8ms
+
+    const hexPoints: Coordinate[] = this.createPoly();
 
     let cellsToMoveTo: Cell[] = [];
 
@@ -287,9 +304,10 @@ export class BoardRenderer {
         CellType.ClayField
       ]
 
-      let result = {};
+      let result: any = {};
 
-      for (var key of keys) {
+      for (var _key of keys) {
+        let key = Number(_key);
         let canvasEl;
 
         switch (Number(key)) {
@@ -312,7 +330,7 @@ export class BoardRenderer {
             break;
         }
 
-        result[Number(key)] = canvasEl;
+        result[key] = canvasEl;
       }
 
       window.__cellPatterns = result;
@@ -326,11 +344,8 @@ export class BoardRenderer {
     points: Coordinate[],
     cell: Cell,
     cellHighlighted: boolean,
-    debug: boolean=true
+    debug: boolean=false
   ) {
-
-    //HACK
-    //CURRENT TIME: ~0.3ms per cell
    
     let polyStart = performance.now();
     this.ctx.save();
@@ -365,7 +380,7 @@ export class BoardRenderer {
     let fillTime = [Math.round((elemsStart - fillStart) * 10000) / 10000, "fill"];
     let elemTime = [Math.round((end - elemsStart) * 10000) / 10000, "elem"];
 
-    let highest = polyTime;
+    let highest: any = polyTime;
 
     for (var item of [fillTime, elemTime]) {
       if (item[0] > highest[0]) {
@@ -375,7 +390,7 @@ export class BoardRenderer {
 
     let totalTime = Math.round((end - polyStart) * 10000) / 10000;
 
-    if (debug) {
+    if (debug && totalTime > 0) {
       console.log({
         // "poly time": polyTime[0] + "ms",
         // "fill time": fillTime[0] + "ms",
@@ -391,21 +406,14 @@ export class BoardRenderer {
 
   fillCell(
     cellType: CellType,
-    debug: boolean=false
   ) {
-    let fillStart = performance.now();
 
     let canvasEl: HTMLCanvasElement= this.getCellPattern(cellType);
-
-    let createPatternStart = performance.now();
-
     let pattern: CanvasPattern|null = this.ctx.createPattern(canvasEl, "repeat");
 
     if (!pattern) {
       throw new Error("Unable to create canvas pattern obj.");
     }
-
-    let transformStart = performance.now();
 
     if (typeof(pattern) != "string") {
       pattern.setTransform(
@@ -418,34 +426,6 @@ export class BoardRenderer {
 
     this.ctx.fillStyle = pattern;
     this.ctx.fill();
-
-    let end = performance.now();
-
-    let getCanvasTime = [Math.round((createPatternStart - fillStart) * 10000) / 10000, "getCanvas"];
-    let createPatternTime = [Math.round((transformStart - createPatternStart) * 10000) / 10000, "createPattern"];
-    let transformTime = [Math.round((end - transformStart) * 10000) / 10000, "transform"];
-
-    let highest = getCanvasTime;
-
-    for (var item of [createPatternTime, transformTime]) {
-      if (item[0] > highest[0]) {
-        highest = item;
-      }
-    }
-
-    let totalTime = Math.round((end - fillStart) * 10000) / 10000;
-
-    if (debug) {
-      console.log({
-        "getCanvas time": getCanvasTime[0] + "ms",
-        "createPattern time": createPatternTime[0] + "ms",
-        "transform time": transformTime[0] + "ms",
-        "total time": totalTime + "ms",
-        "highest time": highest[1],
-        "highest %": Math.round((highest[0] / totalTime) * 100)
-      })
-    }
-
   }
 
   //===================== Elements ==========================
@@ -467,8 +447,7 @@ export class BoardRenderer {
     origin: Coordinate,
     cell: Cell,
   ) {
-
-    let { buildingSize } = BoardUtils.getElemSizes(this.opts.radius);
+    let { buildingSize } = this.elemSizes;
     let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
     let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
 
@@ -487,13 +466,14 @@ export class BoardRenderer {
           elemColor
         );
       }
-
       if (element.type == ElementType.Person) {
         this.drawPersonElement(element, elemPos, elemSvg, elemColor, isSelected);
       }
     }
 
-    this.drawItemElements(itemElements, origin);
+    if (itemElements.length > 0) {
+      this.drawItemElements(itemElements, origin);
+    }
   }
 
   drawPersonElement(
@@ -504,7 +484,7 @@ export class BoardRenderer {
     isSelected: boolean
   ) {
 
-    let { objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(this.opts.radius);
+    let { objectSize, toolSize, itemSize } = this.elemSizes;
     drawSvgToCanvas(elemSvg, this.ctx,
       elemPos.x, elemPos.y,
       objectSize, objectSize,
@@ -631,14 +611,14 @@ export class BoardRenderer {
 
   drawItemElements(
     itemElements: Element[], 
-    origin: Coordinate
+    origin: Coordinate,
   ) {
-    let { itemSize } = BoardUtils.getElemSizes(this.opts.radius);
+    let { itemSize } = this.elemSizes;
 
     let itemElementsCount = itemElements.length;
 
     let twoRows = itemElementsCount > 5;
-
+    
     for (let i=0; i < itemElementsCount; i++) {
       let element = itemElements[i];
       let elemPos = BoardUtils.getElementPosition(element, origin, this.opts.radius);

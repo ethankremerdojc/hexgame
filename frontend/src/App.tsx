@@ -44,6 +44,11 @@ declare global {
     __IFRAME_CONTEXT__?: {
       playerCount: number | null;
     };
+    __svgImgData?: any;
+    __cachedSvgs?: any;
+    __cellPatterns?: any;
+    // __?: any;
+    // __svgImgData?: any;
   }
 }
 

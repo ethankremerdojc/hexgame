@@ -140,9 +140,9 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     renderer.render();
     incrementRenderCount();
 
-    if (!renderCount % 25) {
-      console.log("renders: ", renderCount);
-    }
+    // if (!renderCount % 25) {
+    //   console.log("renders: ", renderCount);
+    // }
 
   }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo]);
 

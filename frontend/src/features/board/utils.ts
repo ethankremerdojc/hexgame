@@ -146,10 +146,12 @@ function svgToPath2Ds(svgText: string, teamColor:string|void) {
 
   const items = getChildItems(svg, teamColor);
 
-  return {
+  let result = {
     viewBox: svg.getAttribute("viewBox"),
     items,
   };
+
+  return result
 }
 
 function drawSvgPath2Ds(ctx: CanvasRenderingContext2D, svgData: any, x: number, y: number, width: number, height: number) {
@@ -177,8 +179,20 @@ function drawSvgPath2Ds(ctx: CanvasRenderingContext2D, svgData: any, x: number, 
   ctx.restore();
 }
 
+function getSvgImgData(svgData: string, teamColor: string|void) {
+  if (window.__svgImgData === undefined) {
+    window.__svgImgData = {};
+  }
+
+  let key = `${svgData}|teamColor`;
+  if (!window.__svgImgData[key]) {
+    window.__svgImgData[key] = svgToPath2Ds(svgData, teamColor);
+  }
+  return window.__svgImgData[key];
+}
+
 export function drawSvgToCanvas(svgData: any, ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, teamColor: string|void=undefined) {
-  let svgImageData = svgToPath2Ds(svgData, teamColor);
+  let svgImageData = getSvgImgData(svgData, teamColor);
   drawSvgPath2Ds(ctx, svgImageData, x, y, width, height);
 }
 
