@@ -184,7 +184,7 @@ function getSvgImgData(svgData: string, teamColor: string|void) {
     window.__svgImgData = {};
   }
 
-  let key = `${svgData}|teamColor`;
+  let key = `${svgData}|${teamColor}`;
   if (!window.__svgImgData[key]) {
     window.__svgImgData[key] = svgToPath2Ds(svgData, teamColor);
   }
