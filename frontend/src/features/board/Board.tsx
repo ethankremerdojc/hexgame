@@ -126,7 +126,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    BoardRenderer.render(
+    const renderer = new BoardRenderer(
       ctx,
       cells,
       selectedCell,
@@ -137,7 +137,12 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       offset.y
     );
 
+    renderer.render();
     incrementRenderCount();
+
+    if (!renderCount % 25) {
+      console.log("renders: ", renderCount);
+    }
 
   }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo]);
 

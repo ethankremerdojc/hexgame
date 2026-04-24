@@ -222,15 +222,11 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
   }
 }
 
-function getSvgForElement(elem: Element): string {
-  return getSvgForSubType(elem.subType, true);
-}
-
-
 const TAU = 2 * Math.PI;
 
 export class BoardRenderer {
-  static render(
+
+  constructor(
     ctx: CanvasRenderingContext2D,
     cells: Cell[],
     selectedCell: Cell|null,
@@ -240,16 +236,32 @@ export class BoardRenderer {
     offsetX: number,
     offsetY: number,
     inset: number=1,
-  ): void {
-    const hexPoints = BoardRenderer.createPoly(radius, inset);
+  ) {
+    this.ctx = ctx;
+    this.cells = cells;
+    this.selectedCell = selectedCell;
+    this.selectedElement = selectedElement;
+
+    this.opts = {
+      showMoveInfo: showMoveInfo,
+      radius: radius,
+      offsetX: offsetX,
+      offsetY: offsetY,
+      inset: inset
+    };
+  }
+
+  render(): void { // Only function that should be called
+    // INITIAL: 15-30ms per render
+    const hexPoints: Coordinate[] = this.createPoly(this.opts.radius, this.opts.inset);
 
     let cellsToMoveTo: Cell[] = [];
 
-    if (showMoveInfo && selectedElement && selectedElement.type == ElementType.Person) {
-      cellsToMoveTo = BoardUtils.getCellsPersonCanMoveTo(selectedElement, cells);
+    if (this.opts.showMoveInfo && this.selectedElement && this.selectedElement.type == ElementType.Person) {
+      cellsToMoveTo = BoardUtils.getCellsPersonCanMoveTo(this.selectedElement, this.cells);
     }
 
-    for (var cell of cells) {
+    for (var cell of this.cells) {
       let cellHighlighted = false;
 
       for (var cm of cellsToMoveTo) {
@@ -258,114 +270,242 @@ export class BoardRenderer {
         }
       }
 
-      let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius, offsetX, offsetY);
+      let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, this.opts.radius, this.opts.offsetX, this.opts.offsetY);
 
-      BoardRenderer.drawHex(
-        ctx, radius,
-        pixelOrigin, hexPoints, 
-        cell, cellHighlighted, 
-        selectedCell, selectedElement,
-        offsetX, offsetY
-      );
+      this.drawHex(pixelOrigin, hexPoints, cell, cellHighlighted);
     }
   }
 
-  static drawHex(
-    ctx: CanvasRenderingContext2D, radius: number, 
-    origin: Coordinate, points: any, 
-    cell: Cell, cellHighlighted: boolean, 
-    selectedCell: Cell|null, selectedElement: Element|null,
-    offsetX: number, offsetY: number
+  getCellPattern(cellType: CellType): HTMLCanvasElement {
+
+    if (window.__cellPatterns === undefined) {
+      let keys = [
+        CellType.Field,
+        CellType.Forest,
+        CellType.Mountain,
+        CellType.Desert,
+        CellType.ClayField
+      ]
+
+      let result = {};
+
+      for (var key of keys) {
+        let canvasEl;
+
+        switch (Number(key)) {
+          case CellType.Field:
+            canvasEl = getGrassCanvas(this.opts.radius);
+            break;
+          case CellType.Forest:
+            canvasEl = getForestCanvas(this.opts.radius);
+            break;
+          case CellType.Mountain:
+            canvasEl = getMountainCanvas(this.opts.radius);
+            break;
+          case CellType.Desert:
+            canvasEl = getDesertCanvas(this.opts.radius);
+            break;
+          case CellType.ClayField:
+            canvasEl = getClayfieldCanvas(this.opts.radius);
+            break
+          default:
+            break;
+        }
+
+        result[Number(key)] = canvasEl;
+      }
+
+      window.__cellPatterns = result;
+    }
+
+    return window.__cellPatterns[cellType];
+  }
+
+  drawHex(
+    origin: Coordinate,
+    points: Coordinate[],
+    cell: Cell,
+    cellHighlighted: boolean,
+    debug: boolean=true
   ) {
-    ctx.save();
-    ctx.translate(origin.x, origin.y);
-    BoardRenderer.polyPath3(ctx, points);
-    ctx.restore();
 
-    BoardRenderer.fillCell(ctx, cell.type, radius, offsetX, offsetY);
-    BoardRenderer.drawElements(ctx, origin, cell, radius, selectedElement);
+    //HACK
+    //CURRENT TIME: ~0.3ms per cell
+   
+    let polyStart = performance.now();
+    this.ctx.save();
+    this.ctx.translate(origin.x, origin.y);
+    this.polyPath3(points);
+    this.ctx.restore();
+    let fillStart = performance.now();
 
-    // we should be able to add a linewidth to all hexes as long as we draw the 
-    // highlighted and selected cells last, reordering them or whatever
-    
-    ctx.save();
-    ctx.lineWidth = 4;
+    this.fillCell(cell.type);
 
-    if (selectedCell && cell.x == selectedCell.x && cell.y == selectedCell.y) {
-      ctx.strokeStyle = "purple";
-      ctx.stroke();
-    } else if (cellHighlighted) {
-      ctx.strokeStyle = "yellow";
-      ctx.stroke();
+    let elemsStart = performance.now();
+
+    if (cell.elements.length > 0) {
+      this.drawElements(origin, cell);
     }
 
-    ctx.restore();
+    let end = performance.now();
+
+    this.ctx.save();
+    this.ctx.lineWidth = 4;
+
+    if (this.selectedCell && cell.x == this.selectedCell.x && cell.y == this.selectedCell.y) {
+      this.ctx.strokeStyle = "purple";
+      this.ctx.stroke();
+    } else if (cellHighlighted) {
+      this.ctx.strokeStyle = "yellow";
+      this.ctx.stroke();
+    }
+
+
+    let polyTime = [Math.round((fillStart - polyStart) * 10000) / 10000, "poly"];
+    let fillTime = [Math.round((elemsStart - fillStart) * 10000) / 10000, "fill"];
+    let elemTime = [Math.round((end - elemsStart) * 10000) / 10000, "elem"];
+
+    let highest = polyTime;
+
+    for (var item of [fillTime, elemTime]) {
+      if (item[0] > highest[0]) {
+        highest = item;
+      }
+    }
+
+    let totalTime = Math.round((end - polyStart) * 10000) / 10000;
+
+    if (debug) {
+      console.log({
+        // "poly time": polyTime[0] + "ms",
+        // "fill time": fillTime[0] + "ms",
+        // "elems time": elemTime[0] + "ms",
+        "total time": totalTime + "ms",
+        "highest time": highest[1],
+        "highest %": Math.round((highest[0] / totalTime) * 100)
+      })
+    }
+
+    this.ctx.restore();
   }
 
-  static fillCell(ctx: CanvasRenderingContext2D, cellType: CellType, radius: number, offsetX: number, offsetY: number) {
-    let canvasEl: HTMLCanvasElement;
+  fillCell(
+    cellType: CellType,
+    debug: boolean=false
+  ) {
+    let fillStart = performance.now();
 
-    switch (Number(cellType)) {
-      case CellType.Field:
-        canvasEl = getGrassCanvas(radius);
-        break;
-      case CellType.Forest:
-        canvasEl = getForestCanvas(radius);
-        break;
-      case CellType.Mountain:
-        canvasEl = getMountainCanvas(radius);
-        break;
-      case CellType.Desert:
-        canvasEl = getDesertCanvas(radius);
-        break;
-      case CellType.ClayField:
-        canvasEl = getClayfieldCanvas(radius);
-        break
-      default:
-        throw new Error(`Can't fill cell by cell type ${cellType}`);
-        break;
-    }
+    let canvasEl: HTMLCanvasElement= this.getCellPattern(cellType);
 
-    let pattern: CanvasPattern|null = ctx.createPattern(canvasEl, "repeat");
+    let createPatternStart = performance.now();
+
+    let pattern: CanvasPattern|null = this.ctx.createPattern(canvasEl, "repeat");
 
     if (!pattern) {
       throw new Error("Unable to create canvas pattern obj.");
     }
 
+    let transformStart = performance.now();
+
     if (typeof(pattern) != "string") {
       pattern.setTransform(
         new DOMMatrix().translate(
-          offsetX,
-          offsetY
+          this.opts.offsetX,
+          this.opts.offsetY
         )
       );
     }
 
-    ctx.fillStyle = pattern;
-    ctx.fill();
+    this.ctx.fillStyle = pattern;
+    this.ctx.fill();
+
+    let end = performance.now();
+
+    let getCanvasTime = [Math.round((createPatternStart - fillStart) * 10000) / 10000, "getCanvas"];
+    let createPatternTime = [Math.round((transformStart - createPatternStart) * 10000) / 10000, "createPattern"];
+    let transformTime = [Math.round((end - transformStart) * 10000) / 10000, "transform"];
+
+    let highest = getCanvasTime;
+
+    for (var item of [createPatternTime, transformTime]) {
+      if (item[0] > highest[0]) {
+        highest = item;
+      }
+    }
+
+    let totalTime = Math.round((end - fillStart) * 10000) / 10000;
+
+    if (debug) {
+      console.log({
+        "getCanvas time": getCanvasTime[0] + "ms",
+        "createPattern time": createPatternTime[0] + "ms",
+        "transform time": transformTime[0] + "ms",
+        "total time": totalTime + "ms",
+        "highest time": highest[1],
+        "highest %": Math.round((highest[0] / totalTime) * 100)
+      })
+    }
+
   }
 
-  static drawHighlightBox(
-    ctx: CanvasRenderingContext2D, elemPos: Coordinate, objectSize: number, color: string
+  //===================== Elements ==========================
+  
+  getSvgForElement(element: Element) {
+    let subType = element.subType;
+
+    if (window.__cachedSvgs === undefined) {
+      window.__cachedSvgs = {};
+    }
+
+    if (!window.__cachedSvgs[subType]) {
+      window.__cachedSvgs[subType] = getSvgForSubType(subType, true);
+    }
+    return window.__cachedSvgs[subType];
+  }
+
+  drawElements(
+    origin: Coordinate,
+    cell: Cell,
   ) {
-    ctx.save();
-    ctx.strokeStyle = color;
-    let lineWidth = objectSize/12;
-    ctx.lineWidth = lineWidth;
-    ctx.strokeRect(elemPos.x-lineWidth, elemPos.y-lineWidth, objectSize+2*lineWidth, objectSize+2*lineWidth);
-    ctx.restore();
+
+    let { buildingSize } = BoardUtils.getElemSizes(this.opts.radius);
+    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
+    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
+
+    for (var element of nonItemElements) {
+      let isSelected = this.selectedElement ? this.selectedElement.id == element.id : false;
+
+      let elemPos = BoardUtils.getElementPosition(element, origin, this.opts.radius);
+
+      let elemColor = colorForTeam(element.team);
+      let elemSvg = this.getSvgForElement(element);
+
+      if (element.type == ElementType.Building) {
+        drawSvgToCanvas(elemSvg, this.ctx,
+          elemPos.x, elemPos.y,
+          buildingSize, buildingSize,
+          elemColor
+        );
+      }
+
+      if (element.type == ElementType.Person) {
+        this.drawPersonElement(element, elemPos, elemSvg, elemColor, isSelected);
+      }
+    }
+
+    this.drawItemElements(itemElements, origin);
   }
 
-  static drawPersonElement(
-    ctx: CanvasRenderingContext2D, 
-    element: Element, elemPos: Coordinate, 
-    elemSvg: any, elemColor: string, 
-    radius: number,
+  drawPersonElement(
+    element: Element,
+    elemPos: Coordinate,
+    elemSvg: any,
+    elemColor: string,
     isSelected: boolean
   ) {
 
-    let { objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(radius);
-    drawSvgToCanvas(elemSvg, ctx,
+    let { objectSize, toolSize, itemSize } = BoardUtils.getElemSizes(this.opts.radius);
+    drawSvgToCanvas(elemSvg, this.ctx,
       elemPos.x, elemPos.y,
       objectSize, objectSize,
       elemColor
@@ -389,18 +529,18 @@ export class BoardRenderer {
       ].includes(heldElement.subType)) {
         continue
       }
-      let heldElemSvg = getSvgForElement(heldElement);
+      let heldElemSvg = this.getSvgForElement(heldElement);
 
-      drawSvgToCanvas(heldElemSvg, ctx,
+      drawSvgToCanvas(heldElemSvg, this.ctx,
         elemPos.x - miniItemSize*1.25, elemPos.y + miniItemSize*i*1.2+miniItemSize*0.5,
         miniItemSize, miniItemSize,
       );
 
-      ctx.fillStyle = "white";
-      ctx.font = `${miniItemSize}px serif`;
+      this.ctx.fillStyle = "white";
+      this.ctx.font = `${miniItemSize}px serif`;
       let countStr = heldElement.count ? heldElement.count.toString() : "";
 
-      ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
+      this.ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
     }
 
     let holdingSword = element.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
@@ -410,38 +550,38 @@ export class BoardRenderer {
     let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
 
     if (element.isWorking) {
-      drawSvgToCanvas(forkSvgRaw, ctx,
+      drawSvgToCanvas(forkSvgRaw, this.ctx,
         elemPos.x + objectSize, elemPos.y,
         toolSize, objectSize,
       );
     }
 
     if (holdingSword) {
-      drawSvgToCanvas(swordSvgRaw, ctx,
+      drawSvgToCanvas(swordSvgRaw, this.ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
     }
     if (holdingBow) {
-      drawSvgToCanvas(bowSvgRaw, ctx,
+      drawSvgToCanvas(bowSvgRaw, this.ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
     };
     if (holdingShield) {
-      drawSvgToCanvas(shieldSvgRaw, ctx,
+      drawSvgToCanvas(shieldSvgRaw, this.ctx,
         elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
         toolSize, objectSize*0.8,
       );
     };
     if (holdingCart) {
-      drawSvgToCanvas(cartSvgRaw, ctx,
+      drawSvgToCanvas(cartSvgRaw, this.ctx,
         elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
         objectSize*0.8, objectSize*0.6,
       );
     }
     if (ridingHorse) {
-      drawSvgToCanvas(horseSvgRaw, ctx,
+      drawSvgToCanvas(horseSvgRaw, this.ctx,
         elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
         objectSize*1.5, objectSize,
       );
@@ -449,7 +589,7 @@ export class BoardRenderer {
       let horse = element.heldElements.filter(el => el.subType == ElementSubType.Horse)[0];
 
       if (horse.hasActionAvailable === false) {
-        drawSvgToCanvas(noSvgRaw, ctx,
+        drawSvgToCanvas(noSvgRaw, this.ctx,
           elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
           objectSize*1.5, objectSize,
         );
@@ -458,7 +598,7 @@ export class BoardRenderer {
 
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
-      drawSvgToCanvas(noSvgRaw, ctx,
+      drawSvgToCanvas(noSvgRaw, this.ctx,
         elemPos.x + objectSize*0.25, elemPos.y+objectSize*0.4,
         objectSize*0.5, objectSize*0.5,
       );
@@ -466,18 +606,34 @@ export class BoardRenderer {
 
     // Health
 
-    ctx.fillStyle = "red";
-    ctx.font = `${miniItemSize*1.5}px serif`;
+    this.ctx.fillStyle = "red";
+    this.ctx.font = `${miniItemSize*1.5}px serif`;
     let healthStr: string = element.health.toString() + " h";
-    ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
+    this.ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
 
     if (isSelected) {
-      BoardRenderer.drawHighlightBox(ctx, elemPos, objectSize, "yellow");
+      this.drawHighlightBox(elemPos, objectSize, "yellow");
     }
   }
 
-  static drawItemElements(ctx: CanvasRenderingContext2D, itemElements: Element[], origin: Coordinate, radius: number) {
-    let { itemSize } = BoardUtils.getElemSizes(radius);
+  drawHighlightBox(
+    elemPos: Coordinate,
+    objectSize: number,
+    color: string
+  ) {
+    this.ctx.save();
+    this.ctx.strokeStyle = color;
+    let lineWidth = objectSize/12;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.strokeRect(elemPos.x-lineWidth, elemPos.y-lineWidth, objectSize+2*lineWidth, objectSize+2*lineWidth);
+    this.ctx.restore();
+  }
+
+  drawItemElements(
+    itemElements: Element[], 
+    origin: Coordinate
+  ) {
+    let { itemSize } = BoardUtils.getElemSizes(this.opts.radius);
 
     let itemElementsCount = itemElements.length;
 
@@ -485,7 +641,7 @@ export class BoardRenderer {
 
     for (let i=0; i < itemElementsCount; i++) {
       let element = itemElements[i];
-      let elemPos = BoardUtils.getElementPosition(element, origin, radius);
+      let elemPos = BoardUtils.getElementPosition(element, origin, this.opts.radius);
 
       let itemSpace = 0.8;
 
@@ -511,77 +667,28 @@ export class BoardRenderer {
         elemPos.x = origin.x + subI*0.5*(1+itemSpace)*itemSize - 0.5*itemSize;
       }
 
-      let elemSvg = getSvgForElement(element);
+      let elemSvg = this.getSvgForElement(element);
 
       drawSvgToCanvas(elemSvg, 
-        ctx,
+        this.ctx,
         elemPos.x, elemPos.y,
         itemSize, itemSize
       );
 
-      ctx.fillStyle = "white";
-      ctx.font = `${itemSize}px serif`;
+      this.ctx.fillStyle = "white";
+      this.ctx.font = `${itemSize}px serif`;
       let countStr = element.count ? element.count.toString() : "";
       let digits = countStr.length;
 
-      ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
+      this.ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
     }
   }
 
-  static drawElements(ctx: CanvasRenderingContext2D, origin: Coordinate, cell: Cell, radius: number, selectedElement: Element|null) {
-    let { buildingSize } = BoardUtils.getElemSizes(radius);
-    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
-    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
+  //===================== Shape things ==========================
 
-    for (var element of nonItemElements) {
-      let isSelected = selectedElement ? selectedElement.id == element.id : false;
-
-      let elemPos = BoardUtils.getElementPosition(element, origin, radius);
-
-      let elemColor = colorForTeam(element.team);
-      let elemSvg = getSvgForElement(element);
-
-      if (element.type == ElementType.Building) {
-        drawSvgToCanvas(elemSvg, ctx,
-          elemPos.x, elemPos.y,
-          buildingSize, buildingSize,
-          elemColor
-        );
-      }
-
-      if (element.type == ElementType.Person) {
-        BoardRenderer.drawPersonElement(ctx, element, elemPos, elemSvg, elemColor, radius, isSelected);
-      }
-    }
-
-    BoardRenderer.drawItemElements(ctx, itemElements, origin, radius);
-  }
-
-  static drawBoundingBoxTriangles(ctx: CanvasRenderingContext2D, cell: Cell, radius: number) {
-    let cellOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius, 0, 0);
-
-    let boundingBoxTriangles = BoardUtils.getBoundingBoxCornerTriangles(radius, cellOrigin);
-
-    for (var triangle of boundingBoxTriangles) {
-      ctx.beginPath();
-      ctx.moveTo(triangle.points[0].x, triangle.points[0].y);
-      ctx.lineTo(triangle.points[1].x, triangle.points[1].y);
-      ctx.lineTo(triangle.points[2].x, triangle.points[2].y);
-      ctx.closePath();
-      ctx.strokeStyle = "orange"; 
-      ctx.stroke();
-    }
-  }
-
-  // static drawTileCoords(ctx: CanvasRenderingContext2D, cell: Cell, origin: Coordinate) {
-  //   ctx.fillStyle = "black";
-  //   ctx.font = "20px serif";
-  //   ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
-  // }
-
-  static createPoly(radius: number, inset: number) {
+  createPoly(): Coordinate[] {
     const
-      size = radius - inset,
+      size = this.opts.radius - this.opts.inset,
       step = TAU / 6;
 
     let points = [];
@@ -592,11 +699,33 @@ export class BoardRenderer {
     return points;
   }
 
-  static polyPath3(ctx: CanvasRenderingContext2D, points: any = []) {
+  polyPath3(points: Coordinate[]) {
     const [{ x: startX, y: startY }] = points;
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    points.forEach(({ x, y }: Coordinate) => { ctx.lineTo(x, y); });
-    ctx.closePath();
+    this.ctx.beginPath();
+    this.ctx.moveTo(startX, startY);
+    points.forEach(({ x, y }: Coordinate) => { this.ctx.lineTo(x, y); });
+    this.ctx.closePath();
   }
 }
+
+// drawBoundingBoxTriangles(cell: Cell) {
+//   let cellOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, radius, 0, 0);
+//
+//   let boundingBoxTriangles = BoardUtils.getBoundingBoxCornerTriangles(radius, cellOrigin);
+//
+//   for (var triangle of boundingBoxTriangles) {
+//     ctx.beginPath();
+//     ctx.moveTo(triangle.points[0].x, triangle.points[0].y);
+//     ctx.lineTo(triangle.points[1].x, triangle.points[1].y);
+//     ctx.lineTo(triangle.points[2].x, triangle.points[2].y);
+//     ctx.closePath();
+//     ctx.strokeStyle = "orange"; 
+//     ctx.stroke();
+//   }
+// }
+
+// static drawTileCoords(ctx: CanvasRenderingContext2D, cell: Cell, origin: Coordinate) {
+//   ctx.fillStyle = "black";
+//   ctx.font = "20px serif";
+//   ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
+// }
