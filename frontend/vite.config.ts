@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/static/gameBuild/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -11,16 +12,16 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: path.resolve(__dirname, '../backend/hexgame/static/gameBuild'),
+    outDir: path.resolve(__dirname, '../backend/hexgame/static/gameBuild/'),
     emptyOutDir: true,
     rollupOptions: {
       output: {
         // Removes hashes from main entry files
-        entryFileNames: `static/[name].js`,
+        entryFileNames: `[name].js`,
         // Removes hashes from split code chunks
-        chunkFileNames: `static/[name].js`,
+        chunkFileNames: `[name].js`,
         // Removes hashes from CSS and other static assets
-        assetFileNames: `static/[name].[ext]`
+        assetFileNames: `[name].[ext]`
       }
     }
   }
