@@ -13,16 +13,40 @@
 
   <!-- Your Games -->
   <h2>Your Running Games</h2>
-
-  <ul>
-      {% for player in games %}
+  
+  <h1>Your Games</h1>
+  <ul class="games-list">
+      {% for game in own_games %}
           <li>
-              <a href="{% url 'game' player.game.id %}">
-                  Game {{ player.game.id }}
+              <a href="{% url 'game' game.id %}">
+                Game {{ game.id }} - {% if game.current_player_turn_user.id != user.id  %}not {% endif %}your turn
               </a>
-              - Turn: {{ player.game.turn_number }}
-              — Players: [{% for p in player.game.players %}{{p.user.username}}, {% endfor %}]
-              - Started: {{ player.game.creation_time }}
+              <span style="display: block;">
+                - Turn: {{ game.turn_number }}
+                - Players: [{% for p in game.players %}{{p.user.username}}, {% endfor %}]
+              </span>
+              <span style="display: block">
+                - Started: {{ game.creation_time }}
+              </span>
+          </li>
+      {% empty %}
+          <li>You are not in any games yet.</li>
+      {% endfor %}
+  </ul>
+  <h1>Other Games</h1>
+  <ul class="games-list">
+      {% for game in other_games %}
+          <li>
+              <a href="{% url 'game' game.id %}">
+                  Game {{ game.id }} (spectate)
+              </a>
+              <span style="display: block;">
+                Turn: {{ game.turn_number }}
+                Players: [{% for p in game.players %}{{p.user.username}}, {% endfor %}]
+              </span>
+              <span style="display: block">
+                Started: {{ game.creation_time }}
+              </span>
           </li>
       {% empty %}
           <li>You are not in any games yet.</li>

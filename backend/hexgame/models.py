@@ -17,6 +17,10 @@ class Game(models.Model):
     def players(self):
         return Player.objects.filter(game=self)
 
+    @property
+    def current_player_turn_user(self):
+        return self.players[self.current_player_turn].user
+
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)

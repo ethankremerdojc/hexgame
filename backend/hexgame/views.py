@@ -32,14 +32,19 @@ def register_view(request):
 
     return render(request, "hexgame/account/register.html", {"form": form})
 
+def get_games(user):
+    players = Player.objects.filter(user=user)
+    game_ids = players.values_list('game__id', flat=True)
+
+    return {
+        "own_games": Game.objects.filter(id__in=game_ids),
+        "other_games": Game.objects.exclude(id__in=game_ids),
+    }
+
 @login_required
 def home_view(request):
-    games = (
-        Player.objects
-        .filter(user=request.user)
-        .select_related("game")
-    )
-    return render(request, "hexgame/account/home.html", {"games": games})
+    games = get_games(request.user)
+    return render(request, "hexgame/account/home.html", games)
 
 @login_required
 def create_game_view(request):
@@ -57,6 +62,7 @@ def create_game_view(request):
                     board_state=json.loads(celldata),   # or whatever your initial board state should be
                     minutes_per_turn=minutes_per_turn,
                     kick_if_inactive=kick_if_inactive,
+                    turn_number=1
                 )
 
                 # include the creator automatically
