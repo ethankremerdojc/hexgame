@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls import static
 
 urlpatterns = [
     path('', include('hexgame.urls')),
@@ -12,3 +14,6 @@ urlpatterns = [
             content_type='application/javascript'
         ), name='sw.js'),
 ]
+
+if not settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
