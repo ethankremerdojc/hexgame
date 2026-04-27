@@ -272,18 +272,15 @@ export class BoardUtils {
     return adjacentCells
   }
 
-  static parseElementId(id: string): any {
-    const [coords, heldElementIndex, position, type, subType, count] = id.split('|');
-    const [x, y] = coords.split(',').map(Number);
-
-    return { x, y, heldElementIndex, position, type, subType, count };
-  }
-
   static getElementParentCell(elem: Element, cells: Cell[]): Cell {
-    let { x, y } = BoardUtils.parseElementId(elem.id);
+
     for (var cell of cells) {
-      if (cell.x == x && cell.y == y) {
-        return cell
+      if (cell.elements) {
+        for (var el of cell.elements) {
+          if (el.id == elem.id) {
+            return cell
+          }
+        }
       }
     }
     throw new Error("unable to find element parent.")
@@ -657,12 +654,21 @@ export class BoardUtils {
       if (holdingCart || holdingBow || holdingSword) {
         return false
       }
+      if (holdingShield && ridingHorse) {
+        return false
+      }
     } else if (elementSubType == ElementSubType.Shield) {
       if (holdingCart || holdingBow || holdingShield) {
         return false
       }
+      if (holdingSword && ridingHorse) {
+        return false
+      }
     } else if (elementSubType == ElementSubType.Horse) {
       if (holdingCart || ridingHorse || holdingShield) {
+        return false
+      }
+      if (holdingSword && holdingShield) {
         return false
       }
     }
@@ -706,15 +712,29 @@ export class BoardUtils {
     return false
   }
 
-  static getTradeOfferings(): object[] {
-    return [
+  static getTradeOfferings(elem: Element): object[] {
+
+
+
+    let offerings: object[] = [
       { type: ElementType.Item, subType: ElementSubType.Wood, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Ore, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Gold, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Clay, count: 1 },
-      { type: ElementType.Item, subType: ElementSubType.Horse, count: 1 },
-    ]
+    ];
+
+    let highestCount = 0;
+    for (var he of elem.heldElements) {
+      if (he.count > highestCount) {
+        highestCount = he.count;
+      }
+    }
+    if (highestCount > 6) {
+      offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1 })
+    }
+
+    return offerings
   }
 
   static getItemsPersonCanGive(personElem: Element|null, cells: Cell[]): ElementSubType[] {

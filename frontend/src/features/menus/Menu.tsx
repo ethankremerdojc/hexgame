@@ -184,18 +184,19 @@ function ElementActionOptions() {
     availableActionsInfo.push(details);
   };
 
+  console.log("trade offering chosen:", tradeOfferingChosen);
+
   const clearActionData = (newCells: Cell[]) => {
     dispatch(setShowMoveInfo(false));
     dispatch(setActionItemsToSelectFrom([]));
     dispatch(setSelectedCell(null));
     dispatch(setActionHandling(""));
 
-    // need to re-get selected element since it has new info
-
     newCells = prepareCellsForStateSave(newCells);
 
     let newParent = newCells.filter((c: Cell) => c.x == parentCell.x && c.y == parentCell.y)[0];
     let newSelEl = newParent.elements.filter((el: Element) => el.id == selectedElement.id)[0];
+    console.log("new sel el", newSelEl);
 
     if (newSelEl.hasActionAvailable) {
       dispatch(setSelectedElement(newSelEl));
@@ -275,12 +276,13 @@ function ElementActionOptions() {
   }
 
   const tradeHandler = () => {
-    dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings()));
+    dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings(selectedElement)));
   }
 
   const backHandler = () => {
     dispatch(setActionItemsToSelectFrom([]));
     dispatch(setActionHandling(""));
+    setTradeOfferingChosen(null);
   }
 
   const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType, giveAmount: number) => {
@@ -492,7 +494,11 @@ function ElementActionOptions() {
                           })
                         }
                         <p>►</p>
-                        <img src={getSvgForSubType(item[1], false)} />
+
+                        <div>
+                          <p>{nameForElementSubType(item[1])}</p>
+                          <img src={getSvgForSubType(item[1], false)} />
+                        </div>
                       </span>
                   </button>
                 )
@@ -547,9 +553,10 @@ function ElementActionOptions() {
                 return (
                   <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }} className="trade-button">
                     <span>
-                      Trade for {nameForElementSubType(getOffering.subType)}
+                      <p>Trade For</p>
+                      <img src={getSvgForSubType(getOffering.subType, false)} />
+                      <p>{nameForElementSubType(getOffering.subType)}</p>
                     </span>
-                    <img src={getSvgForSubType(getOffering.subType, false)} />
                   </button>
                 )
               })
@@ -559,9 +566,15 @@ function ElementActionOptions() {
                           disabled={
                             giveOffering == ElementSubType.Horse && 
                               BoardUtils.elWithHighestCount(selectedElement) &&
-                              BoardUtils.elWithHighestCount(selectedElement).count < 7 }>
-                  Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2} {nameForElementSubType(giveOffering)}
-                </button>)
+                              BoardUtils.elWithHighestCount(selectedElement).count < 7 }
+                        >
+                          <span>
+                            <p>Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2}</p>
+                            <img src={getSvgForSubType(giveOffering, false)} />
+                            <p>{nameForElementSubType(giveOffering)}</p>
+                          </span>
+                        </button>
+                )
               })
               
             }
@@ -618,7 +631,9 @@ export function ElementActionsMenu() {
       {
       helpMenuOpen ?
         <>
-          <button className="help-toggle" onClick={() => {setHelpMenuOpen(false)}}>Back</button>
+          <button className="help-toggle" onClick={() => {
+              setHelpMenuOpen(false);
+            }}>Close Help</button>
           <HelpMenu />
         </>
       : <>
@@ -667,7 +682,9 @@ export function ElementActionsMenu() {
       {
         helpMenuOpen ?
           <>
-            <button className="help-toggle" onClick={() => {setHelpMenuOpen(false)}}>Back</button>
+            <button className="help-toggle" onClick={() => {
+              setHelpMenuOpen(false);
+            }}>Close Help</button>
             <HelpMenu />
           </>
         : <>

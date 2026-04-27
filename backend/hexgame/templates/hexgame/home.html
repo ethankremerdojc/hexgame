@@ -1,0 +1,32 @@
+{% extends 'hexgame/base.html' %}
+{% block title %}Home{% endblock title %}
+
+{% block extracss %}
+  .game-list-link {
+    text-decoration: none;
+    color: blue;
+    font-weight: bold;
+
+    i {
+      color: purple;
+    }
+  }
+{% endblock extracss %}
+
+{% block content %}
+  <p>Welcome, {{ user.username }}.</p>
+  <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit">Log out</button>
+  </form>
+
+  <!-- Create Game -->
+  <p>
+      <a href="{% url 'create_game' %}">
+          <button>Create a Game</button>
+      </a>
+  </p>
+
+  {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True %}
+  {% include "hexgame/game/components/game_list.html" with games=other_games is_own=False %}
+{% endblock content %}

@@ -22,6 +22,7 @@ function Ingredients() {
             return (
               <div key={thing} className="build-item">
                 <div className="thing-to-build">
+                  <p>{nameForElementSubType(thing)}</p>
                   <img src={getSvgForSubType(thing, false)} />
                 </div>
                 <div className="ingredients">

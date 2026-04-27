@@ -30,15 +30,8 @@ import { BoardUtils } from "./boardUtils"
 
 // import { getCSRFToken } from "./utils"
 
-export function getElementId(elem: any, cell: Cell, oldId: string|null): string {
-  let result = `${cell.x},${cell.y}|null|${elem.position}|${elem.type}|${elem.subType}|${elem.count}`;
-  if (oldId !== null && oldId !== undefined && oldId !== "") {
-    let hex = oldId.split("|").pop();
-    result += "|" + hex;
-  } else {
-    result += "|" + genRanHex(4);
-  }
-  return result
+export function getElementId(): string {
+  return genRanHex(10);
 }
 
 const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
@@ -46,7 +39,10 @@ const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.r
 export function updateElemAttributes(elem: Element, cell: Cell): Element {
   let newElem = {...elem};
 
-  newElem.id = getElementId(elem, cell, newElem.id ? newElem.id : null);
+  // items need new ids each type we update, buildings and persons dont
+  if (elem.type == ElementType.Item || !elem.id) {
+    newElem.id = getElementId();
+  }
 
   if (newElem.type == ElementType.Person) {
     if (!newElem.heldElements) {

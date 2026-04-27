@@ -109,5 +109,6 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+TIME_ZONE = "America/Edmonton"
 
 from .local_settings import *

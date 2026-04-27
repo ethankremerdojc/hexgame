@@ -1,0 +1,34 @@
+{% if is_own %}
+  <h1>Own Games</h1>
+{% else %}
+  <h1>Other Games (Spectate)</h1>
+{% endif %}
+<ul class="games-list">
+    {% for game in games %}
+        <li>
+            <a href="{% url 'game' game.id %}" class="game-list-link">
+              <span>
+                Game {{ game.id }}
+                <i>Turn {{ game.turn_number }}:</i>
+                {% if game.current_player_turn_user.id == user.id  %}
+                  <i>Your Turn.</i>
+                {% else %}
+                  <i>{{ game.current_player_turn_user.username }}'s Turn.</i>
+                {% endif %}
+              </span>
+            </a>
+            <span style="display: block;">
+              - Players: ( {% for p in game.players %}{{p.user.username}} {% endfor %})
+            </span>
+
+            <span style="display: block">
+              - Started: {{ game.creation_time }}
+            </span>
+            <span style="display: block">
+              - Last Update: {{ game.time_since_last_update }} ago
+            </span>
+        </li>
+    {% empty %}
+        <li>You are not in any games yet.</li>
+    {% endfor %}
+</ul>
