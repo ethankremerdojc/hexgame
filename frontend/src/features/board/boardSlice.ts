@@ -56,7 +56,10 @@ export function updateElemAttributes(elem: Element): Element {
         if (!he.count) {
           he.count = 1;
         }
-        he.id = getElementId();
+
+        if (!elem.id) {
+          he.id = getElementId();
+        }
         newHeldElements.push(he);
       }
 
