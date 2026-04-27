@@ -11,8 +11,9 @@
 
     </style>
 
-    <a href="/">Home</a>
-    <p>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</p>
+    <a href="/" style="display: block;">Home</a>
+    <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i>
+    <i>- Last Update: {{ game.time_since_last_update }} ago</i>
 
     <iframe src="/game/iframe/?game_id={{game.id}}" id="gameIframe" />
 
