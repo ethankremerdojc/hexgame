@@ -14,6 +14,10 @@
         font-size: clamp(0.8rem, 2.8vh, 2.8rem);
       }
     </style>
+    <style>
+      {% block extracss %}
+    {% endblock extracss %}
+    </style>
 </head>
 <body>
   {% block content %}

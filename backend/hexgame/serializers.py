@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Game, Player
+from .models import *
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,6 +21,16 @@ class PlayerSerializer(serializers.ModelSerializer):
             "game"
         ]
 
+# class GameEventSerializer(serializers.ModelSerializer):
+#     player = PlayerSerializer(read_only=True)
+#
+#     class Meta:
+#         model = GameEvent
+#         fields = [
+#             "id",
+#             "timestamp",
+#             "player"
+#         ]
 
 class GameSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True, read_only=True)

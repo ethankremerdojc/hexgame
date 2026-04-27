@@ -11,11 +11,13 @@ from django.views.decorators.http import require_POST
 from backend.settings import BASE_DIR
 
 from .forms import CreateGameForm
-from .models import Game, Player, PushSubscription
+from .models import *
 from django.contrib.auth.models import User
 from pywebpush import webpush, WebPushException
 from .serializers import GameSerializer
 from backend import settings
+
+from django.db.models import Case, When, Value, BooleanField
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -44,7 +46,7 @@ def get_games(user):
 @login_required
 def home_view(request):
     games = get_games(request.user)
-    return render(request, "hexgame/account/home.html", games)
+    return render(request, "hexgame/home.html", games)
 
 @login_required
 def create_game_view(request):
@@ -92,11 +94,11 @@ def user_has_subscribed(user):
     except:
         return False
 
+#TODO make this actually login required
 # @login_required
 def get_game_context(request, game_id):
     game = get_object_or_404(Game, pk=game_id)
     game = GameSerializer(game).data
-
 
     return JsonResponse({
         "game": game,
@@ -144,10 +146,9 @@ def update_game(request):
     game.save()
 
     player = list(game.players)[game.current_player_turn]
+    PlayerEvent.objects.create(player=player)
 
     if PushSubscription.objects.filter(user=player.user).exists():
-        # print(player.user)
-        # print("sending push to above")
         send_test_push(player.user, game.id)
 
     game_data = GameSerializer(game).data
