@@ -19,12 +19,16 @@ export function getAPILocation() {
 
 let API_HOST = getAPILocation();
 
-export async function postUpdateToBackend(cells: Cell[], playerTurn: TeamColor, gameId: number) {
+export async function postUpdateToBackend(cells: Cell[], playerTurn: TeamColor, gameId: number, wasAdminUpdate: boolean=false) {
   const formData = new URLSearchParams();
 
   formData.append("game_id", String(gameId));
   formData.append("cells", JSON.stringify(cells));
   formData.append("playerTurn", String(playerTurn));
+
+  if (wasAdminUpdate) {
+    formData.append("admin_update", "yes");
+  }
 
   const response = await fetch(API_HOST + "/game/update/", {
     method: "POST",

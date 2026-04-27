@@ -155,7 +155,7 @@ export default function EditorMenu() {
           {
             window.__editing_live_game &&
             <button onClick={() => {
-              postUpdateToBackend(cells, playerTurn, getGameId()).then(r => {
+              postUpdateToBackend(cells, playerTurn, getGameId(), true).then(r => {
                 console.log(r);
                 alert("succesffuly updated game")
               })

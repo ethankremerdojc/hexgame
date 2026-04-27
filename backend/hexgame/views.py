@@ -131,16 +131,22 @@ def game_iframe(request):
 @login_required
 def update_game(request):
     game_id = request.POST.get("game_id")
+    was_admin_update = request.POST.get("admin_update", False)
     game = get_object_or_404(Game, pk=game_id)
 
     new_cells = request.POST.get("cells")
-    new_player_turn = request.POST.get("playerTurn")
 
     game.board_state = json.loads(new_cells)
-    game.current_player_turn = int(new_player_turn)
 
-    if game.current_player_turn == 0:
-        game.turn_number += 1
+    if not was_admin_update:
+        new_player_turn = request.POST.get("playerTurn")
+
+        game.current_player_turn = int(new_player_turn)
+
+        if game.current_player_turn == 0:
+            game.turn_number += 1
+    else:
+        print("was admin update")
 
     game.save()
 
