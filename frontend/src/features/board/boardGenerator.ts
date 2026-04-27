@@ -12,9 +12,7 @@ import type {
   Cell
 } from "./boardTypes"
 
-import {
-  BoardUtils
-} from "./boardUtils"
+import BoardUtils from "./boardUtils"
 
 import {
   CellType, ElementType, ElementSubType, TeamColor

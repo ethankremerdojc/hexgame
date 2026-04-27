@@ -32,11 +32,17 @@
         iframeContainer.innerHTML = `<iframe id="previewIframe" width="720px" height="720px" src="${newIframePath}"></iframe>`;
 
 
-        setTimeout(() => {requestData().then(response => {
+      }
+
+      const createGameForm = document.getElementById("createGameForm");
+      createGameForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        requestData().then(response => {
           let cellDataInput = document.getElementById("id_celldata");
           cellDataInput.value = response.cells;
-        })}, 1000);
-      }
+          createGameForm.submit();
+        })
+      })
 
       function requestData() {
         const iframe = document.getElementById("previewIframe");

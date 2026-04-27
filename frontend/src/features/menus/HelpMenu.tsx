@@ -138,7 +138,7 @@ function HowToPlay() {
   )
 }
 
-export function HelpMenu() {
+export default function HelpMenu() {
   const [showIngredients, setShowIngredients] = useState(false);
 
   return (

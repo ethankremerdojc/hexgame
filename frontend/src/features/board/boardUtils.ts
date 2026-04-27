@@ -13,7 +13,7 @@ import {
   nameForElementSubType
 } from "./vars"
 
-export class BoardUtils {
+export default class BoardUtils {
   static getElemSizes(radius: number): any {
     let halfRadius = radius/2;
     let buildingSize = radius*0.4;
@@ -565,8 +565,6 @@ export class BoardUtils {
       result.push(copied);
     }
 
-    console.log()
-    
     return result
   }
 

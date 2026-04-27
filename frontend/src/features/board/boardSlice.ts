@@ -26,7 +26,7 @@ import {
   itemTypeForCellType
 } from "./vars"
 
-import { BoardUtils } from "./boardUtils"
+import BoardUtils from "./boardUtils"
 
 // import { getCSRFToken } from "./utils"
 
@@ -36,7 +36,7 @@ export function getElementId(): string {
 
 const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
-export function updateElemAttributes(elem: Element, cell: Cell): Element {
+export function updateElemAttributes(elem: Element): Element {
   let newElem = {...elem};
 
   // items need new ids each type we update, buildings and persons dont
@@ -56,7 +56,7 @@ export function updateElemAttributes(elem: Element, cell: Cell): Element {
         if (!he.count) {
           he.count = 1;
         }
-        he.id = getElementId(he, cell, he.id);
+        he.id = getElementId();
         newHeldElements.push(he);
       }
 
@@ -116,7 +116,7 @@ function updateCellElements(cell: Cell): Element[] {
   let result = [];
 
   for (var elem of newElements) {
-    result.push(updateElemAttributes(elem, cell));
+    result.push(updateElemAttributes(elem));
   }
 
   return result;

@@ -19,7 +19,7 @@ import {
   getBuildingCost
 } from "./vars"
 
-import { BoardUtils } from "./boardUtils"
+import BoardUtils from "./boardUtils"
 
 export default class BoardActions {
 
@@ -113,7 +113,7 @@ export default class BoardActions {
 
     // create new element on the tile, will be combined automatically in the slice
     let copiedDroppedElement = structuredClone(elementToDrop);
-    copiedDroppedElement.id = getElementId(copiedDroppedElement, elemParentCell, null); // Give the copied elem a new id
+    copiedDroppedElement.id = getElementId(); // Give the copied elem a new id
     copiedDroppedElement.count = count;
     elemParentCell.elements.push(copiedDroppedElement);
     elementToDrop.count -= count;
@@ -156,7 +156,7 @@ export default class BoardActions {
 
     let elementToTake = elemParentCell.elements.filter((e: Element) => e.id == takenItemId)[0];
     let copiedElem = structuredClone(elementToTake);
-    copiedElem.id = getElementId(copiedElem, elemParentCell, null); // Give the copied elem a new id
+    copiedElem.id = getElementId(); // Give the copied elem a new id
 
     if (count == elementToTake.count) {
       // just take actual item and move it

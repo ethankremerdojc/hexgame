@@ -36,7 +36,7 @@ import {
   getSpecificItemBuildingCost
 } from "../board/vars"
 
-import { BoardUtils } from "../board/boardUtils"
+import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
 import { TESTING } from "@/App.tsx"
@@ -48,7 +48,8 @@ import { getSvgForSubType } from "../board/boardRenderer"
 
 import './Menu.css'
 
-import { HelpMenu } from "./HelpMenu"
+import HelpMenu from "./HelpMenu"
+import EditorMenu from "./EditorMenu"
 
 import buildSvg from "../board/svg/actions/buildIcon.svg";
 import dropSvg from "../board/svg/actions/dropIcon.svg";
@@ -184,8 +185,6 @@ function ElementActionOptions() {
     availableActionsInfo.push(details);
   };
 
-  console.log("trade offering chosen:", tradeOfferingChosen);
-
   const clearActionData = (newCells: Cell[]) => {
     dispatch(setShowMoveInfo(false));
     dispatch(setActionItemsToSelectFrom([]));
@@ -196,7 +195,6 @@ function ElementActionOptions() {
 
     let newParent = newCells.filter((c: Cell) => c.x == parentCell.x && c.y == parentCell.y)[0];
     let newSelEl = newParent.elements.filter((el: Element) => el.id == selectedElement.id)[0];
-    console.log("new sel el", newSelEl);
 
     if (newSelEl.hasActionAvailable) {
       dispatch(setSelectedElement(newSelEl));
@@ -603,7 +601,6 @@ export function ElementActionsMenu() {
   const dispatch = useAppDispatch();
   const playerTurn =        useAppSelector(getPlayerTurn);
 
-
   // ==========================================
 
   const [confirmingEndTurn, setConfirmingEndTurn] = useState(false);
@@ -625,6 +622,13 @@ export function ElementActionsMenu() {
   const userSubscribed = useAppSelector(getUserSubscribed);
   const turnNumber = useAppSelector(getTurnNumber);
 
+  if (window.__editor_mode__) {
+    return (
+      <div className="element-actions-menu"><div className="element-actions-menu-inner">
+        <EditorMenu />
+      </div></div>
+    )
+  }
 
   if (currentPlayerName !== loggedInUsername && !TESTING) {
     return (<div className="element-actions-menu"><div className="element-actions-menu-inner">

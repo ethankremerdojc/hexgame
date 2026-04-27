@@ -114,12 +114,10 @@ def game_iframe(request):
         html = f.read()
 
     player_count = request.GET.get("player_count")
-    view_only = request.GET.get("view_only", False)
 
-    if player_count or view_only:
+    if player_count:
         react_context = json.dumps({
             "playerCount": player_count,
-            # "viewOnly": view_only,
         })
 
         html = html.replace(
@@ -173,8 +171,6 @@ def notification_subscribe_view(request):
         keys = sub["keys"]
         p256dh = keys["p256dh"]
         auth = keys["auth"]
-
-
 
     except (KeyError, json.JSONDecodeError):
 

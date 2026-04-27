@@ -6,9 +6,7 @@ import {
   CellType, ElementType, ElementSubType
 } from "./boardTypes"
 
-import {
-  BoardUtils
-} from "./boardUtils.ts"
+import BoardUtils from "./boardUtils.ts"
 
 import {
   colorForTeam
@@ -225,7 +223,7 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
 const TAU = 2 * Math.PI;
 
 
-export class BoardRenderer {
+export default class BoardRenderer {
   ctx: CanvasRenderingContext2D;
   cells: Cell[];
   selectedCell: Cell|null;

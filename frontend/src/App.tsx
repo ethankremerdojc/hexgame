@@ -44,15 +44,23 @@ declare global {
     __IFRAME_CONTEXT__?: {
       playerCount: number | null;
     };
+    __editor_mode__: boolean | null;
     __svgImgData?: any;
     __cachedSvgs?: any;
     __cellPatterns?: any;
-    // __?: any;
-    // __svgImgData?: any;
   }
 }
 
 export const TESTING = window.location.host.includes(":5173");
+
+export const USE_FAKE_IFRAME_CONTEXT = TESTING && true;
+
+if (USE_FAKE_IFRAME_CONTEXT) {
+  window.__IFRAME_CONTEXT__ = {
+    playerCount: 3
+  }
+  window.__editor_mode__ = true;
+}
 
 let TEST_GAME_ID = 16;
 
@@ -111,6 +119,7 @@ function App() {
       let iframeContext = window.__IFRAME_CONTEXT__;
       if (!iframeContext) { return }
 
+      window.__editor_mode__ = true;
       let newPlayerCount = iframeContext.playerCount ? iframeContext.playerCount : 0;
       dispatch(setPlayerCount(newPlayerCount))
 
@@ -120,7 +129,12 @@ function App() {
       const BG = new BoardGenerator();
       const newBoard = BG.generateBoard(hexRadius, canvasSize, canvasSize, newPlayerCount);
       dispatch(setCells(newBoard));
-      dispatch(setViewOnly(true));
+
+      if (!window.__editor_mode__) {
+        dispatch(setViewOnly(true));
+      } else {
+        dispatch(setViewOnly(false));
+      };
       dispatch(setBackupCells(newBoard));
     }
   }, [backendContext]);

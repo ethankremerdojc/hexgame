@@ -24,13 +24,8 @@ import {
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
-import {
-  BoardRenderer
-} from "./boardRenderer.ts";
-
-import {
-  BoardUtils
-} from "./boardUtils.ts";
+import BoardRenderer from "./boardRenderer.ts";
+import BoardUtils from "./boardUtils.ts";
 
 import "./Board.css"
 
@@ -47,7 +42,7 @@ function getSelectedCellFromMousePos(
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
-      // console.log("selected cell: ", cell)
+      console.log("selected cell: ", cell)
       return cell
     }
   }
@@ -139,10 +134,6 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
     renderer.render();
     incrementRenderCount();
-
-    // if (!renderCount % 25) {
-    //   console.log("renders: ", renderCount);
-    // }
 
   }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo]);
 
@@ -408,8 +399,12 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    if (!thisPlayersTurn && !TESTING) { return }
+    if (window.__editor_mode__) {
+      doSelectionStuffs(mx, my);
+      return
+    }
 
+    if (!thisPlayersTurn && !TESTING) { return }
     doSelectionStuffs(mx, my);
   };
 
