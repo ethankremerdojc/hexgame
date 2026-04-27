@@ -12,8 +12,17 @@ import {
 
 import {
   getSelectedCell,
+  getPlayerTurn,
   getCells, setCells,
 } from "../board/boardSlice.ts";
+
+import {
+  postUpdateToBackend
+} from "@/app/api.js"
+
+import {
+  getGameId
+} from "../../App"
 
 import {
   nameForTeamColor
@@ -25,6 +34,7 @@ export default function EditorMenu() {
   const dispatch = useAppDispatch();
   const cells = useAppSelector(getCells);
   const selectedCell = useAppSelector(getSelectedCell);
+  const playerTurn = useAppSelector(getPlayerTurn);
 
   function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
     let newCells = structuredClone(oldCells);
@@ -99,15 +109,19 @@ export default function EditorMenu() {
     dispatch(setCells(newCells));
   }
 
-  if (window.__IFRAME_CONTEXT__ === undefined) {
-    throw new Error("Missing iframe context.")
+  function getPlayerCount() {
+    let count = 0;
+    for (var cell of cells) {
+      for (var el of cell.elements) {
+        if (el.subType == ElementSubType.Capital) {
+          count ++;
+        }
+      }
+    }
+    return count;
   }
 
-  const playerCount = window.__IFRAME_CONTEXT__.playerCount;
-
-  if (playerCount === null) {
-    throw new Error("Missing player count")
-  }
+  const playerCount = getPlayerCount();
 
   function getMoveCapitalButtons() {
     if (playerCount === null) {
@@ -138,6 +152,17 @@ export default function EditorMenu() {
           <div>
             {getMoveCapitalButtons()}
           </div>
+          {
+            window.__editing_live_game &&
+            <button onClick={() => {
+              postUpdateToBackend(cells, playerTurn, getGameId()).then(r => {
+                console.log(r);
+                alert("succesffuly updated game")
+              })
+            }}>
+              Update Real Game
+            </button>
+          }
         </div>
         :
         <p>Select a cell.</p>

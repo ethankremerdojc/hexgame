@@ -45,6 +45,7 @@ declare global {
       playerCount: number | null;
     };
     __editor_mode__: boolean | null;
+    __editing_live_game: boolean | null;
     __svgImgData?: any;
     __cachedSvgs?: any;
     __cellPatterns?: any;
@@ -64,10 +65,16 @@ if (USE_FAKE_IFRAME_CONTEXT) {
 
 let TEST_GAME_ID = 16;
 
-function getGameId(): number {
+export function getGameId(): number {
   let params = new URLSearchParams(document.location.search);
   let gameId = params.get("game_id");
   return gameId ? Number(gameId) : TEST_GAME_ID
+}
+
+function getIsEditorModeFromURL(): boolean {
+  let params = new URLSearchParams(document.location.search);
+  let editorMode: any = params.get("editorMode");
+  return editorMode ? true : false
 }
 
 function App() {
@@ -113,8 +120,15 @@ function App() {
   }, [contextCollectionStatus]);
 
   useEffect(() => {
+
+    if (loggedInUsername === "admin" && getIsEditorModeFromURL()) {
+      window.__editor_mode__ = true;
+      window.__editing_live_game = true;
+    }
+
     if (backendContext != null) {
       applyBackendContext(backendContext);
+
     } else {
       let iframeContext = window.__IFRAME_CONTEXT__;
       if (!iframeContext) { return }
@@ -131,13 +145,14 @@ function App() {
       dispatch(setCells(newBoard));
 
       if (!window.__editor_mode__) {
-        dispatch(setViewOnly(true));
+        window.__editor_mode__ = true;
+        dispatch(setViewOnly(false));
       } else {
         dispatch(setViewOnly(false));
       };
       dispatch(setBackupCells(newBoard));
     }
-  }, [backendContext]);
+  }, [backendContext, loggedInUsername]);
 
   useEffect(() => {
     if (contextCollectionStatus !== "success") return;

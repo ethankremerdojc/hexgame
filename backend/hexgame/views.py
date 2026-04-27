@@ -85,7 +85,8 @@ def create_game_view(request):
 @login_required
 def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
-    return render(request, "hexgame/game/game.html", {"game": game})
+    editor_mode = request.GET.get("editorMode")
+    return render(request, "hexgame/game/game.html", {"game": game, "editor_mode": editor_mode})
 
 
 def user_has_subscribed(user):
