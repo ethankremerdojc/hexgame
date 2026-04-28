@@ -15,6 +15,7 @@ import {
   PERSON_BASE_DAMAGE,
   SHIELD_ARMOR_INCREASE_AMOUNT,
   SWORD_DAMAGE_INCREASE_AMOUNT,
+  LEATHER_ARMOR_INCREASE_AMOUNT,
   PERSON_BASE_HEALTH,
   getBuildingCost
 } from "./vars"
@@ -209,7 +210,7 @@ export default class BoardActions {
     return newCells
   }
 
-  static doDamage(agressor: Element, defender: Element) {
+  static doDamage(agressor: Element, defender: Element, ignoreShield: boolean=false) {
 
     function getShieldFactor(person: Element) {
       let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Shield).length > 0;
@@ -219,10 +220,19 @@ export default class BoardActions {
     function getSwordFactor(person: Element) {
       let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Sword).length > 0;
       return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
+    };
+
+    function getArmorFactor(person: Element) {
+      let isWearingLeatherArmor = person.heldElements.filter((el: Element) => el.subType == ElementSubType.LeatherArmor).length > 0;
+      return isWearingLeatherArmor ? LEATHER_ARMOR_INCREASE_AMOUNT : 0
     }
 
-    let defenderArmor = defender.armor ? defender.armor : 0;
-    defenderArmor += getShieldFactor(defender);
+
+    let defenderArmor = getArmorFactor(defender);
+
+    if (!ignoreShield) {
+      defenderArmor += getShieldFactor(defender);
+    }
 
     let agressorDamage = PERSON_BASE_DAMAGE + getSwordFactor(agressor);
 
@@ -300,7 +310,7 @@ export default class BoardActions {
     let parentCell = BoardUtils.getElementParentCell(personElem, newCells);
     parentCell.elements.push(receivedItem);
     return newCells
-  }
+  };
 
   static shoot(personShooting: Element, personToShoot: Element, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
@@ -311,7 +321,7 @@ export default class BoardActions {
     newPersonShooting.hasActionAvailable = false;
 
     let newPersonToShoot = parentCell.elements.filter((el: Element) => el.id == personToShoot.id)[0];
-    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
+    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot, true);
 
     if (!hurtPerson) {
       parentCell.elements = [...parentCell.elements, ...newPersonToShoot.heldElements];

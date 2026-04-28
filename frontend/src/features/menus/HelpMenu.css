@@ -48,6 +48,12 @@
   }
 }
 
+.how-to-play-items {
+  li {
+    margin: var(--font-size-small) 0;
+  }
+}
+
 .thing-to-build {
   display: flex;
   flex-direction: column;

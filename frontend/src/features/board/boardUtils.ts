@@ -3,14 +3,20 @@ import type {
 } from "./boardTypes"
 
 import {
-  HexPosition, ElementType, ElementSubType, CellType, MATERIAL_ELEMENT_SUBTYPES
+  HexPosition, 
+  ElementType, 
+  ElementSubType, 
+  CellType, 
+  MATERIAL_ELEMENT_SUBTYPES,
+  getHandsRequiredToHold
 } from "./boardTypes"
 
 import {
   PERSON_MAX_CARRY_WEIGHT,
   CART_CARRY_WEIGHT_INCREASE,
   getBuildingCost,
-  nameForElementSubType
+  nameForElementSubType,
+  getTradeCostForSubType
 } from "./vars"
 
 export default class BoardUtils {
@@ -441,6 +447,7 @@ export default class BoardUtils {
     result.push([ElementType.Item, ElementSubType.Sword]);
     result.push([ElementType.Item, ElementSubType.Shield]);
     result.push([ElementType.Item, ElementSubType.Cart]);
+    result.push([ElementType.Item, ElementSubType.LeatherArmor]);
 
     return result
   }
@@ -628,49 +635,32 @@ export default class BoardUtils {
 
     if (BoardUtils.getPersonRemainingCarryWeight(personElem) < 1) {
       return false
-    }
+    };
 
-    let holdingCart = personElem.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+    let subTypesToCheck: ElementSubType[] = [
+      ElementSubType.Cart,
+      ElementSubType.Sword,
+      ElementSubType.Bow,
+      ElementSubType.Shield,
+      ElementSubType.Cow,
+      ElementSubType.Horse
+    ]
 
-    let holdingSword = personElem.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
-    let holdingBow = personElem.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
-    let holdingShield = personElem.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
+    let currentCapacity = 0;
 
-    let ridingHorse = personElem.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
+    for (var subType of subTypesToCheck) {
+      let holdingItemCount = personElem.heldElements.filter((el: Element) => el.subType == subType).length;
+      if (holdingItemCount > 0) {
+        currentCapacity += getHandsRequiredToHold(subType) * holdingItemCount;
+      }
+    };
+
+    let handsRequired = getHandsRequiredToHold(elementSubType);
+
+    console.log(currentCapacity, handsRequired);
 
 
-    if (elementSubType == ElementSubType.Cart) {
-      if (holdingSword || holdingBow || holdingShield || holdingCart || ridingHorse) {
-        return false
-      }
-    } else if (elementSubType == ElementSubType.Bow) {
-      if (holdingSword || holdingShield || holdingCart || holdingBow) {
-        return false
-      }
-    } else if (elementSubType == ElementSubType.Sword) {
-      if (holdingCart || holdingBow || holdingSword) {
-        return false
-      }
-      if (holdingShield && ridingHorse) {
-        return false
-      }
-    } else if (elementSubType == ElementSubType.Shield) {
-      if (holdingCart || holdingBow || holdingShield) {
-        return false
-      }
-      if (holdingSword && ridingHorse) {
-        return false
-      }
-    } else if (elementSubType == ElementSubType.Horse) {
-      if (holdingCart || ridingHorse || holdingShield) {
-        return false
-      }
-      if (holdingSword && holdingShield) {
-        return false
-      }
-    }
-
-    return true
+    return currentCapacity + handsRequired <= 2
   }
 
   static personCanTakeAnyItem(personElem: Element, cells: Cell[]): boolean {
@@ -729,8 +719,11 @@ export default class BoardUtils {
       offerings.push({type: ElementType.Item, subType: ces, count: 1, disabled: !itemsToTradeExistForMaterial})
     }
 
-    let itemsToTradeExistForHorse = BoardUtils.itemsForTradeExistOnTile(elem, 7, cells);
-    offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1, disabled: !itemsToTradeExistForHorse })
+    let itemsToTradeExistForHorse = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubType.Horse), cells);
+    offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1, disabled: !itemsToTradeExistForHorse });
+
+    let itemsToTradeExistForCow = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubType.Cow), cells);
+    offerings.push({ type: ElementType.Item, subType: ElementSubType.Cow, count: 1, disabled: !itemsToTradeExistForCow });
 
     return offerings
   }

@@ -4,7 +4,9 @@ export enum TeamColor {
   Red,
   Yellow,
   Blue,
-  Green
+  Green,
+  Black,
+  Brown
 }
 
 export enum HexPosition {
@@ -23,7 +25,6 @@ export enum ElementType {
 }
 
 export enum ElementSubType {
-
   // buildings 
   Capital,
   Village,
@@ -48,16 +49,30 @@ export enum ElementSubType {
   Bow,
   Shield,
   Cart,
-  Horse
+  Horse,
+
+  Cow,
+  Leather,
+  LeatherArmor
 }
 
 export const MATERIAL_ELEMENT_SUBTYPES: ElementSubType[] = [
     ElementSubType.Wood,
     ElementSubType.Food,
     ElementSubType.Ore,
-    // ElementSubType.Gold,
-    ElementSubType.Clay
+    ElementSubType.Clay,
+    ElementSubType.Leather
 ];
+
+export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [
+  ElementSubType.Sword,
+  ElementSubType.Bow,
+  ElementSubType.Shield,
+  ElementSubType.Cart,
+  ElementSubType.Horse,
+  ElementSubType.Cow,
+  ElementSubType.LeatherArmor
+]
 
 export enum CellType {
   Field,
@@ -75,14 +90,41 @@ export type Element = {
   position: HexPosition|null,
   id: string,
   count: number,
+  name: string|null,
 
   // Person only
   heldElements: Element[],
   health: number,
-  armor: number|null,
   weight: number|null,
   hasActionAvailable: boolean|null,
   isWorking: boolean|null,
+
+}
+
+export function getHandsRequiredToHold(elementSubType: ElementSubType) {
+  switch (elementSubType) {
+    case ElementSubType.Cart:
+      return 2
+      break;
+    case ElementSubType.Horse:
+      return 1
+      break;
+    case ElementSubType.Cow:
+      return 1
+      break;
+    case ElementSubType.Bow:
+      return 1
+      break;
+    case ElementSubType.Shield:
+      return 1
+      break;
+    case ElementSubType.Sword:
+      return 1
+      break;
+    default:
+      return 0
+      break;
+  }
 }
 
 export function objectToElement(_obj: any): Element {

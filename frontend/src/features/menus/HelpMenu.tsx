@@ -6,6 +6,9 @@ import {
   nameForElementSubType, 
   getSpecificItemBuildingCost,
   PERSON_BASE_DAMAGE,
+  SWORD_DAMAGE_INCREASE_AMOUNT,
+  SHIELD_ARMOR_INCREASE_AMOUNT,
+  LEATHER_ARMOR_INCREASE_AMOUNT,
   NO_FOOD_PENALTY
 } from "../board/vars"
 import { getSvgForSubType } from "../board/boardRenderer"
@@ -87,26 +90,29 @@ function HowToPlay() {
             Move: Move to an adjacent tile.
           </li>
           <li>
-            Take/Drop: Take or drop an item from the tile your villager is on. This includes horses and carts.
+            Take/Drop: Take or drop an item from the tile your villager is on. This includes horses and carts.<br />
             <br/>
             Limitations:
             <br/>
-            You can not hold a horse and cart at the same time, you can not hold a bow and sword at the same time.
+            You can not hold a horse and cart at the same time, you can not hold a bow and sword at the same time.<br />
             You can not hold a shield and bow, or any two of horse, cart or weapon.
           </li>
           <li>
-            Fight: Deal damage to an enemy villager. The base damage is {PERSON_BASE_DAMAGE}, which can be altered by swords and shields.
-            The enemy will also deal damage to your villager at the same time.
+            Fight: Deal damage to an enemy villager. The base damage is {PERSON_BASE_DAMAGE}, which can be altered by weapons, shields and armor
+            The enemy will also deal damage to your villager at the same time.<br />
+            Sword: Adds {SWORD_DAMAGE_INCREASE_AMOUNT} damage.<br />
+            Shield: Reduces damage by {SHIELD_ARMOR_INCREASE_AMOUNT}.<br />
+            Leather Armor: Reduces damage by {LEATHER_ARMOR_INCREASE_AMOUNT}.<br />
           </li>
           <li>
-            Build: Build a structure or item with the items in your villagers inventory and on the ground.
+            Build: Build a structure or item with the items in your villagers inventory and on the ground.<br />
             There can not already be another structure there.
           </li>
           <li>
             Destroy: Destroy a structure at the tile you are on.
           </li>
           <li>
-            Work: Cause your villager to work until the next turn, earning items.
+            Work: Cause your villager to work until the next turn, earning items.<br />
             Your villagers will automatically work if they didn't do any other actions.
           </li>
           <li>
@@ -119,7 +125,7 @@ function HowToPlay() {
             Trade: On a tile with a trader, trade any 2 of a resource for any 1 resource. You can also buy a horse for 7 of any one resource.
           </li>
           <li>
-            Shoot: If your villager has a bow, they can do {PERSON_BASE_DAMAGE} damage to another villager in an adjacent tile, without having that villager do damage to them.
+            Shoot: If your villager has a bow, they can do {PERSON_BASE_DAMAGE} damage to another villager in an adjacent tile, without having that villager do damage to them. Shooting ignores shields, but not armor.
           </li>
 
         </ul>

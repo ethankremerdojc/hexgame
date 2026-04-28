@@ -55,6 +55,8 @@ declare global {
 export const TESTING = window.location.host.includes(":5173");
 
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
+export const USE_TESTING_EDITOR_MODE = false;
+
 
 if (USE_FAKE_IFRAME_CONTEXT) {
   window.__IFRAME_CONTEXT__ = {
@@ -63,7 +65,12 @@ if (USE_FAKE_IFRAME_CONTEXT) {
   window.__editor_mode__ = true;
 }
 
-let TEST_GAME_ID = 22;
+if (USE_TESTING_EDITOR_MODE) {
+  window.__editing_live_game = true;
+  window.__editor_mode__ = true;
+}
+
+let TEST_GAME_ID = 21;
 
 export function getGameId(): number {
   let params = new URLSearchParams(document.location.search);

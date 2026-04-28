@@ -2,11 +2,44 @@
 <html>
 <head>
     <title>{% block title %}{% endblock title %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    
     <style>
+      * {
+        margin: 0;
+        font-family: "Lato", sans-serif;
+      }
+
+      button {
+        color: white;
+        background: #595959;
+        border: solid white 2px;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: clamp(0.25rem, 1vh, 1.25rem) clamp(0.5rem, 2vh, 2.5rem);
+        box-shadow: #00000078 3px 3px 4px 1px;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      .content {
+        background: linear-gradient(109deg, #dcdef4, #24252f);
+        min-width: 100vw;
+        min-height: 100vh;
+      }
+      .content-inner {
+        padding: clamp(1rem, 4vh, 5rem);
+      }
+
       h1 {
         font-size: clamp(1rem, 4vh, 5rem);
       }
-      p, input, button, a, li {
+      p, input, button, a, li, i {
         font-size: clamp(0.8rem, 2.8vh, 2.8rem);
       }
 
@@ -16,11 +49,17 @@
     </style>
     <style>
       {% block extracss %}
-    {% endblock extracss %}
+      {% endblock extracss %}
     </style>
+
+
 </head>
 <body>
-  {% block content %}
-  {% endblock content %}
+  <div class="content">
+      <div class="content-inner">
+        {% block content %}
+        {% endblock content %}
+      </div>
+    </div>
 </body>
 </html>

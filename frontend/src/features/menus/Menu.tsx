@@ -7,7 +7,8 @@ import {
   ElementType,
   ElementSubType,
   ElementAction,
-  objectToElement
+  objectToElement,
+  ITEMS_YOU_CAN_HOLD_ONE_OF
 } from "../board/boardTypes"
 
 import {
@@ -31,9 +32,9 @@ import {
 import { 
   getBuildingCost,
   nameForElementSubType,
-  nameForTeamColor,
   colorForTeam,
-  getSpecificItemBuildingCost
+  getSpecificItemBuildingCost,
+  getTradeCostForSubType
 } from "../board/vars"
 
 import BoardUtils from "../board/boardUtils"
@@ -414,7 +415,7 @@ function ElementActionOptions() {
       setLabelCount(e.target.value);
     }
 
-    let justOne = item.count == 1;
+    let justOne = item.count == 1 || ITEMS_YOU_CAN_HOLD_ONE_OF.includes(item.subType);
 
     if (justOne) {
       return (
@@ -509,7 +510,7 @@ function ElementActionOptions() {
               {itemsToSelectFrom.map(person => {
                 return (
                   <button key={person.id} onClick={() => { fight(person.id) }}>
-                    Fight: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
+                  {person.name}
                   </button>
                 )
               })}
@@ -535,7 +536,7 @@ function ElementActionOptions() {
               {itemsToSelectFrom.map(person => {
                 return (
                   <button key={person.id} onClick={() => { shoot(person) }}>
-                    Shoot: {nameForTeamColor(person.team)} {nameForElementSubType(person.subType)} ({person.health}H)
+                      {person.name}
                   </button>
                 )
               })}
@@ -564,17 +565,17 @@ function ElementActionOptions() {
                 )
               })
             :
-              BoardUtils.getItemTypesPersonCanGive(selectedElement, cells, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2).map(giveOffering => {
+              BoardUtils.getItemTypesPersonCanGive(selectedElement, cells, getTradeCostForSubType(tradeOfferingChosen)).map(giveOffering => {
                 return (
                   <button 
                     className="fullwidth-option" 
                     key={giveOffering} 
                     onClick={
-                      () => { handleTrade(giveOffering, tradeOfferingChosen, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2) }
+                      () => { handleTrade(giveOffering, tradeOfferingChosen, getTradeCostForSubType(tradeOfferingChosen)) }
                     }
                   >
                     <span>
-                      <p>Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2}</p>
+                      <p>Give {getTradeCostForSubType(tradeOfferingChosen)}</p>
                       <img src={getSvgForSubType(giveOffering, false)} />
                       <p>{nameForElementSubType(giveOffering)}</p>
                     </span>

@@ -6,8 +6,8 @@ import {
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 4;
-export const PERSON_MAX_CARRY_WEIGHT = 5;
-export const CART_CARRY_WEIGHT_INCREASE = 6; // because cart still weighs 1
+export const PERSON_MAX_CARRY_WEIGHT = 6;
+export const CART_CARRY_WEIGHT_INCREASE = 7; // because cart still weighs 1
 export const PERSON_BASE_DAMAGE = 4;
 export const PERSON_BASE_HEALTH = 10;
 export const STARTING_FOOD = 15;
@@ -15,7 +15,19 @@ export const STARTING_GOLD = 10;
 
 export const SHIELD_ARMOR_INCREASE_AMOUNT = 2;
 export const SWORD_DAMAGE_INCREASE_AMOUNT = 3;
+export const LEATHER_ARMOR_INCREASE_AMOUNT = 2;
 export const NO_FOOD_PENALTY = 3;
+
+export function getTradeCostForSubType(subType: ElementSubType) {
+  if (subType == ElementSubType.Horse) { return 7 };
+  if (subType == ElementSubType.Cow) { return 6 };
+  return 2
+}
+
+export const COW_PRODUCING_TILES: CellType[] = [
+  CellType.Field,
+  CellType.Forest
+]
 
 export const CELL_INFO_BY_TYPE = {
   0: { // Field
@@ -50,7 +62,8 @@ export const THINGS_THAT_CAN_BE_BUILT = [
   ElementSubType.Bow,
   ElementSubType.Shield,
   ElementSubType.Cart,
-  ElementSubType.Villager
+  ElementSubType.Villager,
+  ElementSubType.LeatherArmor
 ]
 
 export function getBuildingCost(elementToBuildType: ElementSubType) {
@@ -99,10 +112,14 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
     case ElementSubType.SawMill:
       ingredients.push({
         subType: ElementSubType.Wood,
-        count: 3
+        count: 1
       })
       ingredients.push({
         subType: ElementSubType.Ore,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
         count: 2
       })
       break;
@@ -134,14 +151,24 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
         count: 3
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubType.Leather,
         count: 1
       })
       break;
     case ElementSubType.Shield:
       ingredients.push({
         subType: ElementSubType.Ore,
-        count: 5
+        count: 4
+      })
+      ingredients.push({
+        subType: ElementSubType.Leather,
+        count: 1
+      })
+      break;
+    case ElementSubType.LeatherArmor:
+      ingredients.push({
+        subType: ElementSubType.Leather,
+        count: 3
       })
       break;
     case ElementSubType.Cart:
@@ -198,23 +225,20 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
     "Ore",
     "Clay",
     "Gold",
+
     "Sword",
     "Bow",
     "Shield",
     "Cart",
-    "Horse"
+    "Horse",
+    "Cow",
+    "Leather",
+    "Leather Armor"
   ][elemSubType]
 }
 
-// export function getActionDetails(actionType: number): any {
-//   return ELEMENT_ACTION_DETAILS[actionType]
-// }
-
 export function colorForTeam(teamVal: TeamColor|null): string {
-
-  if (teamVal === null) {
-    return ""
-  }
+  if (teamVal === null) { return "" }
 
   return [
     "white",
@@ -222,7 +246,9 @@ export function colorForTeam(teamVal: TeamColor|null): string {
     "red",
     "yellow",
     "blue",
-    "green"
+    "green",
+    "black",
+    "brown"
   ][teamVal]
 }
 
@@ -233,7 +259,9 @@ export function nameForTeamColor(color: TeamColor): string {
     "Red",
     "Yellow",
     "Blue",
-    "Green"
+    "Green",
+    "Black",
+    "Brown"
   ][color]
 }
 

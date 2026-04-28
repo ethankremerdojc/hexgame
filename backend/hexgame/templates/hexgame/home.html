@@ -2,30 +2,61 @@
 {% block title %}Home{% endblock title %}
 
 {% block extracss %}
+
+  .content {
+    button {}
+
+    button, h1 {
+      margin: clamp(0.6rem, 2vh, 2.3rem) 0; 
+    }
+  }
+
+  .logout-form {
+    display: inline;
+  }
+
+  .games-list {
+    list-style: none;
+    padding-inline-start: 0;
+
+    li {
+      margin-bottom: clamp(0.6rem, 2vh, 2.3rem);
+    }
+
+    .game-info {
+      display: block;
+      font-size: clamp(0.6rem, 2vh, 2.3rem);
+      color: #3c3c3c;
+    }
+
+  }
+
   .game-list-link {
     text-decoration: none;
-    color: blue;
+    color: #2439e0;
     font-weight: bold;
 
     i {
-      color: purple;
+      color: #753075;
     }
   }
+
+  
+
+  
 {% endblock extracss %}
 
 {% block content %}
-  <p>Welcome, {{ user.username }}.</p>
-  <form method="post" action="{% url 'logout' %}">
+  <h1>Welcome, {{ user.username }}.</h1>
+
+  <a href="{% url 'create_game' %}">
+      <button>Create a Game</button>
+  </a>
+
+  <form method="post" action="{% url 'logout' %}" class="logout-form">
       {% csrf_token %}
       <button type="submit">Log out</button>
   </form>
-
-  <!-- Create Game -->
-  <p>
-      <a href="{% url 'create_game' %}">
-          <button>Create a Game</button>
-      </a>
-  </p>
 
   {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True %}
   {% include "hexgame/game/components/game_list.html" with games=other_games is_own=False %}

@@ -23,12 +23,19 @@ import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
   NO_FOOD_PENALTY,
-  itemTypeForCellType
+  itemTypeForCellType,
+  COW_PRODUCING_TILES
 } from "./vars"
 
 import BoardUtils from "./boardUtils"
 
-// import { getCSRFToken } from "./utils"
+import { randomItem } from "./utils"
+
+import { NAMES_LIST } from "./randomNames.ts";
+
+export function getRandomName(): string {
+  return randomItem(NAMES_LIST)
+}
 
 export function getElementId(): string {
   return genRanHex(10);
@@ -45,6 +52,10 @@ export function updateElemAttributes(elem: Element): Element {
   }
 
   if (newElem.type == ElementType.Person) {
+    if (!newElem.name) {
+      newElem.name = getRandomName();
+    }
+
     if (!newElem.heldElements) {
       newElem.heldElements = [];
     } else {
@@ -230,7 +241,15 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
     let horses = cell.elements.filter(el => el.subType == ElementSubType.Horse);
     for (var horse of horses) {
       horse.hasActionAvailable = true;
+    };
+
+    let cows = cell.elements.filter(el => el.subType == ElementSubType.Cow);
+    if (cows.length > 0) {
+      if (workers.length > 0 && COW_PRODUCING_TILES.includes(Number(cell.type))) {
+        cell.elements.push(objectToElement({type: ElementType.Item, subType: ElementSubType.Leather, count: cows.length}));
+      }
     }
+
 
     if (workers.length < 1) { continue }
 

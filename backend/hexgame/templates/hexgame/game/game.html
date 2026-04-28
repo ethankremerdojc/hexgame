@@ -5,8 +5,8 @@
     <style>
 
       iframe {
-        width: calc(100vw - 30px);
-        height: calc(100vh - 200px);
+        width: 90vw;
+        height: 82vh;
       }
 
     </style>
@@ -15,7 +15,7 @@
     <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i>
     <i>- Last Update: {{ game.time_since_last_update }} ago</i>
 
-    <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe" />
+    <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe"  />
 
     <!-- Create Game -->
     <p>

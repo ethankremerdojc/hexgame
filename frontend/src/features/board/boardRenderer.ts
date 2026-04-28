@@ -71,6 +71,9 @@ import cartSvg from "./svg/cart.svg";
 import horseSvgRaw from "./svg/horse.svg?raw";
 import horseSvg from "./svg/horse.svg";
 
+import cowSvgRaw from "./svg/cow.svg?raw";
+import cowSvg from "./svg/cow.svg";
+
 //items
 import foodSvgRaw from "./svg/bread.svg?raw";
 import foodSvg from "./svg/bread.svg";
@@ -86,6 +89,12 @@ import oreSvg from "./svg/rock.svg";
 
 import claySvgRaw from "./svg/clay.svg?raw";
 import claySvg from "./svg/clay.svg";
+
+import leatherSvgRaw from "./svg/leather.svg?raw";
+import leatherSvg from "./svg/leather.svg";
+
+import leatherArmorSvgRaw from "./svg/leather-armor.svg?raw";
+import leatherArmorSvg from "./svg/leather-armor.svg";
 
 import noSvgRaw from "./svg/actions/noIcon.svg?raw";
 
@@ -179,8 +188,18 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
       }
       return claySvg;
       break;
-
-
+    case ElementSubType.Leather:
+      if (raw) {
+        return leatherSvgRaw;
+      }
+      return leatherSvg;
+      break;
+    case ElementSubType.LeatherArmor:
+      if (raw) {
+        return leatherArmorSvgRaw;
+      }
+      return leatherArmorSvg;
+      break;
 
     case ElementSubType.Sword:
       if (raw) {
@@ -212,7 +231,12 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
       }
       return horseSvg;
       break;
-
+    case ElementSubType.Cow:
+      if (raw) {
+        return cowSvgRaw;
+      }
+      return cowSvg;
+      break;
 
     default:
       throw new Error(`unknown element subtype: ${subType}`);
@@ -503,7 +527,8 @@ export default class BoardRenderer {
         ElementSubType.Bow,
         ElementSubType.Shield,
         ElementSubType.Cart,
-        ElementSubType.Horse
+        ElementSubType.Horse,
+        ElementSubType.LeatherArmor
       ].includes(heldElement.subType)) {
         continue
       }
@@ -525,6 +550,7 @@ export default class BoardRenderer {
     let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
     let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
     let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+    let wearingLeatherArmor = element.heldElements.filter(el => el.subType == ElementSubType.LeatherArmor).length > 0;
     let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
 
     if (element.isWorking) {
@@ -534,30 +560,13 @@ export default class BoardRenderer {
       );
     }
 
-    if (holdingSword) {
-      drawSvgToCanvas(swordSvgRaw, this.ctx,
-        elemPos.x + objectSize*1.1, elemPos.y,
-        toolSize, objectSize,
+    if (wearingLeatherArmor) {
+      drawSvgToCanvas(leatherArmorSvgRaw, this.ctx,
+        elemPos.x - objectSize*0.12, elemPos.y+objectSize*0.65,
+        objectSize*1.24, objectSize*0.35,
       );
     }
-    if (holdingBow) {
-      drawSvgToCanvas(bowSvgRaw, this.ctx,
-        elemPos.x + objectSize*1.1, elemPos.y,
-        toolSize, objectSize,
-      );
-    };
-    if (holdingShield) {
-      drawSvgToCanvas(shieldSvgRaw, this.ctx,
-        elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
-        toolSize, objectSize*0.8,
-      );
-    };
-    if (holdingCart) {
-      drawSvgToCanvas(cartSvgRaw, this.ctx,
-        elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
-        objectSize*0.8, objectSize*0.6,
-      );
-    }
+
     if (ridingHorse) {
       drawSvgToCanvas(horseSvgRaw, this.ctx,
         elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
@@ -574,6 +583,33 @@ export default class BoardRenderer {
       }
     }
 
+    if (holdingSword) {
+      drawSvgToCanvas(swordSvgRaw, this.ctx,
+        elemPos.x + objectSize*1.1, elemPos.y,
+        toolSize, objectSize,
+      );
+    }
+    if (holdingBow) {
+      drawSvgToCanvas(bowSvgRaw, this.ctx,
+        elemPos.x + objectSize*1.1, elemPos.y,
+        toolSize, objectSize,
+      );
+    };
+
+    if (holdingShield) {
+      drawSvgToCanvas(shieldSvgRaw, this.ctx,
+        elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
+        toolSize, objectSize*0.8,
+      );
+    };
+    if (holdingCart) {
+      drawSvgToCanvas(cartSvgRaw, this.ctx,
+        elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
+        objectSize*0.8, objectSize*0.6,
+      );
+    }
+
+
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
       drawSvgToCanvas(noSvgRaw, this.ctx,
@@ -585,13 +621,24 @@ export default class BoardRenderer {
     // Health
 
     this.ctx.fillStyle = "red";
-    this.ctx.font = `${miniItemSize*1.5}px serif`;
-    let healthStr: string = element.health.toString() + " h";
+    this.ctx.font = `${miniItemSize*1.8}px serif`;
+    let healthStr: string = element.health.toString();
     this.ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
 
     if (isSelected) {
       this.drawHighlightBox(elemPos, objectSize, "yellow");
     }
+
+    // Name
+
+    this.ctx.fillStyle = "white";
+    this.ctx.font = `${miniItemSize*1.2}px serif`;
+    let elStr = element.name ? element.name : "";
+    this.ctx.fillText(
+      elStr, 
+      elemPos.x,
+      elemPos.y - objectSize*0.2
+    );
   }
 
   drawHighlightBox(
@@ -706,4 +753,4 @@ export default class BoardRenderer {
 //   ctx.fillStyle = "black";
 //   ctx.font = "20px serif";
 //   ctx.fillText(`(${cell.x}, ${cell.y})`, origin.x - originOffset, origin.y);
-// }
+// 
