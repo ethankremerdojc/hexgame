@@ -549,7 +549,12 @@ function ElementActionOptions() {
             !tradeOfferingChosen ?
               itemsToSelectFrom.map((getOffering: any) => {
                 return (
-                  <button key={getOffering.subType} onClick={() => { setTradeOfferingChosen(getOffering.subType) }} className="trade-button">
+                  <button 
+                    key={getOffering.subType}
+                    onClick={() => { setTradeOfferingChosen(getOffering.subType) }} 
+                    className="trade-button"
+                    disabled={getOffering['disabled']}
+                  >
                     <span>
                       <p>Trade For</p>
                       <img src={getSvgForSubType(getOffering.subType, false)} />
@@ -559,22 +564,23 @@ function ElementActionOptions() {
                 )
               })
             :
-              BoardUtils.getItemsPersonCanGive(selectedElement, cells).map(giveOffering => {
-                return (<button className="fullwidth-option" key={giveOffering} onClick={() => { handleTrade(giveOffering, tradeOfferingChosen, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2) }} 
-                          disabled={
-                            giveOffering == ElementSubType.Horse && 
-                              BoardUtils.elWithHighestCount(selectedElement) &&
-                              BoardUtils.elWithHighestCount(selectedElement).count < 7 }
-                        >
-                          <span>
-                            <p>Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2}</p>
-                            <img src={getSvgForSubType(giveOffering, false)} />
-                            <p>{nameForElementSubType(giveOffering)}</p>
-                          </span>
-                        </button>
+              BoardUtils.getItemTypesPersonCanGive(selectedElement, cells, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2).map(giveOffering => {
+                return (
+                  <button 
+                    className="fullwidth-option" 
+                    key={giveOffering} 
+                    onClick={
+                      () => { handleTrade(giveOffering, tradeOfferingChosen, tradeOfferingChosen == ElementSubType.Horse ? 7 : 2) }
+                    }
+                  >
+                    <span>
+                      <p>Give {tradeOfferingChosen == ElementSubType.Horse ? 7 : 2}</p>
+                      <img src={getSvgForSubType(giveOffering, false)} />
+                      <p>{nameForElementSubType(giveOffering)}</p>
+                    </span>
+                  </button>
                 )
               })
-              
             }
             </>
           }

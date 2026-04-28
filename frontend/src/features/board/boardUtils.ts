@@ -3,7 +3,7 @@ import type {
 } from "./boardTypes"
 
 import {
-  HexPosition, ElementType, ElementSubType, CellType,
+  HexPosition, ElementType, ElementSubType, CellType, MATERIAL_ELEMENT_SUBTYPES
 } from "./boardTypes"
 
 import {
@@ -709,81 +709,45 @@ export default class BoardUtils {
     return false
   }
 
+  static itemsForTradeExistOnTile(elem: Element, requiredCount: number, cells: Cell[]): boolean {
+    for (var ces of MATERIAL_ELEMENT_SUBTYPES) {
+      let resource = {subType: ces, count: requiredCount};
+      if (BoardUtils.resourcesExistForPerson([resource], elem, cells)) {
+        return true
+      }
+    }
+    return false
+  }
+
   static getTradeOfferings(elem: Element, cells: Cell[]): object[] {
-    let offerings: object[] = [
-      { type: ElementType.Item, subType: ElementSubType.Wood, count: 1 },
-      { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
-      { type: ElementType.Item, subType: ElementSubType.Ore, count: 1 },
-      { type: ElementType.Item, subType: ElementSubType.Gold, count: 1 },
-      { type: ElementType.Item, subType: ElementSubType.Clay, count: 1 },
-    ];
 
-    const parentElem = BoardUtils.getElementParentCell(elem, cells);
+    let itemsToTradeExistForMaterial = BoardUtils.itemsForTradeExistOnTile(elem, 2, cells);
 
-    let counts: any = {};
+    let offerings: object[] = [];
 
-    let consumableElementSubtypes: ElementSubType[] = [
-        ElementSubType.Wood,
-        ElementSubType.Food,
-        ElementSubType.Ore,
-        ElementSubType.Gold,
-        ElementSubType.Clay
-    ]
-
-    for (var he of elem.heldElements.filter((el: Element) => consumableElementSubtypes.includes(el.subType))) {
-      counts[he.subType] = he.count;
+    for (var ces of MATERIAL_ELEMENT_SUBTYPES) {
+      offerings.push({type: ElementType.Item, subType: ces, count: 1, disabled: !itemsToTradeExistForMaterial})
     }
 
-    for (var el of parentElem.elements.filter((el: Element) => consumableElementSubtypes.includes(el.subType))) {
-      if (counts[el.subType]) {
-        counts[el.subType] += el.count;
-      } else {
-        counts[el.subType] = el.count;
-      }
-    }
-
-    let highest: any = 0;
-
-    for (var c of Object.values(counts) as number[]) {
-      if (c > highest) {
-        highest = c;
-      }
-    }
-
-    if (highest > 6) {
-      offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1 })
-    }
+    let itemsToTradeExistForHorse = BoardUtils.itemsForTradeExistOnTile(elem, 7, cells);
+    offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1, disabled: !itemsToTradeExistForHorse })
 
     return offerings
   }
 
-  static getItemsPersonCanGive(personElem: Element|null, cells: Cell[]): ElementSubType[] {
+  static getItemTypesPersonCanGive(personElem: Element|null, cells: Cell[], requiredCount: number): ElementSubType[] {
     if (!personElem) {
       throw new Error("No personElem supplied to 'getItemsPersonCanGive'");
     }
 
-    const parentElem = BoardUtils.getElementParentCell(personElem, cells);
-    let parentElemItems = parentElem.elements.filter(el => el.type == ElementType.Item);
-    
     let result = [];
 
-    let oneCountItems = [];
-
-    for (var item of parentElemItems) {
-      if (item.count && item.count > 1) {
-        result.push(item.subType);
+    for (var ces of MATERIAL_ELEMENT_SUBTYPES) {
+      let resource = {subType: ces, count: requiredCount};
+      if (BoardUtils.resourcesExistForPerson([resource], personElem, cells)) {
+        result.push(ces);
       }
-      oneCountItems[item.subType] = 1; // could be null
-    }
-
-    for (var heldItem of personElem.heldElements) {
-      if (heldItem.count && heldItem.count > 1) {
-        result.push(heldItem.subType);
-      }
-      if (oneCountItems[heldItem.subType]) {
-        result.push(heldItem.subType);
-      }
-    }
+    };
 
     return result
   }

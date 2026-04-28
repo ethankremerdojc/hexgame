@@ -51,6 +51,14 @@ export enum ElementSubType {
   Horse
 }
 
+export const MATERIAL_ELEMENT_SUBTYPES: ElementSubType[] = [
+    ElementSubType.Wood,
+    ElementSubType.Food,
+    ElementSubType.Ore,
+    // ElementSubType.Gold,
+    ElementSubType.Clay
+];
+
 export enum CellType {
   Field,
   Desert,
