@@ -164,7 +164,9 @@ function App() {
   useEffect(() => {
     if (contextCollectionStatus !== "success") return;
     const INTERVAL_TIME = 5000;
-
+    if (window.__editor_mode__) {
+      return
+    }
     const intervalId = setInterval(async () => {
 
       try {
