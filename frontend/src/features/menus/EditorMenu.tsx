@@ -56,6 +56,15 @@ export default function EditorMenu() {
     return newCells;
   }
 
+  function addElementAndSave(subType: ElementSubType) {
+    if (selectedCell === null) {
+      return
+    }
+    let element = objectToElement({type: ElementType.Item, subType: subType});
+    let newCells = addElement(selectedCell.x, selectedCell.y, element, cells);
+    dispatch(setCells(newCells));
+  }
+
   function addTraderTile() {
     if (selectedCell === null) {
       throw new Error("selected cell is null")
@@ -148,6 +157,12 @@ export default function EditorMenu() {
         <div className="editor-options">
           <button onClick={() => addTraderTile()}>
             <span>Add Trader</span>
+          </button>
+          <button onClick={() => addElementAndSave(ElementSubType.Horse)}>
+            <span>Add Horse</span>
+          </button>
+          <button onClick={() => addElementAndSave(ElementSubType.Cow)}>
+            <span>Add Cow</span>
           </button>
           <div>
             {getMoveCapitalButtons()}
