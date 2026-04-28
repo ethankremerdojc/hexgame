@@ -274,7 +274,7 @@ function ElementActionOptions() {
   }
 
   const tradeHandler = () => {
-    dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings(selectedElement)));
+    dispatch(setActionItemsToSelectFrom(BoardUtils.getTradeOfferings(selectedElement, cells)));
   }
 
   const backHandler = () => {

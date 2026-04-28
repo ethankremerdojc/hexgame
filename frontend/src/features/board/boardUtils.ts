@@ -404,7 +404,6 @@ export default class BoardUtils {
     }
 
     return true
-
   }
 
   static elementsToBuildExistOnTile(elementSubType: ElementSubType, personElem: Element, cells: Cell[]): boolean { 
@@ -710,10 +709,7 @@ export default class BoardUtils {
     return false
   }
 
-  static getTradeOfferings(elem: Element): object[] {
-
-
-
+  static getTradeOfferings(elem: Element, cells: Cell[]): object[] {
     let offerings: object[] = [
       { type: ElementType.Item, subType: ElementSubType.Wood, count: 1 },
       { type: ElementType.Item, subType: ElementSubType.Food, count: 1 },
@@ -722,13 +718,39 @@ export default class BoardUtils {
       { type: ElementType.Item, subType: ElementSubType.Clay, count: 1 },
     ];
 
-    let highestCount = 0;
-    for (var he of elem.heldElements) {
-      if (he.count > highestCount) {
-        highestCount = he.count;
+    const parentElem = BoardUtils.getElementParentCell(elem, cells);
+
+    let counts: any = {};
+
+    let consumableElementSubtypes: ElementSubType[] = [
+        ElementSubType.Wood,
+        ElementSubType.Food,
+        ElementSubType.Ore,
+        ElementSubType.Gold,
+        ElementSubType.Clay
+    ]
+
+    for (var he of elem.heldElements.filter((el: Element) => consumableElementSubtypes.includes(el.subType))) {
+      counts[he.subType] = he.count;
+    }
+
+    for (var el of parentElem.elements.filter((el: Element) => consumableElementSubtypes.includes(el.subType))) {
+      if (counts[el.subType]) {
+        counts[el.subType] += el.count;
+      } else {
+        counts[el.subType] = el.count;
       }
     }
-    if (highestCount > 6) {
+
+    let highest: any = 0;
+
+    for (var c of Object.values(counts) as number[]) {
+      if (c > highest) {
+        highest = c;
+      }
+    }
+
+    if (highest > 6) {
       offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1 })
     }
 
