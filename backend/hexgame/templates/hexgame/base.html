@@ -53,8 +53,6 @@
       {% block extracss %}
       {% endblock extracss %}
     </style>
-
-
 </head>
 <body>
   <div class="content">
@@ -63,5 +61,23 @@
         {% endblock content %}
       </div>
     </div>
+
+    <script>
+      // Add confirm dialog if about to archive/unarchive a game
+      let archiveForms = document.getElementsByClassName("archive-form");
+
+      for (var form of archiveForms) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          let f = e.target;
+          let fd = new FormData(f);
+
+          if (confirm("Are you sure you want to change the archived state of game " + fd.get("game_id") + "?")) {
+            f.submit();
+          }
+        })
+      }
+    </script>
 </body>
 </html>
