@@ -20,6 +20,9 @@
 
 
             </a>
+
+            {% if game.complete %}<i class="game-info">Winner: {{game.winner.username}}</i>{% endif %}
+
             <i class="game-info">
               <b>Players:</b> ( {% for p in game.players %}{{p.user.username}} {% endfor %})
             </i>
