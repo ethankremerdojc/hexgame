@@ -26,12 +26,13 @@
             <i class="game-info">
               <b>Last Update:</b> {{ game.time_since_last_update }} ago
             </i>
-
-            <form method="post" action="{% url 'archive_game' %}" class="archive-form">
-                {% csrf_token %}
-                <input hidden name="game_id" value="{{ game.id }}" />
-                <button type="submit">Archive Game</button>
-            </form>
+            {% if is_own %}
+              <form method="post" action="{% url 'archive_game' %}" class="archive-form">
+                  {% csrf_token %}
+                  <input hidden name="game_id" value="{{ game.id }}" />
+                  <button type="submit">Archive Game</button>
+              </form>
+            {% endif %}
         </li>
     {% empty %}
         <li>You are not in any games yet.</li>
