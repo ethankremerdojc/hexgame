@@ -6,15 +6,19 @@
     {% for game in games %}
         <li>
             <a href="{% url 'game' game.id %}" class="game-list-link">
-              <p class="game-title">
-                Game {{ game.id }}
-              </p>
-              <i>Round {{ game.turn_number }}:</i>
-              {% if game.current_player_turn_user.id == user.id  %}
+              <button>
+                <p class="game-title">
+                  Game {{ game.id }}
+                </p>
+                <i>Round {{ game.turn_number }}:</i>
+               {% if game.current_player_turn_user.id == user.id  %}
                 <i>Your Turn.</i>
               {% else %}
                 <i>{{ game.current_player_turn_user.username }}'s Turn.</i>
               {% endif %}
+              </button>
+
+
             </a>
             <i class="game-info">
               <b>Players:</b> ( {% for p in game.players %}{{p.user.username}} {% endfor %})
