@@ -19,7 +19,7 @@ urlpatterns = [
     path("game/get_context/<int:game_id>/", get_game_context, name="get_game_context"),
     path("game/update/", update_game, name="update_game"),
     path("game/create/", create_game_view, name="create_game"),
-    path("game/archive/", archive_game_view, name="archive_game"),
+    path("game/toggle_archive/", toggle_archive_game_view, name="toggle_archive_game"),
 
     path("api/notifications/subscribe/", notification_subscribe_view, name="notification_subscribe_view")
 ]

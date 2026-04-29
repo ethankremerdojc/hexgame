@@ -168,7 +168,7 @@ def update_game(request):
     return JsonResponse({'result': 'success', 'game': game_data})
 
 @login_required
-def archive_game_view(request):
+def toggle_archive_game_view(request):
     game_id = request.POST.get("game_id")
 
     game = get_object_or_404(Game, pk=game_id)
@@ -183,7 +183,7 @@ def archive_game_view(request):
     if not user_in_players:
         raise PermissionDenied
 
-    game.archived = True
+    game.archived = not game.archived
     game.save()
     return redirect("home")
 
