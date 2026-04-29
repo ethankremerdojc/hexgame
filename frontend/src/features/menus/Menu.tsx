@@ -613,7 +613,12 @@ function ElementActionOptions() {
             <div className="rename-block">
               <input id="renameInput" />
               <button onClick={() => {
-                let newName = document.getElementById("renameInput").value;
+                let renameInput = document.getElementById("renameInput") as HTMLInputElement | null;
+                if (!renameInput) {
+                  throw new Error("Unable to find rename input.")
+                  return;
+                }
+                let newName = renameInput.value;
                 if (!newName) {
                   alert("You must provide a name with at least one character.");
                 }
