@@ -84,7 +84,9 @@ function HowToPlay() {
         <p>Each villager's inventory space is 5, which includes horses and weapons etc.</p>
         <p>Each of your villagers can take one non-item and non health related action exportach turn.</p>
         <p>For example, your villager can take 2 food, drop 1 wood, then move, making it use it's action.</p>
+        <p>Each villager has '2 hands' which determines which 'special items' that villager can hold.</p>
         <p>Here are all of the possible actions and their limitations/requirements.</p>
+        
         <ul>
           <li>
             Move: Move to an adjacent tile.
@@ -98,7 +100,7 @@ function HowToPlay() {
             You can not hold a shield and bow, or any two of horse, cart or weapon.
           </li>
           <li>
-            Fight: Deal damage to an enemy villager. The base damage is {PERSON_BASE_DAMAGE}, which can be altered by weapons, shields and armor
+            Fight: Deal damage to an enemy villager. The base damage is {PERSON_BASE_DAMAGE}, which can be altered by weapons, shields and armor<br/>
             The enemy will also deal damage to your villager at the same time.<br />
             Sword: Adds {SWORD_DAMAGE_INCREASE_AMOUNT} damage.<br />
             Shield: Reduces damage by {SHIELD_ARMOR_INCREASE_AMOUNT}.<br />
@@ -125,17 +127,26 @@ function HowToPlay() {
             Trade: On a tile with a trader, trade any 2 of a resource for any 1 resource. You can also buy a horse for 7 of any one resource.
           </li>
           <li>
-            Shoot: If your villager has a bow, they can do {PERSON_BASE_DAMAGE} damage to another villager in an adjacent tile, without having that villager do damage to them. Shooting ignores shields, but not armor.
+            Shoot: If your villager has a bow, they can do {PERSON_BASE_DAMAGE} damage to another villager in an adjacent tile, without having that villager do damage to them.<br/>
+            Shooting ignores shields, but not armor.
           </li>
 
         </ul>
         <h2>Special Items</h2>
         <ul>
           <li>
-            Cart: Increases capacity  for a villager holding it to 10.
+            Sword, Bow, Shield: Each require 1 hand to hold.
           </li>
           <li>
-            Horse: If the first action of a villager riding a horse is 'Move', they can take another action.
+            Cart: Increases capacity for a villager holding it to 12. Requires 2 hands.
+          </li>
+          <li>
+            Horse: If the first action of a villager riding a horse is 'Move', they can take another action. Requires 1 hand.
+          </li>
+          <li>
+            Cow: Produces leather, can be purchased from trader. <br/>
+            Produces 1 leather per cow if there is a working villager on the same tile, if the tile is either 'field' or 'forest'<br/>
+            Requires 1 hand.
           </li>
         </ul>
 
