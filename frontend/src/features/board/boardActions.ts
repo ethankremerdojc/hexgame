@@ -286,6 +286,14 @@ export default class BoardActions {
     return newCells;
   }
 
+  static renamePerson(personElem: Element, newName: string, cells: Cell[]): Cell[] {
+    let newCells = structuredClone(cells);
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPerson.name = newName;
+    return newCells;
+  }
+
   static healPerson(personElem: Element, cells: Cell[]): Cell[] {
     let resources = [{subType: ElementSubType.Food, count: 1}];
     if (!BoardUtils.resourcesExistForPerson(resources, personElem, cells)) {
@@ -384,6 +392,8 @@ export default class BoardActions {
     if (BoardUtils.personCanShoot(personElem, cells)) {
       result.push(ElementAction.Shoot)
     }
+
+    result.push(ElementAction.Rename)
 
     return result
   }

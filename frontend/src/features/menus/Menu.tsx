@@ -111,7 +111,11 @@ export const ELEMENT_ACTION_DETAILS: object[] = [
   { // shoot
     title: "shoot",
     helpText: "Shoot someone in adjacent tile"
-  }
+  },
+  { // shoot
+    title: "rename",
+    helpText: "Rename Villager"
+  },
 ]
 
 export function getActionDetails(actionType: number): any {
@@ -152,6 +156,9 @@ function iconForActionType(actionType: string) {
       break;
     case "destroy":
       return noSvg
+      break;
+    case "rename":
+      return healSvg
       break;
     default:
       break;
@@ -330,6 +337,16 @@ function ElementActionOptions() {
     clearActionData(newCells);
   }
 
+  const renameHandler = () => {
+    dispatch(setActionHandling("rename"));
+  }
+
+  const rename = (newName: string) => {
+    let newCells = BoardActions.renamePerson(selectedElement, newName, cells);
+    dispatch(setCells(newCells));
+    clearActionData(newCells);
+  }
+
   const getActionHandler = (title: string) => {
 
     let actionFunc;
@@ -367,6 +384,11 @@ function ElementActionOptions() {
     else if (title == "shoot") {
       actionFunc = shootHandler
     }
+    else if (title == "rename") {
+      actionFunc = renameHandler
+    }
+
+
 
     else if (title == "back") {
       actionFunc = backHandler
@@ -585,6 +607,21 @@ function ElementActionOptions() {
             }
             </>
           }
+
+          {
+            actionHandling == "rename" &&
+            <div className="rename-block">
+              <input id="renameInput" />
+              <button onClick={() => {
+                let newName = document.getElementById("renameInput").value;
+                if (!newName) {
+                  alert("You must provide a name with at least one character.");
+                }
+                rename(newName);
+              }}>Rename</button>
+            </div>
+          }
+
         </div>
       </>
       :

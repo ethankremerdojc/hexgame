@@ -192,5 +192,6 @@ export enum ElementAction {
   Heal,
   Reproduce,
   Trade,
-  Shoot
+  Shoot,
+  Rename
 }
