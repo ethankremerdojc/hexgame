@@ -32,6 +32,7 @@
     <div class="game-info">
       <a href="/" style="display: block;"><button>Home</button></a>
       <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i>
+      {% if game.complete %}<i>Winner: {{game.winner.username}}</i>{% endif %}
     </div>
 
     <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe" />

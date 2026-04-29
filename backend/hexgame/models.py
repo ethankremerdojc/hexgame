@@ -21,7 +21,9 @@ class Game(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     kick_if_inactive = models.BooleanField()
 
+    complete = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
+    winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     @property
     def players(self):

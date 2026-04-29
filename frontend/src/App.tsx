@@ -20,7 +20,8 @@ import {
   getLoggedInUsername,
   setLoggedInUsername,
   setUserSubscribed,
-  setTurnNumber
+  setTurnNumber,
+  setGameOver, getGameOver 
 } from "@/features/board/boardSlice"
 
 // import {
@@ -53,7 +54,7 @@ declare global {
 }
 
 export const TESTING = window.location.host.includes(":5173");
-
+const TEST_GAME_ID = 24;
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = false;
 
@@ -70,7 +71,6 @@ if (USE_TESTING_EDITOR_MODE) {
   window.__editor_mode__ = true;
 }
 
-let TEST_GAME_ID = 21;
 
 export function getGameId(): number {
   let params = new URLSearchParams(document.location.search);
@@ -91,6 +91,7 @@ function App() {
   const viewOnly = useAppSelector(getViewOnly);
   const loggedInUsername = useAppSelector(getLoggedInUsername);
   const currentPlayerName = useAppSelector(getCurrentPlayerName);
+  const gameOver = useAppSelector(getGameOver);
 
   let [contextCollectionStatus, setContextCollectionStatus] = useState("notstarted");
   let [backendContext, setBackendContext] = useState<any>(null);
@@ -108,6 +109,10 @@ function App() {
     dispatch(setTurnNumber(game.turn_number));
     dispatch(setUserSubscribed(backendContext.subscribed));
     dispatch(setUsernames(getUsernamesFromGameObj(game)));
+    dispatch(setGameOver(game.complete));
+    if (game.complete) {
+      dispatch(setViewOnly(true));
+    }
   }
 
   useEffect(() => {
@@ -139,6 +144,8 @@ function App() {
     } else {
       let iframeContext = window.__IFRAME_CONTEXT__;
       if (!iframeContext) { return }
+
+      dispatch(setLoggedInUsername("admin"));
 
       window.__editor_mode__ = true;
       let newPlayerCount = iframeContext.playerCount ? iframeContext.playerCount : 0;
@@ -214,6 +221,11 @@ function App() {
         canvasWidth={Math.min(document.documentElement.clientWidth, 900)} 
         canvasHeight={document.documentElement.clientHeight} 
       />
+      { gameOver &&
+        <div className="element-actions-menu"><div className="element-actions-menu-inner">
+          <h1>Game Over. (View Only)</h1>
+        </div></div>
+      }
       { !viewOnly && <ElementActionsMenu /> }
     </div>
   )

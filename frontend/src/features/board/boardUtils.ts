@@ -795,7 +795,8 @@ export default class BoardUtils {
     let parentElem = BoardUtils.getElementParentCell(personElem, cells);
     let buildingElements = parentElem.elements.filter(el => el.type == ElementType.Building);
     if (buildingElements.length < 1) { return false };
-    if (buildingElements[0].subType == ElementSubType.Capital) { return false };
+    let building = buildingElements[0];
+    if (building.subType == ElementSubType.Capital && building.team == personElem.team) { return false };
     return true
   }
 }

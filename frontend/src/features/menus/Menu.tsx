@@ -26,7 +26,7 @@ import {
   endTurn, revertToBeginningOfTurn,
   prepareCellsForStateSave,
 
-  setUserSubscribed, getUserSubscribed
+  setUserSubscribed, getUserSubscribed,
 } from "../board/boardSlice.ts";
 
 import { 
@@ -204,7 +204,7 @@ function ElementActionOptions() {
     let newParent = newCells.filter((c: Cell) => c.x == parentCell.x && c.y == parentCell.y)[0];
     let newSelEl = newParent.elements.filter((el: Element) => el.id == selectedElement.id)[0];
 
-    if (newSelEl.hasActionAvailable) {
+    if (newSelEl && newSelEl.hasActionAvailable) {
       dispatch(setSelectedElement(newSelEl));
     } else {
       dispatch(setSelectedElement(null));
@@ -254,11 +254,15 @@ function ElementActionOptions() {
 
   const buildHandler = () => {
     let thingsToBuild = BoardUtils.getAvailableThingsToBuild(parentCell);
-
     dispatch(setActionItemsToSelectFrom(thingsToBuild));
   }
 
   const destroyHandler = () => {
+    let building = parentCell.elements.filter((el: Element) => el.type == ElementType.Building)[0];
+    dispatch(setActionItemsToSelectFrom(["Destroy " + nameForElementSubType(building.subType)]));
+  }
+
+  const destroy = () => {
     let newCells = BoardActions.destroyBuilding(selectedElement, cells);
     dispatch(setCells(newCells));
     clearActionData(newCells);
@@ -387,7 +391,6 @@ function ElementActionOptions() {
     else if (title == "rename") {
       actionFunc = renameHandler
     }
-
 
 
     else if (title == "back") {
@@ -541,6 +544,13 @@ function ElementActionOptions() {
           {
             actionHandling == "work" &&
             <button className="fullwidth-option" key={"workbutton"} onClick={() => { work() }}>
+              {/* First item is just a message based on current villager */}
+              {itemsToSelectFrom[0]} 
+            </button>
+          }
+          {
+            actionHandling == "destroy" &&
+            <button className="fullwidth-option" key={"destroybutton"} onClick={() => { destroy() }}>
               {/* First item is just a message based on current villager */}
               {itemsToSelectFrom[0]} 
             </button>

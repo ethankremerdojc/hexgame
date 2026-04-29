@@ -219,6 +219,25 @@ function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): 
   return cells
 }
 
+function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
+  // verify that there is only 1 capital and it is the one of the current team
+  let capitals = [];
+
+  for (var cell of cells) {
+    let cellCapitals: Element[] = cell.elements.filter((el: Element) => el.subType == ElementSubType.Capital);
+    if (cellCapitals.length < 1) { continue }
+    capitals.push(cellCapitals[0]);
+  }
+
+  console.log("num capitals: ", capitals.length);
+
+  if (capitals.length > 1) { return false };
+
+  if (capitals[0].team == playerTurn) { return true };
+
+  throw new Error("Somehow the only capital is one of a different player.");
+}
+
 function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
     cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
@@ -290,7 +309,8 @@ export interface BoardState {
   loggedInUsername: string,
 
   userSubscribed: boolean,
-  turnNumber: number
+  turnNumber: number,
+  gameOver: boolean
 }
 
 const initialState: BoardState = {
@@ -313,7 +333,8 @@ const initialState: BoardState = {
   usernames: [],
   loggedInUsername: "",
   userSubscribed: false,
-  turnNumber: 0
+  turnNumber: 0,
+  gameOver: false
 };
 
 const boardSlice = createSlice({
@@ -377,14 +398,28 @@ const boardSlice = createSlice({
       let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
       cells = makePersonsWithActionOnTeamWork(currentPlayerTurn, state.cells);
 
-      state.cells = setupNewTurn(cells, state.playerTurn);
-      state.backupCells = state.cells;
+      const winnerExists = checkForWinner(cells, currentPlayerTurn);
+      if (winnerExists) {
+        console.log("winner exists")
+        state.cells = cells;
+        state.gameOver = true;
+        postUpdateToBackend(
+          state.cells,
+          state.playerTurn,
+          state.gameId,
+          false,
+          state.loggedInUsername
+        );
+      } else {
+        state.cells = setupNewTurn(cells, state.playerTurn);
+        state.backupCells = state.cells;
 
-      if (state.playerTurn == 0) {
-        state.turnNumber += 1;
+        if (state.playerTurn == 0) {
+          state.turnNumber += 1;
+        }
+
+        postUpdateToBackend(state.cells, state.playerTurn, state.gameId);
       }
-
-      postUpdateToBackend(state.cells, state.playerTurn, state.gameId);
     },
     setViewOnly(state, action: PayloadAction<boolean>) {
       state.viewOnly = action.payload;
@@ -403,6 +438,10 @@ const boardSlice = createSlice({
     },
     setUserSubscribed(state, action: PayloadAction<boolean>) {
       state.userSubscribed = action.payload;
+    },
+
+    setGameOver(state, action: PayloadAction<boolean>) {
+      state.gameOver = action.payload;
     },
   },
 });
@@ -424,6 +463,7 @@ export const getCurrentPlayerName = (state: RootState): string => state.board.us
 export const getLoggedInUsername = (state: RootState): string => state.board.loggedInUsername;
 export const getUserSubscribed = (state: RootState): boolean => state.board.userSubscribed;
 export const getTurnNumber = (state: RootState): number => state.board.turnNumber;
+export const getGameOver = (state: RootState): boolean => state.board.gameOver;
 
 export const { 
   setCells,
@@ -444,7 +484,8 @@ export const {
   setUsernames,
   setLoggedInUsername,
   setUserSubscribed,
-  setTurnNumber
+  setTurnNumber,
+  setGameOver
 } = boardSlice.actions;
 
 export default boardSlice.reducer;
