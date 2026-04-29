@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from pywebpush import webpush, WebPushException
 from .serializers import GameSerializer
 from backend import settings
-
+from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Value, BooleanField
 
 def register_view(request):
@@ -34,19 +34,26 @@ def register_view(request):
 
     return render(request, "hexgame/account/register.html", {"form": form})
 
-def get_games(user):
+def get_games(user, archived):
     players = Player.objects.filter(user=user)
     game_ids = players.values_list('game__id', flat=True)
 
+    games = Game.objects.archived() if archived else Game.objects.non_archived()
+
     return {
-        "own_games": Game.objects.filter(id__in=game_ids),
-        "other_games": Game.objects.exclude(id__in=game_ids),
+        "own_games": games.filter(id__in=game_ids),
+        "other_games": games.exclude(id__in=game_ids),
     }
 
 @login_required
 def home_view(request):
-    games = get_games(request.user)
+    games = get_games(request.user, archived=False)
     return render(request, "hexgame/home.html", games)
+
+@login_required
+def archive_view(request):
+    games = get_games(request.user, archived=True)
+    return render(request, "hexgame/archive.html", games)
 
 @login_required
 def create_game_view(request):
@@ -159,6 +166,26 @@ def update_game(request):
     game_data = GameSerializer(game).data
 
     return JsonResponse({'result': 'success', 'game': game_data})
+
+@login_required
+def archive_game_view(request):
+    game_id = request.POST.get("game_id")
+
+    game = get_object_or_404(Game, pk=game_id)
+    players = game.players
+
+    user_in_players = False
+    for p in players:
+        if p.user == request.user:
+            user_in_players = True
+            break
+
+    if not user_in_players:
+        raise PermissionDenied
+
+    game.archived = True
+    game.save()
+    return redirect("home")
 
 #------------- Notifications -------------------
 

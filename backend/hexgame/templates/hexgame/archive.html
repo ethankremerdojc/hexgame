@@ -52,30 +52,16 @@
 
 {% block content %}
 
-  <i>Logged in as: <b>{{ user.username }}</b></i>
  
   <section class="header-buttons">
-    <a href="{% url 'create_game' %}">
-        <button>Create a Game</button>
+    <a href="{% url 'home' %}">
+        <button>Home</button>
     </a>
-
-    <form method="post" action="{% url 'logout' %}" class="logout-form">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
   </section>
 
   <section class="game-lists">
-    <h1>Your Games</h1>
+    <h1>Archived Games</h1>
     {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True %}
-    <h1>Other Games (spectate)</h1>
-    {% include "hexgame/game/components/game_list.html" with games=other_games is_own=False %}
-  </section>
-
-  <section class="bottom-section">
-    <a href="{% url 'archive' %}">
-        <button>Archived Games</button>
-    </a>
   </section>
 
 {% endblock content %}

@@ -5,6 +5,7 @@ from .views import *
 
 urlpatterns = [
     path("", home_view, name="home"),
+    path("archive/", archive_view, name="archive"),
     path("register/", register_view, name="register"),
     path("login/", auth_views.LoginView.as_view(
         template_name="hexgame/account/login.html",
@@ -18,6 +19,7 @@ urlpatterns = [
     path("game/get_context/<int:game_id>/", get_game_context, name="get_game_context"),
     path("game/update/", update_game, name="update_game"),
     path("game/create/", create_game_view, name="create_game"),
+    path("game/archive/", archive_game_view, name="archive_game"),
 
     path("api/notifications/subscribe/", notification_subscribe_view, name="notification_subscribe_view")
 ]

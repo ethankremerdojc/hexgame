@@ -4,10 +4,15 @@ from django.db import models
 # from datetime import datetime
 from django.utils import timezone
 
-class Game(models.Model):
-    # and have methods to retreive these via api.
-    # Should have a time per turn, and timestamps for 
-    # creation etc.
+class GameManager(models.Manager):
+    def archived(self):
+        return self.filter(archived=True)
+
+    def non_archived(self):
+        return self.filter(archived=False)
+
+class Game(models.Model): 
+    objects = GameManager()
 
     turn_number = models.IntegerField()
     current_player_turn = models.IntegerField()
@@ -15,6 +20,8 @@ class Game(models.Model):
     minutes_per_turn = models.IntegerField()
     creation_time = models.DateTimeField(auto_now_add=True)
     kick_if_inactive = models.BooleanField()
+
+    archived = models.BooleanField(default=False)
 
     @property
     def players(self):

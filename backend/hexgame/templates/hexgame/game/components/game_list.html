@@ -1,8 +1,7 @@
-{% if is_own %}
-  <h1>Your Games</h1>
-{% else %}
-  <h1>Other Games (Spectate)</h1>
-{% endif %}
+
+
+<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+
 <ul class="games-list">
     {% for game in games %}
         <li>
@@ -21,12 +20,18 @@
               <b>Players:</b> ( {% for p in game.players %}{{p.user.username}} {% endfor %})
             </i>
 
-            <i class="game-info">
-              <b>Started:</b> {{ game.creation_time }}
-            </i>
+            <!-- <i class="game-info"> -->
+            <!--   <b>Started:</b> {{ game.creation_time }} -->
+            <!-- </i> -->
             <i class="game-info">
               <b>Last Update:</b> {{ game.time_since_last_update }} ago
             </i>
+
+            <form method="post" action="{% url 'archive_game' %}" class="archive-form">
+                {% csrf_token %}
+                <input hidden name="game_id" value="{{ game.id }}" />
+                <button type="submit">Archive Game</button>
+            </form>
         </li>
     {% empty %}
         <li>You are not in any games yet.</li>
