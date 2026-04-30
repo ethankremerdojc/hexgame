@@ -43,6 +43,12 @@ button {
   box-shadow: #00000078 3px 3px 4px 1px;
 }
 
+button:disabled {
+  background: #5a6a75 !important;
+  color: #2d4657 !important;
+}
+}
+
 textarea {
   border: var(--border);
 }
