@@ -1,0 +1,12 @@
+.editor-menu {
+  button, button span {
+    font-size: var(--font-size-medium);
+    padding: var(--font-size-xsmall);
+  }
+}
+
+.editor-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--font-size-small);
+}

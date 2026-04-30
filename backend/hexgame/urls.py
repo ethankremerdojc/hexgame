@@ -21,5 +21,8 @@ urlpatterns = [
     path("game/create/", create_game_view, name="create_game"),
     path("game/toggle_archive/", toggle_archive_game_view, name="toggle_archive_game"),
 
+    path("chat/post_message/", post_chat_message, name="post_chat_message"),
+    path("chat/get_messages/<int:game_id>/", get_chat_messages, name="get_chat_messages"),
+
     path("api/notifications/subscribe/", notification_subscribe_view, name="notification_subscribe_view")
 ]

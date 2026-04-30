@@ -48,3 +48,15 @@ class GameSerializer(serializers.ModelSerializer):
             "turn_number",
             "complete"
         ]
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    player = PlayerSerializer(read_only=True)
+
+    class Meta:
+        model = ChatMessage
+        fields = [
+            "id",
+            "timestamp",
+            "player",
+            "message"
+        ]

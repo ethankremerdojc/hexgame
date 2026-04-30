@@ -14,7 +14,7 @@ from .forms import CreateGameForm
 from .models import *
 from django.contrib.auth.models import User
 from pywebpush import webpush, WebPushException
-from .serializers import GameSerializer
+from .serializers import GameSerializer, ChatMessageSerializer
 from backend import settings
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Value, BooleanField
@@ -62,7 +62,7 @@ def create_game_view(request):
         if form.is_valid():
             users = form.cleaned_data["usernames"]
             minutes_per_turn = form.cleaned_data["minutes_per_turn"]
-            kick_if_inactive = form.cleaned_data["kick_if_inactive"]
+            # kick_if_inactive = form.cleaned_data["kick_if_inactive"]
             celldata = form.cleaned_data["celldata"]
 
             with transaction.atomic():
@@ -70,7 +70,7 @@ def create_game_view(request):
                     current_player_turn=0,
                     board_state=json.loads(celldata),   # or whatever your initial board state should be
                     minutes_per_turn=minutes_per_turn,
-                    kick_if_inactive=kick_if_inactive,
+                    kick_if_inactive=False,
                     turn_number=1
                 )
 
@@ -165,12 +165,12 @@ def update_game(request):
 
     player = list(game.players)[game.current_player_turn]
     PlayerEvent.objects.create(player=player)
-
-    if PushSubscription.objects.filter(user=player.user).exists():
-        send_test_push(player.user, game.id)
+    
+    if not game.archived:
+        if PushSubscription.objects.filter(user=player.user).exists():
+            send_test_push(player.user, game.id)
 
     game_data = GameSerializer(game).data
-
     return JsonResponse({'result': 'success', 'game': game_data})
 
 @login_required
@@ -178,16 +178,7 @@ def toggle_archive_game_view(request):
     game_id = request.POST.get("game_id")
 
     game = get_object_or_404(Game, pk=game_id)
-    players = game.players
-
-    user_in_players = False
-    for p in players:
-        if p.user == request.user:
-            user_in_players = True
-            break
-
-    if not user_in_players:
-        raise PermissionDenied
+    get_object_or_404(Player, game=game, user=request.user)
 
     game.archived = not game.archived
     game.save()
@@ -266,7 +257,30 @@ def send_test_push(user, game_id):
     print(resp)
     return JsonResponse(resp)
 
+# CHAT
 
+@login_required
+def get_chat_messages(request, game_id):
+    game = get_object_or_404(Game, pk=game_id)
+    player = get_object_or_404(Player, game=game, user=request.user)
 
+    return JsonResponse({"messages": ChatMessageSerializer(
+        ChatMessage.objects.filter(player__game=game), many=True
+    ).data})
 
+@login_required
+def post_chat_message(request):
+    message = request.POST.get("message")
+    game_id = request.POST.get("game_id")
+    print("game id", game_id)
+    game = get_object_or_404(Game, pk=game_id)
+    print("game exists")
+    player = get_object_or_404(Player, game=game, user=request.user)
+    print("player exists")
 
+    ChatMessage.objects.create(
+        player=player,
+        message=message
+    )
+
+    return get_chat_messages(request, game_id)

@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script>
+      function getCSRFToken() {
+        const name = "csrftoken=";
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name)) {
+            return cookie.substring(name.length);
+          }
+        }
+
+        return "";
+      }
+    </script>
     <title>{% block title %}{% endblock title %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,6 +28,14 @@
         font-family: "Lato", sans-serif;
       }
 
+      :root {
+        --font-size-xxsmall: clamp(0.2rem, 1vh, 0.8rem);
+        --font-size-xsmall: clamp(0.25rem, 1.4vh, 1.2rem);
+        --font-size-small: clamp(0.5rem, 2vh, 1.5rem);
+        --font-size-medium: clamp(0.8rem, 3vh, 2.8rem);
+        --font-size-large: clamp(1rem, 4vh, 5rem);
+      }
+
       body {
         background: linear-gradient(109deg, #dcdef4, #24252f);
       }
@@ -23,7 +46,7 @@
         border: solid white 2px;
         border-radius: 8px;
         font-weight: 600;
-        padding: clamp(0.25rem, 1vh, 1.25rem) clamp(0.5rem, 2vh, 2.5rem);
+        padding: var(--font-size-xxsmall) var(--font-size-xsmall);
         box-shadow: #00000078 3px 3px 4px 1px;
       }
 
@@ -35,18 +58,18 @@
         min-width: 100vw;
       }
       .content-inner {
-        padding: clamp(1rem, 4vh, 5rem);
+        padding: var(--font-size-large);
       }
 
       h1 {
-        font-size: clamp(1rem, 4vh, 5rem);
+        font-size: var(--font-size-large);
       }
       p, input, button, a, li, i {
-        font-size: clamp(0.8rem, 2.8vh, 2.8rem);
+        font-size: var(--font-size-small);
       }
 
       input:placeholder, input:autofill {
-        font-size: clamp(0.8rem, 2.8vh, 2.8rem);
+        font-size: var(--font-size-medium);
       }
     </style>
     <style>

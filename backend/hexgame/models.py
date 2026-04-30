@@ -85,3 +85,8 @@ class PushSubscription(models.Model):
     auth = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class ChatMessage(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    player = models.ForeignKey('Player', null=True, on_delete=models.SET_NULL)
+    message = models.TextField()

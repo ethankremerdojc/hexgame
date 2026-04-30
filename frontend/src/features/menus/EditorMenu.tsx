@@ -65,6 +65,16 @@ export default function EditorMenu() {
     dispatch(setCells(newCells));
   }
 
+  function clearSelectedCell() {
+    let newCells = structuredClone(cells);
+    for (var cell of newCells) {
+      if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
+        cell.elements = [];
+      }
+    }
+    dispatch(setCells(newCells));
+  }
+
   function addTraderTile() {
     if (selectedCell === null) {
       throw new Error("selected cell is null")
@@ -156,17 +166,18 @@ export default function EditorMenu() {
         selectedCell ?
         <div className="editor-options">
           <button onClick={() => addTraderTile()}>
-            <span>Add Trader</span>
+            Add Trader
           </button>
           <button onClick={() => addElementAndSave(ElementSubType.Horse)}>
-            <span>Add Horse</span>
+            Add Horse
           </button>
           <button onClick={() => addElementAndSave(ElementSubType.Cow)}>
-            <span>Add Cow</span>
+            Add Cow
           </button>
-          <div>
-            {getMoveCapitalButtons()}
-          </div>
+          {getMoveCapitalButtons()}
+          <button onClick={() => {clearSelectedCell()}}>
+            Clear Cell
+          </button>
           {
             window.__editing_live_game &&
             <button onClick={() => {

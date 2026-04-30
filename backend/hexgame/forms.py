@@ -9,7 +9,7 @@ class CreateGameForm(forms.Form):
     )
 
     minutes_per_turn = forms.IntegerField(min_value=1, max_value=200, initial=10, required=False)
-    kick_if_inactive = forms.BooleanField(required=False)
+    # kick_if_inactive = forms.BooleanField(required=False)
     celldata = forms.CharField(widget=forms.HiddenInput(), required=True)
     cell_count = forms.IntegerField(min_value=10, max_value=200, initial=70)
 

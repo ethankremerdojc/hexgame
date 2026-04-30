@@ -1,39 +1,58 @@
 {% extends 'hexgame/base.html' %}
-{% block title %}Game{% endblock title %}
+  {% block title %}Game {{game.id}}{% endblock title %}
 
 {% block content %}
-    <style>
+  <style>
 
-      iframe {
-        width: 100%;
+    .game-container {
+      width: 100%;
+      display: flex;
+      gap: 30px;
+    }
 
-        height: 81vh;
+    .game-iframe-container {
+      width: calc(100% - 330px)
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 80vh;
+      border: none;
+    }
+
+    .content-inner {
+      padding: 0 !important;
+      position: relative;
+      top: 2vw;
+      left: 2vw;
+      width: 96vw;
+    }
+
+    .chat-container {
+      width: 300px;
+    }
+
+    .game-info {
+      margin-bottom: 2vw;
+
+      i {
         display: block;
       }
-      
-      .content-inner {
-        padding: 0 !important;
-        position: relative;
-        top: 2vw;
-        left: 2vw;
-        width: 96vw;
-      }
+    }
+  </style>
+  <div class="game-info">
+    <a href="/" style="display: block;"><button>Home</button></a>
+    <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i>
+    {% if game.complete %}<i>Winner: {{game.winner.username}}</i>{% endif %}
+  </div>
 
-      .game-info {
-        margin-bottom: 2vw;
-
-        i {
-          display: block;
-        }
-      }
-
-    </style>
-    
-    <div class="game-info">
-      <a href="/" style="display: block;"><button>Home</button></a>
-      <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i>
-      {% if game.complete %}<i>Winner: {{game.winner.username}}</i>{% endif %}
+  <div class="game-container">
+    <div class="game-iframe-container">
+      <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe"></iframe>
     </div>
 
-    <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe" />
+    <div class="chat-container">
+      {% include "hexgame/game/components/chat.html" with game=game %}
+    </div>
+  </div>
 {% endblock content %}

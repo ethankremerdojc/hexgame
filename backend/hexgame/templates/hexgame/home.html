@@ -7,7 +7,7 @@
     button {}
 
     button, h1 {
-      margin: clamp(0.6rem, 2vh, 2.3rem) 0; 
+      margin: var(--font-size-small) 0; 
     }
   }
 
@@ -20,12 +20,12 @@
     padding-inline-start: 0;
 
     li {
-      margin-bottom: clamp(0.6rem, 2vh, 2.3rem);
+      margin-bottom: var(--font-size-xsmall);
     }
 
     .game-info {
       display: block;
-      font-size: clamp(0.6rem, 2vh, 2.3rem);
+      font-size: var(--font-size-small);
       color: #3c3c3c;
     }
 
@@ -47,7 +47,6 @@
     margin: clamp(0.2rem, 0.6vh, 0.8rem) 0;
   }
 
-  
 {% endblock extracss %}
 
 {% block content %}
