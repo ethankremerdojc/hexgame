@@ -10,6 +10,8 @@
   --font-size-small: clamp(0.5rem, 2vh, 2.6rem);
   --font-size-medium: clamp(0.8rem, 3vh, 2.8rem);
   --font-size-large: clamp(1rem, 4vh, 4rem);
+
+  --header-height: calc(2*var(--font-size-large));
 }
 
 * {
@@ -63,11 +65,12 @@ a {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+
 }
 .content-inner {
   padding: var(--font-size-medium);
   width: calc(100% - 2*var(--font-size-medium));
-  height: calc(100% - 2*var(--font-size-medium));
+  height: calc(100% - 2*var(--font-size-medium) - var(--header-height));
 }
 
 h1 {

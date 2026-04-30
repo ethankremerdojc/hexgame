@@ -148,6 +148,13 @@
   justify-content: space-between;
 }
 
+
+.element-actions-middle-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--font-size-xsmall);
+}
+
 .rename-block {
   display: flex;
   flex-direction: column;
