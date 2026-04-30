@@ -56,7 +56,7 @@ declare global {
 
 export const TESTING = window.location.host.includes(":5173");
 const TEST_GAME_ID = 17;
-export const USE_FAKE_IFRAME_CONTEXT = TESTING && true;
+export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = false;
 
 

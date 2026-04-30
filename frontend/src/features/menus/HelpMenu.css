@@ -1,6 +1,10 @@
 .help-menu {
   max-height: min(900px, 85vh);
   overflow-y: auto;
+
+  h1, button, h2, p {
+    margin: var(--font-size-small) 0;
+  }
 }
 
 .ingredients-list {

@@ -25,7 +25,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: #252525;
+  background: #202a31;
   padding: var(--font-size-xsmall) calc(var(--font-size-xsmall) * 1.25);
   border-radius: var(--font-size-xsmall);
   border: solid white 2px;
@@ -55,16 +55,17 @@
 
 .element-action-options, .element-action-items {
   button {
+    background: #cddce7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     min-width: 100px;
+    color: var(--text-color) !important;
     span {
-
-      color: #252525;
       display: flex;
       align-items: center;
       gap: clamp(0.5rem, 1.5vh, 1.5rem);
       img {
-        /* background: darkgray; */
-
         width: clamp(1rem, 3vh, 3rem);
         height: clamp(1rem, 3vh, 3rem);
         padding: 4px;
@@ -82,13 +83,17 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
+.element-action-items > :first-child:last-child {
+  grid-column: 1 / span 2;
+}
+
 .element-turn-actions {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.player-turn-text {
+.player-turn-text, .round-number-text {
   width: 100%;
   text-align: center;
   color: #e3e3e3;
@@ -119,6 +124,7 @@
     }
   }
   .droptake-label-text-span {
+    color: white;
     font-size: var(--font-size-small);
   }
 }
@@ -132,5 +138,18 @@
 
 .nav {
   display: flex;
+  flex-direction: column;
   gap: var(--font-size-xsmall);
+}
+
+.element-actions-top-buttons, .element-actions-bottom-buttons {
+  display: flex;
+  gap: var(--font-size-xsmall);
+  justify-content: space-between;
+}
+
+.rename-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--font-size-small);
 }

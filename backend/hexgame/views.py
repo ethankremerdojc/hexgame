@@ -168,7 +168,12 @@ def update_game(request):
     
     if not game.archived:
         if PushSubscription.objects.filter(user=player.user).exists():
-            send_test_push(player.user, game.id)
+            send_push_notif(
+                player.user, 
+                f"Your Turn ({user.username}) in game {game.id}",
+                "Last player made their move.",
+                game.id
+            )
 
     game_data = GameSerializer(game).data
     return JsonResponse({'result': 'success', 'game': game_data})
@@ -222,11 +227,11 @@ def notification_subscribe_view(request):
 
     return JsonResponse({"status": "success"})
 
-def send_test_push(user, game_id):
+def send_push_notif(user, title, body, game_id):
     payload = json.dumps({
-        "title": f"Your Turn ({user.username}) in game {game_id}",
-        "body": "Last player made their move.",
-        "url": "/",
+        "title": title,
+        "body": body,
+        "url": f"/game/{game_id}/",
     })
 
     sent = 0
@@ -253,8 +258,8 @@ def send_test_push(user, game_id):
             sent += 1
         except WebPushException:
             failed += 1
+
     resp = {"sent": sent, "failed": failed}
-    print(resp)
     return JsonResponse(resp)
 
 # CHAT
@@ -272,15 +277,28 @@ def get_chat_messages(request, game_id):
 def post_chat_message(request):
     message = request.POST.get("message")
     game_id = request.POST.get("game_id")
-    print("game id", game_id)
     game = get_object_or_404(Game, pk=game_id)
-    print("game exists")
     player = get_object_or_404(Player, game=game, user=request.user)
-    print("player exists")
 
     ChatMessage.objects.create(
         player=player,
         message=message
     )
+
+    def trunc(msg):
+        if len(msg) > 100:
+            return msg[:100]
+        return msg
+
+    for p in game.players:
+        if p.id == player.id:
+            continue
+        if PushSubscription.objects.filter(user=p.user).exists():
+            send_push_notif(
+                player.user, 
+                f"New Message in game {game.id}",
+                trunc(message),
+                game.id
+            )
 
     return get_chat_messages(request, game_id)

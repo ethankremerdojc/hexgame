@@ -1,19 +1,23 @@
 <style>
 
 .chat {
-  background: white;
+  background: rgba(255, 255, 255, 0.5);
   height: 100%;
   display: flex;
   flex-direction: column-reverse;
+  border: var(--border-white);
 }
 
 .chat-messages {
-  max-height: 70vh;
   overflow-y: auto;
 }
 
+.chat-messages .message:first-child {
+  border-top: none !important;
+}
+
 .message {
-  border-top: solid black 2px;
+  border-top: solid white 2px;
   padding: var(--font-size-xxsmall);
   h2 {
     font-size: var(--font-size-small);
@@ -25,7 +29,7 @@
 }
 
 .chat-input-section {
-  border-top: solid black 2px;
+  border-top: solid white 2px;
   display: flex;
   flex-direction: column;
   padding: var(--font-size-xxsmall);

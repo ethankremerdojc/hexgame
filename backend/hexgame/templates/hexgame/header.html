@@ -1,0 +1,44 @@
+<style>
+
+header {
+  padding: var(--font-size-xxsmall) var(--font-size-xsmall);
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header-inner-right {
+  display: flex;
+  gap: var(--font-size-xxsmall);
+  align-items: center;
+
+  button {
+    cursor: pointer;
+  }
+}
+
+</style>
+
+<header>
+  <div class="header-inner">
+    <div class="header-inner-left">
+       <a href="/">
+        <h1>HexGame</h1>
+      </a>   
+    </div>
+    <div class="header-inner-right">
+      {% if user.username %}
+        <h2>User: {{ user.username }}</h2>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="/register/"><button>Register</button></a>
+        <a href="/login/"><button>Login</button></a>
+      {% endif %}
+    </div>
+  </div>
+</header>

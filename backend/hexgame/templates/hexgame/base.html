@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,62 +18,12 @@
         return "";
       }
     </script>
-    <title>{% block title %}{% endblock title %}</title>
+    <title>HexGame | {% block title %}{% endblock title %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
-    
-    <style>
-      * {
-        margin: 0;
-        font-family: "Lato", sans-serif;
-      }
-
-      :root {
-        --font-size-xxsmall: clamp(0.2rem, 1vh, 0.8rem);
-        --font-size-xsmall: clamp(0.25rem, 1.4vh, 1.2rem);
-        --font-size-small: clamp(0.5rem, 2vh, 1.5rem);
-        --font-size-medium: clamp(0.8rem, 3vh, 2.8rem);
-        --font-size-large: clamp(1rem, 4vh, 5rem);
-      }
-
-      body {
-        background: linear-gradient(109deg, #dcdef4, #24252f);
-      }
-
-      button {
-        color: white;
-        background: #595959;
-        border: solid white 2px;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: var(--font-size-xxsmall) var(--font-size-xsmall);
-        box-shadow: #00000078 3px 3px 4px 1px;
-      }
-
-      a {
-        text-decoration: none;
-      }
-
-      .content {
-        min-width: 100vw;
-      }
-      .content-inner {
-        padding: var(--font-size-large);
-      }
-
-      h1 {
-        font-size: var(--font-size-large);
-      }
-      p, input, button, a, li, i {
-        font-size: var(--font-size-small);
-      }
-
-      input:placeholder, input:autofill {
-        font-size: var(--font-size-medium);
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
     <style>
       {% block extracss %}
       {% endblock extracss %}
@@ -79,28 +31,28 @@
 </head>
 <body>
   <div class="content">
-      <div class="content-inner">
-        {% block content %}
-        {% endblock content %}
-      </div>
+    {% include 'hexgame/header.html' %}
+    <div class="content-inner">
+      {% block content %}
+      {% endblock content %}
     </div>
+  </div>
 
-    <script>
-      // Add confirm dialog if about to archive/unarchive a game
-      let archiveForms = document.getElementsByClassName("archive-form");
+  <script>
+    let archiveForms = document.getElementsByClassName("archive-form");
 
-      for (var form of archiveForms) {
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
+    for (var form of archiveForms) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
 
-          let f = e.target;
-          let fd = new FormData(f);
+        let f = e.target;
+        let fd = new FormData(f);
 
-          if (confirm("Are you sure you want to change the archived state of game " + fd.get("game_id") + "?")) {
-            f.submit();
-          }
-        })
-      }
-    </script>
+        if (confirm("Are you sure you want to change the archived state of game " + fd.get("game_id") + "?")) {
+          f.submit();
+        }
+      })
+    }
+  </script>
 </body>
 </html>

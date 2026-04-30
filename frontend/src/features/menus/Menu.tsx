@@ -448,7 +448,7 @@ function ElementActionOptions() {
           display: "flex",
           flexDirection: "column",
         }}>
-          <label>
+          <label htmlFor={`${item.id}-rangeinput`} className="droptake-label">
             <span className="droptake-label-image-span"><img src={getSvgForSubType(item.subType, false)} /></span>
             <span className="droptake-label-text-span">{nameForElementSubType(item.subType)}</span>
           </label>
@@ -703,15 +703,14 @@ export function ElementActionsMenu() {
         <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
         </>
       }
-      <p>Turn #: {turnNumber}</p>
+      <p className="round-number-text" >Round #: {turnNumber}</p>
       <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>{currentPlayerName}</span></p>
     </div></div>)
   }
 
   return (
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
-      <div className="nav">
-        <a href="/">Home</a>
+      <div className="element-actions-top-buttons">
         {
           !userSubscribed &&
             <button onClick={
@@ -740,24 +739,29 @@ export function ElementActionsMenu() {
               }
             }>Subscribe</button>
         }
-      </div>
 
+        {helpMenuOpen ?
+          <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
+            Close Help
+          </button>
+          :
+          <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>
+            Help
+          </button>
+        }
+      </div>
       {
         helpMenuOpen ?
-          <>
-            <button className="help-toggle" onClick={() => {
-              setHelpMenuOpen(false);
-            }}>Close Help</button>
-            <HelpMenu />
-          </>
-        : <>
-          <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
-          <p>Turn #: {turnNumber}</p>
-          <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
+          <HelpMenu />
+        :
+        <>
+          <div className="element-actions-middle-buttons">
+            <p className="round-number-text">Turn #: {turnNumber}</p>
+            <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
 
-          <ElementActionOptions />
-
-          <div className="element-turn-actions">
+            <ElementActionOptions />
+          </div>
+          <div className="element-actions-bottom-buttons">
             {
               !confirmingResetTurn && 
               <> 
@@ -769,7 +773,6 @@ export function ElementActionsMenu() {
               <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
               } </>
             }
-
             {
               !confirmingEndTurn &&
               <> { confirmingResetTurn ? <>
@@ -781,6 +784,7 @@ export function ElementActionsMenu() {
               } </>
             }
           </div>
+
         </>
       }
 

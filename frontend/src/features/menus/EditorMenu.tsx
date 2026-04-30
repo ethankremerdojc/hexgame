@@ -66,6 +66,7 @@ export default function EditorMenu() {
   }
 
   function clearSelectedCell() {
+    if (!selectedCell) { return };
     let newCells = structuredClone(cells);
     for (var cell of newCells) {
       if (cell.x == selectedCell.x && cell.y == selectedCell.y) {

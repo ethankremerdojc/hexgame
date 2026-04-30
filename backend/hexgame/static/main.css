@@ -1,0 +1,90 @@
+:root {
+  --text-color: #0a4269;
+  --border-width: clamp(0.05rem, 0.25vh, 0.15rem);
+  --border: solid var(--text-color) var(--border-width);
+
+  --border-white: solid white var(--border-width);
+  --font-size-xxxsmall: clamp(0.1rem, 0.5vh, 0.4rem);
+  --font-size-xxsmall: clamp(0.2rem, 1vh, 1.3rem);
+  --font-size-xsmall: clamp(0.25rem, 1.4vh, 1.9rem);
+  --font-size-small: clamp(0.5rem, 2vh, 2.6rem);
+  --font-size-medium: clamp(0.8rem, 3vh, 2.8rem);
+  --font-size-large: clamp(1rem, 4vh, 4rem);
+}
+
+* {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+  color: #0a4269;
+}
+
+*::placeholder {
+  color: #0a4269;
+  font-size: var(--font-size-xsmall);
+}
+
+*:active, *:focus, *:focus-visible {
+  outline: none;
+}
+
+body {
+  background: #95a8b5;
+}
+
+button {
+  color: white;
+  background: #0a4269;
+  border: var(--border);
+  border-radius: 8px;
+  font-weight: 600;
+  padding: var(--font-size-xxxsmall) var(--font-size-xsmall);
+  box-shadow: #00000078 3px 3px 4px 1px;
+}
+
+textarea {
+  border: var(--border);
+}
+
+input {
+  color: white;
+  background: #0a4269;
+  border: var(--border-white);
+  border-radius: 4px;
+}
+
+
+a {
+  text-decoration: none;
+}
+
+.content {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.content-inner {
+  padding: var(--font-size-medium);
+  width: calc(100% - 2*var(--font-size-medium));
+  height: calc(100% - 2*var(--font-size-medium));
+}
+
+h1 {
+  font-size: var(--font-size-large);
+}
+h2 {
+  font-size: var(--font-size-medium);
+}
+p, input, button, a, li, i {
+  font-size: var(--font-size-small);
+}
+
+.helptext {
+  font-size: var(--font-size-xsmall);
+  font-style: italic;
+}
+
+input:placeholder {
+  font-size: var(--font-size-medium);
+}

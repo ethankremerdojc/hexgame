@@ -3,11 +3,9 @@
 
 {% block extracss %}
 
-  .content {
-    button {}
-
+  .content-inner {
     button, h1 {
-      margin: var(--font-size-medium) 0; 
+      margin: var(--font-size-xsmall) 0; 
     }
   }
 
@@ -20,7 +18,7 @@
     padding-inline-start: 0;
 
     li {
-      margin-bottom: var(--font-size-small);
+      margin-bottom: var(--font-size-xsmall);
     }
 
     .game-info {
@@ -30,6 +28,10 @@
     }
 
   }
+  
+  .game-title {
+    color: white;
+  }
 
   .game-list-link {
     text-decoration: none;
@@ -37,7 +39,7 @@
     font-weight: bold;
 
     i {
-      color: #753075;
+      color: #e082e0;
     }
   }
 
@@ -50,13 +52,6 @@
 {% endblock extracss %}
 
 {% block content %}
-
- 
-  <section class="header-buttons">
-    <a href="{% url 'home' %}">
-        <button>Home</button>
-    </a>
-  </section>
 
   <section class="game-lists">
     <h1>Archived Games</h1>
