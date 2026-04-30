@@ -91,3 +91,10 @@ p, input, button, a, li, i {
 input:placeholder {
   font-size: var(--font-size-medium);
 }
+
+@media screen and (max-width: 1200px) {
+  .content {
+    /* Go to 90% because of peoples url bar and stuff */
+    height: calc(93vh - 2*var(--font-size-medium) - var(--header-height));
+  }
+}
