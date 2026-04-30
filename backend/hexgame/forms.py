@@ -5,11 +5,13 @@ User = get_user_model()
 
 class CreateGameForm(forms.Form):
     usernames = forms.CharField(
-        help_text="Enter usernames separated by commas. (Yours is automatically included, do not add your username.)"
+        help_text="Enter usernames separated by commas. (Yours is automatically included, do not add your own username.)"
     )
-    minutes_per_turn = forms.IntegerField(min_value=1, max_value=200)
+
+    minutes_per_turn = forms.IntegerField(min_value=1, max_value=200, initial=10, required=False)
     kick_if_inactive = forms.BooleanField(required=False)
     celldata = forms.CharField(widget=forms.HiddenInput(), required=True)
+    cell_count = forms.IntegerField(min_value=10, max_value=200, initial=70)
 
     def clean_usernames(self):
         raw_value = self.cleaned_data["usernames"]

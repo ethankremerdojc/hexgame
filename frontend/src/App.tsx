@@ -44,6 +44,7 @@ declare global {
   interface Window {
     __IFRAME_CONTEXT__?: {
       playerCount: number | null;
+      cellCount: number | null;
     };
     __editor_mode__: boolean | null;
     __editing_live_game: boolean | null;
@@ -61,7 +62,8 @@ export const USE_TESTING_EDITOR_MODE = false;
 
 if (USE_FAKE_IFRAME_CONTEXT) {
   window.__IFRAME_CONTEXT__ = {
-    playerCount: 3
+    playerCount: 3,
+    cellCount: 70
   }
   window.__editor_mode__ = true;
 }
@@ -144,7 +146,11 @@ function App() {
     } else {
       let iframeContext = window.__IFRAME_CONTEXT__;
       if (!iframeContext) { return }
+      if (iframeContext.cellCount === null) {
+        throw new Error("Cell count was null.");
+      }
 
+      let cellCount: number = iframeContext.cellCount;
       dispatch(setLoggedInUsername("admin"));
 
       window.__editor_mode__ = true;
@@ -155,7 +161,13 @@ function App() {
       let hexRadius = 40;
 
       const BG = new BoardGenerator();
-      const newBoard = BG.generateBoard(hexRadius, canvasSize, canvasSize, newPlayerCount);
+      const newBoard = BG.generateBoard(
+        hexRadius,
+        canvasSize,
+        canvasSize,
+        newPlayerCount,
+        cellCount
+      );
       dispatch(setCells(newBoard));
 
       if (!window.__editor_mode__) {

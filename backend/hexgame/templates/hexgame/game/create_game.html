@@ -22,16 +22,20 @@
 
       function generatePreview() {
         let usernames = document.getElementById("id_usernames").value;
+        let cellCount = document.getElementById("id_cell_count").value;
+
         if (!usernames) {
           alert("please place at least one player that isn't you.")
           return
         }
+        if (!cellCount) {
+          alert("Please provide a cell count.");
+          return
+        }
         let playerCount = 1 + usernames.split(",").length;
-        let newIframePath = `/game/iframe/?view_only=1&player_count=${playerCount}`;
+        let newIframePath = `/game/iframe/?player_count=${playerCount}&cell_count=${cellCount}`;
         let iframeContainer = document.getElementById("iframeContainer");
         iframeContainer.innerHTML = `<iframe id="previewIframe" width="720px" height="720px" src="${newIframePath}"></iframe>`;
-
-
       }
 
       const createGameForm = document.getElementById("createGameForm");

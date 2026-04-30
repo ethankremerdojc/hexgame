@@ -472,6 +472,9 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     return (<div>Set Player Count Before Rendering Board.</div>)
   }
 
+  // TODO 
+  // Add a second canvas for rendering sprites
+
   return (
     <canvas
       id="game-board-canvas"

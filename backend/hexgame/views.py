@@ -122,10 +122,12 @@ def game_iframe(request):
         html = f.read()
 
     player_count = request.GET.get("player_count")
+    cell_count = request.GET.get("cell_count")
 
     if player_count:
         react_context = json.dumps({
             "playerCount": player_count,
+            "cellCount": cell_count
         })
 
         html = html.replace(
