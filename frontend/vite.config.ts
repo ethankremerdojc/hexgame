@@ -2,6 +2,19 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+let IS_DEV = path.resolve(__dirname).includes("/ethan/");
+
+let serverBlock = {};
+if (IS_DEV) {
+  console.log("is dev");
+  serverBlock = {
+    "/api": {
+      target: "http://localhost:8001",
+      changeOrigin: true
+    }
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base: '/static/gameBuild/',
@@ -12,12 +25,7 @@ export default defineConfig({
     }
   },
   server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:8001",
-        changeOrigin: true
-      }
-    }
+    proxy: serverBlock
   },
   build: {
     outDir: path.resolve(__dirname, '../backend/hexgame/static/gameBuild/'),
