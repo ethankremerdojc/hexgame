@@ -270,7 +270,7 @@ def get_chat_messages(request, game_id):
     player = get_object_or_404(Player, game=game, user=request.user)
 
     return JsonResponse({"messages": ChatMessageSerializer(
-        ChatMessage.objects.filter(player__game=game), many=True
+        ChatMessage.objects.filter(player__game=game).order_by('timestamp'), many=True
     ).data})
 
 @login_required
