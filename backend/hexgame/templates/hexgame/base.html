@@ -30,13 +30,16 @@
     </style>
 </head>
 <body>
+  {% include 'hexgame/header.html' %}
+
   <div class="content">
-    {% include 'hexgame/header.html' %}
     <div class="content-inner">
       {% block content %}
       {% endblock content %}
     </div>
   </div>
+
+  {% include 'hexgame/footer.html' %}
 
   <script>
     let archiveForms = document.getElementsByClassName("archive-form");

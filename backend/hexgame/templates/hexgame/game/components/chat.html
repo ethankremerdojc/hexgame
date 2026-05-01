@@ -5,7 +5,6 @@
   height: 100%;
   display: flex;
   flex-direction: column-reverse;
-  border: var(--border-white);
 }
 
 .chat-messages {
@@ -17,7 +16,7 @@
 }
 
 .message {
-  border-top: solid white 2px;
+  border-top: var(--border);
   padding: var(--font-size-xxsmall);
   h2 {
     font-size: var(--font-size-small);
@@ -29,7 +28,7 @@
 }
 
 .chat-input-section {
-  border-top: solid white 2px;
+  border-top: var(--border);
   display: flex;
   flex-direction: column;
   padding: var(--font-size-xxsmall);
@@ -39,16 +38,13 @@
     resize: vertical;
   }
 }
-
-
-
 </style>
 
 <div class="chat">
-  <form class="chat-input-section" id="messageForm">
-    <textarea name="message" placeholder="message" id="message-textarea"></textarea>
-    <button type="submit">Send</button>
-  </form>
+    <form class="chat-input-section" id="messageForm">
+      <textarea name="message" placeholder="message" id="message-textarea"></textarea>
+      <button type="submit">Send</button>
+    </form>
   <div class="chat-messages" id="chat-messages">
     <div class="message">
       <h2>username</h2>

@@ -2,6 +2,18 @@
 {% block title %}Create Game{% endblock title %}
 
 {% block content %}
+
+<style>
+h1, p {
+  margin: var(--font-size-xsmall) 0;
+}
+
+iframe {
+  width: 100%;
+  height: max(50vh, 50vw);
+}
+</style>
+
     <h2>Create Game</h2>
 
     <form method="post" id="createGameForm">
@@ -10,18 +22,27 @@
 
         <h1>Preview</h1>
         <button onclick="generatePreview()" type="button">Generate</button>
+        <button type="submit" disabled id="createGameButton">Create game</button>
         <div id="iframeContainer">
         </div>
 
-        <button type="submit">Create game</button>
     </form>
+
     <script defer>
+      let dissallowedUsername = '{{ user.username }}';
 
       let generatedData = null;
 
       function generatePreview() {
         let usernames = document.getElementById("id_usernames").value;
         let cellCount = document.getElementById("id_cell_count").value;
+        let createGameButton = document.getElementById("createGameButton");
+        createGameButton.disabled = true;
+
+        if (usernames.includes(dissallowedUsername)) {
+          alert("Do not add your own username.");
+          return
+        }
 
         if (!usernames) {
           alert("please place at least one player that isn't you.")
@@ -34,7 +55,8 @@
         let playerCount = 1 + usernames.split(",").length;
         let newIframePath = `/game/iframe/?player_count=${playerCount}&cell_count=${cellCount}`;
         let iframeContainer = document.getElementById("iframeContainer");
-        iframeContainer.innerHTML = `<iframe id="previewIframe" width="720px" height="720px" src="${newIframePath}"></iframe>`;
+        iframeContainer.innerHTML = `<iframe id="previewIframe" src="${newIframePath}"></iframe>`;
+        createGameButton.disabled = false;
       }
 
       const createGameForm = document.getElementById("createGameForm");

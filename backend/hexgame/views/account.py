@@ -12,7 +12,7 @@ def get_games(user, archived):
 
     return {
         "own_games": games.filter(id__in=game_ids),
-        "other_games": games.exclude(id__in=game_ids),
+        "other_games": games.exclude(id__in=game_ids).filter(spectatable=True),
     }
 
 @login_required

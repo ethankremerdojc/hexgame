@@ -1,19 +1,35 @@
 {% extends 'hexgame/base.html' %}
-  {% block title %}Game {{game.id}}{% endblock title %}
+{% block title %}
+  {% if game.title %}
+    {{ game.title }}
+  {% else %}
+    Game {{ game.id }} 
+  {% endif %}
+{% endblock title %}
 
 {% block content %}
   <style>
+    /* Footer and header same height right now */
+    .content {
+      height: calc(100vh - calc(2*var(--header-height)));
+    }
+
+    .content-inner {
+      /* Calc for padding */
+      height: calc(100% - calc(2 * var(--font-size-xsmall)));
+    }
 
     .game-container {
       width: 100%;
       display: flex;
-      gap: 30px;
+      gap: var(--font-size-small);
       height: 100%;
     }
 
     .game-iframe-container {
       width: 100%;
-      border: solid rgba(255, 255, 255, 0.5) 2px;
+      border: var(--border);
+      box-shadow: var(--bottom-right-border-shadow);
     }
 
     iframe {
@@ -23,46 +39,105 @@
     }
 
     .chat-container {
+      border: var(--border);
       width: max(280px, 25vw);
-    }
-
-    .game-info {
-      height: var(--header-height);
-      outline: solid red 1px;
+      box-shadow: var(--bottom-right-border-shadow);
     }
 
     @media screen and (max-width: 1200px) {
+
+
+      .content {
+        height: calc(92vh - calc(2*var(--header-height)));
+      }
+
       .game-container {
         flex-direction: column;
         height: 100%;
       }
 
-      .game-iframe-container {
-        height: calc(65% - 30px);
-      }
+      {% if user in game.user_players %}
+        .game-iframe-container {
+          height: calc(65% - var(--font-size-small));
+        }
 
-      .chat-container {
-        width: 100%;
-        height: 35%;
-      }
+        .chat-container {
+          width: 100%;
+          height: 35%;
+        }
+      {% else %}
+        .game-iframe-container {
+          height: calc(100% - var(--font-size-small));
+        }
+      {% endif %}
     }
   </style>
-  <section>
-    <form method="POST">
-      <label for="game_title">
-        Title
-      </label>
-      <input type="text" name="game_title">
-    </form>
-  </section>
+
+  {% if user == game.creator %}
+
+    <style>
+      .game-info {
+        height: calc(2*var(--header-height));
+        display: flex;
+        align-items: center;
+
+        form {
+          display: flex;
+          gap: var(--font-size-medium);
+
+          p {
+            display: flex;
+            flex-direction: column;
+          }
+
+          input, p, button {
+            font-size: var(--font-size-xsmall);
+          }
+
+          input[type="checkbox"] {
+            width: var(--font-size-xsmall);
+            height: var(--font-size-xsmall);
+          }
+
+          input[type="checkbox"]:checked:after {
+            content: "Yes";
+            margin-left: var(--font-size-xsmall);
+          }
+          input[type="checkbox"]:not(:checked):after {
+            content: "No";
+            margin-left: var(--font-size-xsmall);
+          }
+        }
+      }
+      .game-container {
+        height: calc(100% - calc(2*var(--header-height))) !important;
+      }
+
+      .content-inner {
+        padding-top: 0;
+        height: calc(100% - var(--font-size-xsmall));
+      }
+
+    </style>
+
+    <section class="game-info"> 
+      <form method="post" id="updateGameInfoForm">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit">Update Info</button>
+      </form>
+    </section>
+  {% endif %}
 
   <section class="game-container">
     <div class="game-iframe-container">
       <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe"></iframe>
     </div>
-
-    <div class="chat-container">
-      {% include "hexgame/game/components/chat.html" with game=game %}
-    </div>
+    
+    {% if user in game.user_players %}
+      <div class="chat-container">
+        {% include "hexgame/game/components/chat.html" with game=game %}
+      </div>
+    {% endif %}
   </section>
 {% endblock content %}

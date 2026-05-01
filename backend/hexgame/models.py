@@ -23,10 +23,10 @@ class Game(models.Model):
 
     complete = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
-    winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     spectatable = models.BooleanField(default=True)
-    title = models.CharField(max_length=255, null=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
 
     class Difficulty:
         EASY = "E"
@@ -42,6 +42,10 @@ class Game(models.Model):
         }
 
     difficulty = models.CharField(max_length=1, choices=Difficulty.DIFFICULTY_CHOICES, default=Difficulty.MEDIUM)
+
+    @property
+    def user_players(self):
+        return [p.user for p in self.players]
 
     @property
     def players(self):

@@ -60,7 +60,7 @@ export async function getBackendContext(gameId: number) {
   return await response.json(); // or .text() depending on your view 
 }
 
-export function notificationSubscribe(subscription, username) {
+export function notificationSubscribe(subscription: any, username: string) {
   return fetch("/api/notification_subscribe/", {
     method: "POST",
     headers: { 

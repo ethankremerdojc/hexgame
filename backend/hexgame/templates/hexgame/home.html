@@ -2,37 +2,19 @@
 {% block title %}Home{% endblock title %}
 
 {% block extracss %}
-  .content-inner {
-    button, h1 {
-      margin: var(--font-size-xsmall) 0; 
-    }
-  }
-
   .game-lists {
     display: flex;
     align-items: center;
     flex-direction: column;
+    justify-content: space-around;
+    gap: var(--font-size-large);
   }
+ 
 {% endblock extracss %}
 
 {% block content %}
-  <section class="header-buttons">
-    <a href="{% url 'create_game' %}">
-        <button>Create a Game</button>
-    </a>
-  </section>
-
   <section class="game-lists">
-    <h1>Your Games</h1>
-    {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True %}
-    <h1>Other Games (spectate)</h1>
-    {% include "hexgame/game/components/game_list.html" with games=other_games is_own=False %}
+    {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True add_create_button=True title="Your Running Games" %}
+    {% include "hexgame/game/components/game_list.html" with games=other_games is_own=False title="Spectatable Games" %}
   </section>
-
-  <section class="bottom-section">
-    <a href="{% url 'archive' %}">
-        <button>Archived Games</button>
-    </a>
-  </section>
-
 {% endblock content %}

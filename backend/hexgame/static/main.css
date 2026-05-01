@@ -4,21 +4,24 @@
 
 
 
-  --border-width: clamp(0.05rem, 0.25vh, 0.15rem);
-  --half-border-width: clamp(0.05rem, 0.25vh, 0.15rem);
+  --border-width: clamp(0.05em, 0.3vh, 0.2em);
+  --half-border-width: clamp(0.025em, 0.15vh, 0.1em);
   --border: solid var(--text-color) var(--border-width);
   --border-white: solid white var(--border-width);
-  --table-border: solid #93989b var(--half-border-width);
+
+  --table-border: solid #93989b var(--border-width);
 
 
-  --font-size-xxxsmall: clamp(0.1rem, 0.5vh, 0.4rem);
-  --font-size-xxsmall: clamp(0.2rem, 1vh, 1.3rem);
-  --font-size-xsmall: clamp(0.25rem, 1.4vh, 1.9rem);
-  --font-size-small: clamp(0.5rem, 2vh, 2.6rem);
-  --font-size-medium: clamp(0.8rem, 3vh, 2.8rem);
-  --font-size-large: clamp(1rem, 4vh, 4rem);
+  --font-size-xxxsmall: clamp(0.1em, 0.5vh, 0.4em);
+  --font-size-xxsmall: clamp(0.2em, 1vh, 1.3em);
+  --font-size-xsmall: clamp(0.25em, 1.65vh, 2.2em);
+  --font-size-small: clamp(0.5em, 2vh, 2.6em);
+  --font-size-medium: clamp(0.8em, 2.5vh, 2.8em);
+  --font-size-large: clamp(1em, 3vh, 3.5em);
 
   --header-height: calc(2*var(--font-size-medium));
+
+  --bottom-right-border-shadow: #00000036 var(--half-border-width) var(--half-border-width) var(--half-border-width) var(--half-border-width);
 }
 
 * {
@@ -40,20 +43,33 @@ body {
   background: #95a8b5;
 }
 
+form p:has(input) {
+  margin-bottom: var(--font-size-xsmall);
+}
+
 button {
   color: white;
   background: #0a4269;
-  border: var(--border);
   border-radius: 8px;
   font-weight: 600;
+  border: none;
   padding: var(--font-size-xxxsmall) var(--font-size-xsmall);
-  box-shadow: #00000078 3px 3px 4px 1px;
+  box-shadow: var(--bottom-right-border-shadow);
 }
 
 button:disabled {
   background: #5a6a75 !important;
   color: #2d4657 !important;
 }
+
+button.inverted {
+  color: #0a4269;
+  background: white;
+  font-weight: 800;
+}
+
+button.secondary {
+  background: #95a8b5;
 }
 
 textarea {
@@ -67,32 +83,39 @@ input {
   border-radius: 4px;
 }
 
+input[type="checkbox"], input[type="radio"] {
+  width: var(--font-size-small);
+  height: var(--font-size-small);
+}
 
 a {
   text-decoration: none;
 }
 
 .content {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+  /* height: calc(100vh - calc(2*var(--header-height)));  */
+  /* Footer and header same height right now */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-
 }
+
 .content-inner {
   padding: var(--font-size-xsmall);
-  width: calc(100% - 2*var(--font-size-xsmall));
-  height: calc(100% - calc(2*var(--font-size-xsmall)) - var(--header-height));
+  /* height: calc(100% - calc(2 * var(--font-size-xsmall))); */
 }
 
 h1 {
   font-size: var(--font-size-large);
+  line-height: var(--font-size-large);
 }
 h2 {
   font-size: var(--font-size-medium);
 }
-p, input, button, a, li, i {
+p, input, button, a, li, i, td, th {
   font-size: var(--font-size-small);
 }
 
@@ -108,6 +131,6 @@ input:placeholder {
 @media screen and (max-width: 1200px) {
   .content {
     /* Go to 90% because of peoples url bar and stuff */
-    height: calc(92vh);
+    /* height: calc(92vh - ); */
   }
 }

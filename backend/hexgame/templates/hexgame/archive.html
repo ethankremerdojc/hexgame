@@ -2,20 +2,18 @@
 {% block title %}Home{% endblock title %}
 
 {% block extracss %}
-
-  .content-inner {
-    button, h1 {
-      margin: var(--font-size-xsmall) 0; 
-    }
+  .game-lists {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--font-size-large);
   }
-
 {% endblock extracss %}
 
 {% block content %}
 
   <section class="game-lists">
-    <h1>Archived Games</h1>
-    {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True %}
+    {% include "hexgame/game/components/game_list.html" with games=own_games is_own=True title="Archived Games" %}
   </section>
 
 {% endblock content %}

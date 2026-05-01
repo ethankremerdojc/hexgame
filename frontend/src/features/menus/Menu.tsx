@@ -42,9 +42,6 @@ import BoardActions from "../board/boardActions"
 
 import { TESTING } from "@/App.tsx"
 import { notificationSubscribe } from "@/app/api"
-import {
-  getCSRFToken
-} from "@/features/board/utils"
 import { getSvgForSubType } from "../board/boardRenderer"
 
 import './Menu.css'

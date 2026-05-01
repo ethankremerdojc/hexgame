@@ -1,10 +1,11 @@
+from hexgame.models import *
 from django import forms
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 class CreateGameForm(forms.Form):
-    title = forms.CharField()
+    title = forms.CharField(required=True)
     usernames = forms.CharField(
         help_text="Enter usernames separated by commas. (Yours is automatically included, do not add your own username.)"
     )
@@ -36,3 +37,9 @@ class CreateGameForm(forms.Form):
             )
 
         return users
+
+class GameInfoForm(forms.ModelForm):
+
+    class Meta:
+        model = Game
+        fields = ["title", "spectatable"]

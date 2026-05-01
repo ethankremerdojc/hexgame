@@ -1,9 +1,15 @@
 <style>
   .games-list {
     background: var(--dark-background);
-    width: min(90vw, 1000px);
+    width: min(90vw, 800px);
     padding: var(--font-size-small);
     border-radius: var(--font-size-xsmall);
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: var(--font-size-xsmall); 
+    }
   }
 
   .games-list-table {
@@ -16,94 +22,181 @@
 
     th, td {
       border: var(--table-border);
+      padding: var(--font-size-xxsmall);
+    }
+
+    .game-row {
+      button {
+        text-align: left;
+        width: 100%;
+      }
+    }
+
+    td {
+      text-align: center;
+    }
+  }
+
+  .td[colspan="6"] {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .archive-link {
+    color: white;
+    text-decoration: underline;
+  }
+
+  @media screen and (max-width: 1100px) {
+
+    .games-list-table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      tbody, thead {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .games-list-head-tr {
+        display: none;
+      }
+
+      th, td {
+        border: unset;
+
+        font-size: var(--font-size-xsmall);
+      }
+
+      tbody tr {
+        border: var(--table-border);
+        border-bottom: none;
+      }
+      tbody > :last-child {
+        border-bottom: var(--table-border);
+      }
+
+      .game-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        justify-items: stretch;
+        align-items: center;
+      }
+
+      .game-turn-number, .game-last-player {
+        text-align: left;
+      }
+
+      .game-current-player, .game-creator {
+        text-align: right;
+      }
+
+      .game-link, .game-archive-button {
+        grid-column: 1 / span 2;
+        button {
+          text-align: center !important;
+        }
+      }
+
+      .game-archive-button button {
+        font-size: var(--font-size-xsmall);
+      }
+
+      td[colspan="6"] {
+        width: 100%;
+        display: block;
+        padding: var(--font-size-xxsmall) 0;
+
+        button {
+          width: calc(100% - calc(2*var(--font-size-xxsmall)));
+        }
+      }
+    }
+    
+    .game-creator:before {
+      content: "Created by: "
+    }
+    .game-turn-number:before {
+      content: "Round #"
+    }
+
+    .game-creator:before {
+      content: "Created by: "
+    }
+
+    .game-last-player:before {
+      content: "Last turn: "
     }
   }
 </style>
 
 <div class="games-list">
+  <h1>{{ title }}</h1>
   <table class="games-list-table">
     <thead>
-      <th></th>
-      <!-- <th>Game ID</th> -->
-      <th>Game Title</th>
-      <th>Created By</th>
-      <th>Round #</th>
-      <th>Player Turn</th>
-      <th>Last turn</th>
-      <!-- <th>Game Created</th> -->
-      <th>Archive</th>
+      <tr class="games-list-head-tr">
+        <th>Game</th>
+        <th>Round #</th>
+        <th>Player Turn</th>
+        <th>Last turn</th>
+        <th>Created By</th>
+        {% if is_own %}
+          <th><a class="archive-link" href="/archive/">Archive</a></th>
+        {% endif %}
+      </tr>
     </thead>
     <tbody>
       {% for game in games %}
+        <tr class="game-row">
+          <td class="game-link">
+            <a href="{% url 'game' game_id=game.id %}">
+              <button>
+                {% if game.title %}
+                  Game {{ game.id }}: {{ game.title }}
+                {% else %}
+                  Game {{ game.id }}: unnamed 
+                {% endif %}
+            </button>
+            </a>
+          </td>
+          <td class="game-turn-number">{{ game.turn_number }}</td>
+          <td class="game-current-player">{% if game.current_player_turn_user == user %}<b>Your</b>{% else %}{{ game.current_player_turn_user.username }}'s{% endif %} turn</td>
+          <td class="game-last-player"><b>{{ game.last_player_turn_user.username }}</b>, {{ game.time_since_last_update }} ago</td>
+          <td class="game-creator">{{ game.creator.username }}</td>
+          {% if is_own %}
+            <td class="game-archive-button">
+                <form method="post" action="{% url 'toggle_archive_game' %}" class="archive-form">
+                {% csrf_token %}
+                <input hidden name="game_id" value="{{ game.id }}" />
+                <button type="submit" class="secondary">{% if game.archived %}Unarchive{% else %}Archive{% endif %} Game</button>
+                </form>
+            </td>
+          {% endif %}
+        </tr>
+
+      {% empty %}
+        <tr><td colspan="6">
+        {% if is_own %}
+          You are not in any games yet.
+        {% else %}
+          No games spectatable right now.
+        {% endif %}
+        </td></tr>
+      {% endfor %}
+
+      {% if add_create_button %}
         <tr>
-          <td><a href="{% url 'game' game_id=game.id %}"><button>Game {{ game.id }} ⇒</button></a></td>
-          <!-- <td>{{ game.id }}</td> -->
-          <td>{{ game.title }}</td>
-          <td>{{ game.creator.username }}</td>
-          <td>{{ game.turn_number }}</td>
-          <td>{% if game.current_player_turn_user == user %}<b>You</b>{% else %}{{ game.current_player_turn_user.username }}{% endif %}</td>
-          <td><b>{{ game.last_player_turn_user.username }}</b>, {{ game.time_since_last_update }} ago</td>
-          <!-- <td>{{ game.creation_time }}</td> -->
-          <td>
-            {% if is_own %}
-              <form method="post" action="{% url 'toggle_archive_game' %}" class="archive-form">
-              {% csrf_token %}
-              <input hidden name="game_id" value="{{ game.id }}" />
-              <button type="submit">{% if game.archived %}Unarchive{% else %}Archive{% endif %} Game</button>
-              </form>
-            {% endif %}
+          <td colspan="6">
+            <a href="{% url 'create_game' %}">
+              <button class="inverted">Create a Game</button>
+            </a>
           </td>
         </tr>
-      {% empty %}
-        <tr><td>You are not in any games yet.</td></tr>
-      {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 </div>
-
-
-{% comment %}
-<ul class="games-list">
-    {% for game in games %}
-        <li>
-            <a href="{% url 'game' game.id %}" class="game-list-link">
-              <button>
-                <p class="game-title">
-                  Game {{ game.id }}
-                </p>
-                <i>Round {{ game.turn_number }}:</i>
-               {% if game.current_player_turn_user.id == user.id  %}
-                <i>Your Turn.</i>
-              {% else %}
-                <i>{{ game.current_player_turn_user.username }}'s Turn.</i>
-              {% endif %}
-              </button>
-
-
-            </a>
-
-            {% if game.complete %}<i class="game-info">Winner: {{game.winner.username}}</i>{% endif %}
-
-            <i class="game-info">
-              <b>Players:</b> ( {% for p in game.players %}{{p.user.username}} {% endfor %})
-            </i>
-
-            <!-- <i class="game-info"> -->
-            <!--   <b>Started:</b> {{ game.creation_time }} -->
-            <!-- </i> -->
-            <i class="game-info">
-              <b>Last Update:</b> {{ game.time_since_last_update }} ago
-            </i>
-            {% if is_own %}
-              <form method="post" action="{% url 'toggle_archive_game' %}" class="archive-form">
-                  {% csrf_token %}
-                  <input hidden name="game_id" value="{{ game.id }}" />
-                  <button type="submit">{% if game.archived %}Unarchive{% else %}Archive{% endif %} Game</button>
-              </form>
-            {% endif %}
-        </li>
-    {% empty %}
-        <li>You are not in any games yet.</li>
-    {% endfor %}
-</ul>
-{% endcomment %}

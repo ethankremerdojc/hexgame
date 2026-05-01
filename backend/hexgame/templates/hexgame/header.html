@@ -1,13 +1,21 @@
 <style>
 
 header {
-  padding: var(--font-size-xxsmall) var(--font-size-xsmall);
   height: var(--header-height);
+  background: var(--text-color);
+  box-shadow: var(--bottom-right-border-shadow);
 }
 
 .header-inner {
+  padding: 0 var(--font-size-xsmall);
   display: flex;
+  height: 100%;
+  align-items: center;
   justify-content: space-between;
+
+  h1, h2 {
+    color: white;
+  }
 }
 
 .header-inner-right {
@@ -17,6 +25,19 @@ header {
 
   button {
     cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  header {
+    h1 {
+      font-size: var(--font-size-medium);
+    }
+
+    button {
+      font-size: var(--font-size-xsmall);
+      padding: var(--border-width);
+    }
   }
 }
 </style>
@@ -33,7 +54,7 @@ header {
         <h2>User: {{ user.username }}</h2>
         <form method="post" action="{% url 'logout' %}" class="logout-form">
             {% csrf_token %}
-            <button type="submit">Logout</button>
+            <button type="submit" class="inverted">Logout</button>
         </form>
       {% else %}
         <a href="/register/"><button>Register</button></a>

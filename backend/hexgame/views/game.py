@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.db import transaction
 from hexgame.models import *
-from hexgame.forms import CreateGameForm
+from hexgame.forms import CreateGameForm, GameInfoForm
 from django.http import HttpResponse
 from backend.settings import BASE_DIR
 
@@ -56,7 +56,29 @@ def create_game_view(request):
 def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     editor_mode = request.GET.get("editorMode")
-    return render(request, "hexgame/game/game.html", {"game": game, "editor_mode": editor_mode})
+
+    if not game.spectatable:
+        get_object_or_404(Player, game=game, user=request.user)
+
+    if request.method == "POST":
+        form = GameInfoForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            spectatable = form.cleaned_data["spectatable"]
+
+            game.title = title
+            game.spectatable = spectatable
+
+            game.save()
+
+    else:
+        form = GameInfoForm(instance=game)
+
+    return render(request, "hexgame/game/game.html", {
+        "game": game,
+        "editor_mode": editor_mode,
+        "form": form
+    })
 
 @login_required
 def game_iframe(request):
