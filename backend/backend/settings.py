@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'hexgame'
+
+    'hexgame.app.HexgameConfig', # Loads hexgame with custom user
 ]
 
 LOGIN_URL = "login"

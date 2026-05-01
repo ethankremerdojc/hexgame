@@ -14,7 +14,7 @@
   align-items: flex-start;
 }
 
-h1, h2, p, i, b {
+h1, h2, p, i, b, li {
   /* font-size: var(--font-size-small); */
   color: white;
 }

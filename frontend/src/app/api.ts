@@ -5,20 +5,6 @@ import {
   getCSRFToken
 } from "@/features/board/utils"
 
-export function getAPILocation() {
-  if (window.location.host.includes("localhost:")) {
-    return "http://localhost:8001"
-  }
-
-  if (window.location.host == "10.0.0.178:5173") {
-    return "http://10.0.0.178:8001"
-  }
-
-  return "https://" + window.location.host
-}
-
-let API_HOST = getAPILocation();
-
 export async function postUpdateToBackend(
   cells: Cell[],
   playerTurn: TeamColor,
@@ -40,7 +26,7 @@ export async function postUpdateToBackend(
     formData.append("admin_update", "yes");
   }
 
-  const response = await fetch(API_HOST + "/game/update/", {
+  const response = await fetch("/api/update_game/", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -58,7 +44,7 @@ export async function postUpdateToBackend(
 }
 
 export async function getBackendContext(gameId: number) {
-  const response = await fetch(`${API_HOST}/game/get_context/${gameId}/`, {
+  const response = await fetch(`/api/get_game_context/${gameId}/`, {
     method: "GET",
     headers: {
     //   "Content-Type": "application/x-www-form-urlencoded",
@@ -72,4 +58,17 @@ export async function getBackendContext(gameId: number) {
   }
 
   return await response.json(); // or .text() depending on your view 
+}
+
+export function notificationSubscribe(subscription, username) {
+  return fetch("/api/notification_subscribe/", {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken()
+    },
+
+    credentials: "include",
+    body: JSON.stringify({"subscription": subscription, "username": username}),
+  });
 }

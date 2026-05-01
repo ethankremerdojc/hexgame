@@ -27,11 +27,8 @@
     }
 
     .game-info {
-      margin-bottom: 2vw;
-
-      i {
-        display: block;
-      }
+      height: var(--header-height);
+      outline: solid red 1px;
     }
 
     @media screen and (max-width: 1200px) {
@@ -50,12 +47,16 @@
       }
     }
   </style>
-  <!-- <div class="game-info"> -->
-  <!--   <i>Players: [{% for player in game.players %}{{player.user.username}}, {% endfor %}]</i> -->
-  <!--   {% if game.complete %}<i>Winner: {{game.winner.username}}</i>{% endif %} -->
-  <!-- </div> -->
+  <section>
+    <form method="POST">
+      <label for="game_title">
+        Title
+      </label>
+      <input type="text" name="game_title">
+    </form>
+  </section>
 
-  <div class="game-container">
+  <section class="game-container">
     <div class="game-iframe-container">
       <iframe src="/game/iframe/?game_id={{game.id}}{% if editor_mode %}&editorMode=1{% endif %}" id="gameIframe"></iframe>
     </div>
@@ -63,5 +64,5 @@
     <div class="chat-container">
       {% include "hexgame/game/components/chat.html" with game=game %}
     </div>
-  </div>
+  </section>
 {% endblock content %}

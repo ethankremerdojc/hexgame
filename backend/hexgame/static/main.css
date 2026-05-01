@@ -1,9 +1,16 @@
 :root {
   --text-color: #0a4269;
-  --border-width: clamp(0.05rem, 0.25vh, 0.15rem);
-  --border: solid var(--text-color) var(--border-width);
+  --dark-background: #202a31;
 
+
+
+  --border-width: clamp(0.05rem, 0.25vh, 0.15rem);
+  --half-border-width: clamp(0.05rem, 0.25vh, 0.15rem);
+  --border: solid var(--text-color) var(--border-width);
   --border-white: solid white var(--border-width);
+  --table-border: solid #93989b var(--half-border-width);
+
+
   --font-size-xxxsmall: clamp(0.1rem, 0.5vh, 0.4rem);
   --font-size-xxsmall: clamp(0.2rem, 1vh, 1.3rem);
   --font-size-xsmall: clamp(0.25rem, 1.4vh, 1.9rem);

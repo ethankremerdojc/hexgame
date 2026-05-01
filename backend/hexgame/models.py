@@ -25,13 +25,44 @@ class Game(models.Model):
     archived = models.BooleanField(default=False)
     winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+    spectatable = models.BooleanField(default=True)
+    title = models.CharField(max_length=255, null=True)
+
+    class Difficulty:
+        EASY = "E"
+        MEDIUM = "M"
+        HARD = "H"
+        IMPOSSIBLE = "I"
+
+        DIFFICULTY_CHOICES = {
+            EASY: "Easy",
+            MEDIUM: "Medium",
+            HARD: "Hard",
+            IMPOSSIBLE: "Impossible"
+        }
+
+    difficulty = models.CharField(max_length=1, choices=Difficulty.DIFFICULTY_CHOICES, default=Difficulty.MEDIUM)
+
     @property
     def players(self):
         return Player.objects.filter(game=self)
 
     @property
+    def creator(self):
+        return self.players[0].user
+
+    @property
     def current_player_turn_user(self):
         return self.players[self.current_player_turn].user
+
+    @property
+    def last_player_turn_user(self):
+        if self.current_player_turn == 0:
+            player = self.players[len(self.players) - 1]
+        else:
+            player = self.players[self.current_player_turn - 1]
+
+        return player.user
 
     @property
     def time_since_last_update(self):

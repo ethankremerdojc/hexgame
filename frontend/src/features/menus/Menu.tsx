@@ -41,7 +41,7 @@ import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
 import { TESTING } from "@/App.tsx"
-import { getAPILocation } from "@/app/api"
+import { notificationSubscribe } from "@/app/api"
 import {
   getCSRFToken
 } from "@/features/board/utils"
@@ -711,34 +711,30 @@ export function ElementActionsMenu() {
   return (
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
       <div className="element-actions-top-buttons">
-        {
-          !userSubscribed &&
-            <button onClick={
-              async () => {
-                try {
-                  await signupForNotifications({
-                    vapidPublicKey: "BL33qr07Zgt-RZIj0YK346IrtEzqL9osLQvPLDcVijxsGudk9xIPBASP9Nm1GNUYbFo86fBoZlZhhr6F-AX9gJ4",
-                    saveSubscription: async (subscription) => {
-                      await fetch(getAPILocation() + "/api/notifications/subscribe/", {
-                        method: "POST",
-                        headers: { 
-                          "Content-Type": "application/json",
-                          "X-CSRFToken": getCSRFToken()
-                        },
+        <button
+          disabled={userSubscribed}
+          onClick={
+          async () => {
+            let subscription = await signupForNotifications({
+              vapidPublicKey: "BL33qr07Zgt-RZIj0YK346IrtEzqL9osLQvPLDcVijxsGudk9xIPBASP9Nm1GNUYbFo86fBoZlZhhr6F-AX9gJ4"
+            });
 
-                        credentials: "include",
-                        body: JSON.stringify({"subscription": subscription, "username": loggedInUsername}),
-                      });
-                    },
-                  });
-                  setUserSubscribed(true);
-                  console.log("User signed up for notifications");
-                } catch (error) {
-                  console.error("Notification signup failed:", error);
-                }
+            if (!subscription) {
+              alert("there was a problem signing up for notifications.");
+            }
+
+            notificationSubscribe(subscription, loggedInUsername).then((result) => {
+              if (result.ok) {
+                alert("Successfully signed up for notifications.");
+                dispatch(setUserSubscribed(true));
+              } else {
+                alert("There was a problem signing up for notifications.");
               }
-            }>Subscribe</button>
-        }
+            })
+          }
+        }>
+          {userSubscribed ? "Subscribed!" : "Subscribe"}
+        </button>
 
         {helpMenuOpen ?
           <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
