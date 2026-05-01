@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
 import type { Element, Cell } from "../board/boardTypes"
@@ -35,6 +36,8 @@ export default function EditorMenu() {
   const cells = useAppSelector(getCells);
   const selectedCell = useAppSelector(getSelectedCell);
   const playerTurn = useAppSelector(getPlayerTurn);
+  
+  const [copiedCellContents, setCopiedCellContents]: [any, any] = useState([]);
 
   function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
     let newCells = structuredClone(oldCells);
@@ -56,12 +59,35 @@ export default function EditorMenu() {
     return newCells;
   }
 
+  function setElements(x: number, y: number, elements: Element[], oldCells: Cell[]): Cell[] {
+    let newCells = structuredClone(oldCells);
+    for (var cell of newCells) {
+      if (cell.x == x && cell.y == y) {
+        cell.elements = elements;
+      }
+    }
+    return newCells;
+  }
+
   function addElementAndSave(subType: ElementSubType) {
     if (selectedCell === null) {
       return
     }
     let element = objectToElement({type: ElementType.Item, subType: subType});
     let newCells = addElement(selectedCell.x, selectedCell.y, element, cells);
+    dispatch(setCells(newCells));
+  }
+
+  function copyCellContents() {
+    if (selectedCell === null) { return };
+    setCopiedCellContents(structuredClone(selectedCell.elements));
+  }
+
+  function pasteCellContents() {
+    if (selectedCell === null) {
+      return
+    }
+    let newCells = setElements(selectedCell.x, selectedCell.y, copiedCellContents, cells);
     dispatch(setCells(newCells));
   }
 
@@ -179,6 +205,8 @@ export default function EditorMenu() {
           <button onClick={() => {clearSelectedCell()}}>
             Clear Cell
           </button>
+          <button onClick={() => copyCellContents()}>Copy Elements</button>
+          <button onClick={() => pasteCellContents()}>Paste Elements</button>
           {
             window.__editing_live_game &&
             <button onClick={() => {
