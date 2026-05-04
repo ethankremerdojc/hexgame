@@ -53,6 +53,28 @@
     font-weight: 400;
   }
 
+  .emoji-span-happy {
+    color: green;
+  }
+
+  .emoji-span-passive {
+    color: yellow;
+  }
+
+  .emoji-span-angry {
+    font-weight: bold;
+    color: orange;
+  }
+
+  .emoji-span-furious {
+    font-weight: bold;
+    color: red;
+  }
+
+  .game-current-player span {
+    display: block;
+  }
+
   @media screen and (max-width: 1100px) {
 
     .games-list-table {
@@ -158,23 +180,36 @@
         <tr class="game-row">
           <td class="game-link">
             <a href="{% url 'game' game_id=game.id %}">
-              <button {% if game.current_player_turn_user != user %}class="secondary"{% else %}class="highlighted"{% endif %}>
+              <button {% if game.current_player_turn_user != user %}class="secondary"{% else %}class="go-button"{% endif %}>
 
-                  {% if game.title %}
-                    {{ game.id }}: {{ game.title }}
-                  {% else %}
-                    {{ game.id }}: unnamed 
-                  {% endif %}
-                  <br style="height: 0px;" />
+                  <span style="width: fit-content; color: white; font-weight: bold; display: block;">
+                    {% if game.title %}
+                      {{ game.id }}: {{ game.title }}
+                    {% else %}
+                      {{ game.id }}: unnamed 
+                    {% endif %}
+                  </span>
                   {% if game.current_player_turn_user == user %}
-                    <span style="width: 100%; color: white; font-weight: bold; text-decoration: underline;">Your Turn</span>
+                    <span style="width: fit-content; color: white; font-weight: bold; display: block;">Your Turn</span>
                   {% endif %}
               </button>
             </a>
           </td>
           <td class="game-turn-number">{{ game.turn_number }}</td>
-          <td class="game-current-player">{% if game.current_player_turn_user == user %}<b>Your</b>{% else %}{{ game.current_player_turn_user.username }}'s{% endif %} turn</td>
-          <td class="game-last-player"><b>{{ game.last_player_turn_user.username }}</b>, {{ game.time_since_last_update }} ago</td>
+          <td class="game-current-player">
+            {% if game.current_player_turn_user == user %}
+            <b>Your turn for</b>
+            {% else %}
+              <i style="color: white;">{{ game.current_player_turn_user.username }}'s turn for</i>
+            {% endif %}
+
+            {% autoescape off %}
+            {{ game.get_emoji_span_for_time }}
+            {% endautoescape %}
+          </td>
+          <td class="game-last-player">
+            <b style="display: block;">{{ game.last_player_turn_user.username }}</b>{{ game.time_since_last_update_string }} ago
+        </td>
           <td class="game-creator">{{ game.creator.username }}</td>
           {% if is_own %}
             <td class="game-archive-button">

@@ -2,7 +2,7 @@
   --text-color: #0a4269;
   --dark-background: #202a31;
 
-
+  --go-color: #15a053;
 
   --border-width: clamp(0.05em, 0.3vh, 0.2em);
   --half-border-width: clamp(0.025em, 0.15vh, 0.1em);
@@ -74,6 +74,10 @@ button.secondary {
 
 button.highlighted {
   border: var(--border-white);
+}
+
+.go-button {
+  background: #15a053;
 }
 
 textarea {

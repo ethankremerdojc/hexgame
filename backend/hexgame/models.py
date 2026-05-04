@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 # from datetime import datetime
 from django.utils import timezone
+from datetime import timedelta
 
 class GameManager(models.Manager):
     def archived(self):
@@ -41,8 +42,6 @@ class Game(models.Model):
             IMPOSSIBLE: "Impossible"
         }
 
-    difficulty = models.CharField(max_length=1, choices=Difficulty.DIFFICULTY_CHOICES, default=Difficulty.MEDIUM)
-
     @property
     def user_players(self):
         return [p.user for p in self.players]
@@ -79,8 +78,13 @@ class Game(models.Model):
         else:
             dif = now - events.latest('timestamp').timestamp
 
-        one_hour_in_seconds = 3600
+        return dif
 
+    @property
+    def time_since_last_update_string(self):
+        dif = self.time_since_last_update
+
+        one_hour_in_seconds = 3600
         days = dif.days
 
         hours = math.floor(dif.seconds / one_hour_in_seconds)
@@ -105,6 +109,24 @@ class Game(models.Model):
             return f"1 minute, {seconds} seconds"
 
         return f"{math.floor(dif.seconds / 60)} minutes"
+
+    @property
+    def get_emoji_span_for_time(self):
+        time_since = self.time_since_last_update
+
+        time_str = self.time_since_last_update_string
+
+        if time_since < timedelta(hours=3):
+            return f'<span class="emoji-span-happy">{time_str} 😃</span>'
+
+        if time_since < timedelta(hours=12):
+            return f'<span class="emoji-span-passive">{time_str} 😐</span>'
+
+        if time_since < timedelta(hours=24):
+            return f'<span class="emoji-span-angry">{time_str} 😠</span>'
+
+        return f'<span class="emoji-span-furious">{time_str} 😤</span>'
+
 
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
