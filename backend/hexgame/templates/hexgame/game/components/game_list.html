@@ -49,6 +49,10 @@
     text-decoration: underline;
   }
 
+  .game-link, button {
+    font-weight: 400;
+  }
+
   @media screen and (max-width: 1100px) {
 
     .games-list-table {
@@ -68,7 +72,7 @@
 
       th, td {
         border: unset;
-
+        padding: calc(3*var(--border-width));
         font-size: var(--font-size-xsmall);
       }
 
@@ -154,13 +158,18 @@
         <tr class="game-row">
           <td class="game-link">
             <a href="{% url 'game' game_id=game.id %}">
-              <button>
-                {% if game.title %}
-                  Game {{ game.id }}: {{ game.title }}
-                {% else %}
-                  Game {{ game.id }}: unnamed 
-                {% endif %}
-            </button>
+              <button {% if game.current_player_turn_user != user %}class="secondary"{% else %}class="highlighted"{% endif %}>
+
+                  {% if game.title %}
+                    {{ game.id }}: {{ game.title }}
+                  {% else %}
+                    {{ game.id }}: unnamed 
+                  {% endif %}
+                  <br style="height: 0px;" />
+                  {% if game.current_player_turn_user == user %}
+                    <span style="width: 100%; color: white; font-weight: bold; text-decoration: underline;">Your Turn</span>
+                  {% endif %}
+              </button>
             </a>
           </td>
           <td class="game-turn-number">{{ game.turn_number }}</td>

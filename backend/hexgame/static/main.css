@@ -72,6 +72,10 @@ button.secondary {
   background: #95a8b5;
 }
 
+button.highlighted {
+  border: var(--border-white);
+}
+
 textarea {
   border: var(--border);
 }
