@@ -16,7 +16,7 @@ import {
   setSelectedCell,
   getSelectedElement, setSelectedElement,
   getTurnNumber,
-
+  getUsernames,
   setShowMoveInfo,
   getPlayerTurn,
   setActionHandling, getActionHandling,
@@ -40,7 +40,7 @@ import {
 import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
-import { TESTING } from "@/App.tsx"
+// import { TESTING } from "@/App.tsx"
 import { notificationSubscribe } from "@/app/api"
 import { getSvgForSubType } from "../board/boardRenderer"
 
@@ -653,6 +653,33 @@ function ElementActionOptions() {
   )
 }
 
+function SignupButton({dispatch, userSubscribed, loggedInUsername}: any) {
+  return (<button
+    disabled={userSubscribed}
+    onClick={
+    async () => {
+      let subscription = await signupForNotifications({
+        vapidPublicKey: "BL33qr07Zgt-RZIj0YK346IrtEzqL9osLQvPLDcVijxsGudk9xIPBASP9Nm1GNUYbFo86fBoZlZhhr6F-AX9gJ4"
+      });
+
+      if (!subscription) {
+        alert("there was a problem signing up for notifications.");
+      }
+
+      notificationSubscribe(subscription, loggedInUsername).then((result) => {
+        if (result.ok) {
+          alert("Successfully signed up for notifications.");
+          dispatch(setUserSubscribed(true));
+        } else {
+          alert("There was a problem signing up for notifications.");
+        }
+      })
+    }
+  }>
+    {userSubscribed ? "Subscribed!" : "Subscribe"}
+  </button>)
+}
+
 export function ElementActionsMenu() {
   const dispatch = useAppDispatch();
   const playerTurn =        useAppSelector(getPlayerTurn);
@@ -675,6 +702,7 @@ export function ElementActionsMenu() {
 
   const currentPlayerName = useAppSelector(getCurrentPlayerName);
   const loggedInUsername = useAppSelector(getLoggedInUsername);
+  const usernames = useAppSelector(getUsernames);
   const userSubscribed = useAppSelector(getUserSubscribed);
   const turnNumber = useAppSelector(getTurnNumber);
 
@@ -686,52 +714,14 @@ export function ElementActionsMenu() {
     )
   }
 
-  if (currentPlayerName !== loggedInUsername && !TESTING) {
-    return (<div className="element-actions-menu"><div className="element-actions-menu-inner">
-      {
-      helpMenuOpen ?
-        <>
-          <button className="help-toggle" onClick={() => {
-              setHelpMenuOpen(false);
-            }}>Close Help</button>
-          <HelpMenu />
-        </>
-      : <>
-        <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>Help</button>
-        </>
-      }
-      <p className="round-number-text" >Round #: {turnNumber}</p>
-      <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>{currentPlayerName}</span></p>
-    </div></div>)
-  }
-
   return (
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
       <div className="element-actions-top-buttons">
-        <button
-          disabled={userSubscribed}
-          onClick={
-          async () => {
-            let subscription = await signupForNotifications({
-              vapidPublicKey: "BL33qr07Zgt-RZIj0YK346IrtEzqL9osLQvPLDcVijxsGudk9xIPBASP9Nm1GNUYbFo86fBoZlZhhr6F-AX9gJ4"
-            });
-
-            if (!subscription) {
-              alert("there was a problem signing up for notifications.");
-            }
-
-            notificationSubscribe(subscription, loggedInUsername).then((result) => {
-              if (result.ok) {
-                alert("Successfully signed up for notifications.");
-                dispatch(setUserSubscribed(true));
-              } else {
-                alert("There was a problem signing up for notifications.");
-              }
-            })
-          }
-        }>
-          {userSubscribed ? "Subscribed!" : "Subscribe"}
-        </button>
+        <SignupButton
+          dispatch={dispatch}
+          userSubscribed={userSubscribed}
+          loggedInUsername={loggedInUsername}
+        />
 
         {helpMenuOpen ?
           <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
@@ -750,38 +740,45 @@ export function ElementActionsMenu() {
         <>
           <div className="element-actions-middle-buttons">
             <p className="round-number-text">Turn #: {turnNumber}</p>
-            <p className="player-turn-text">Current Player's Turn: <span style={{color: colorForTeam(playerTurn)}}>You</span></p>
-
-            <ElementActionOptions />
+            <p className="player-turn-text">
+                Current Player's Turn:&nbsp;
+                <span style={{color: colorForTeam(playerTurn)}}>
+                  {currentPlayerName == loggedInUsername ? "You" : currentPlayerName}
+                </span>
+            </p>
+            <p className="players">Players: ({ usernames.map((username: string, index: number) => 
+                <span key={username} style={{color: colorForTeam(index)}}>{username}</span>)} )
+            </p>
+            { currentPlayerName == loggedInUsername && <ElementActionOptions /> }
           </div>
-          <div className="element-actions-bottom-buttons">
-            {
-              !confirmingResetTurn && 
-              <> 
-              { confirmingEndTurn ? <>
-                <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
-                <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
-              </>
-              :
-              <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
-              } </>
-            }
-            {
-              !confirmingEndTurn &&
-              <> { confirmingResetTurn ? <>
-                  <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
-                  <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
+          {
+            currentPlayerName == loggedInUsername && 
+            <div className="element-actions-bottom-buttons">
+              {
+                !confirmingResetTurn && 
+                <> 
+                { confirmingEndTurn ? <>
+                  <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
+                  <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
                 </>
                 :
-                <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
-              } </>
-            }
-          </div>
-
+                <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
+                } </>
+              }
+              {
+                !confirmingEndTurn &&
+                <> { confirmingResetTurn ? <>
+                    <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
+                    <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
+                  </>
+                  :
+                  <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
+                } </>
+              }
+            </div>
+          }
         </>
       }
-
-
     </div></div>
   )
 };

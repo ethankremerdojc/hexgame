@@ -97,6 +97,7 @@
   width: 100%;
   text-align: center;
   color: #e3e3e3;
+  font-size: var(--font-size-xsmall);
 
   span {
     font-weight: 600;
@@ -159,4 +160,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--font-size-small);
+}
+
+.players {
+  font-size: var(--font-size-xsmall);
+  display: flex;
+  gap: var(--font-size-xxsmall);
 }

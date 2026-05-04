@@ -48,7 +48,7 @@ class Game(models.Model):
 
     @property
     def players(self):
-        return Player.objects.filter(game=self)
+        return Player.objects.filter(game=self).order_by('id')
 
     @property
     def creator(self):

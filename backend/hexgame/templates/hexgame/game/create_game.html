@@ -29,7 +29,7 @@ iframe {
     </form>
 
     <script defer>
-      let dissallowedUsername = '{{ user.username }}';
+      let requiredUsername = '{{ user.username }}';
 
       let generatedData = null;
 
@@ -39,8 +39,8 @@ iframe {
         let createGameButton = document.getElementById("createGameButton");
         createGameButton.disabled = true;
 
-        if (usernames.includes(dissallowedUsername)) {
-          alert("Do not add your own username.");
+        if (!usernames.includes(requiredUsername)) {
+          alert("You did not add your own username.");
           return
         }
 
@@ -52,7 +52,7 @@ iframe {
           alert("Please provide a cell count.");
           return
         }
-        let playerCount = 1 + usernames.split(",").length;
+        let playerCount = usernames.split(",").length;
         let newIframePath = `/game/iframe/?player_count=${playerCount}&cell_count=${cellCount}`;
         let iframeContainer = document.getElementById("iframeContainer");
         iframeContainer.innerHTML = `<iframe id="previewIframe" src="${newIframePath}"></iframe>`;

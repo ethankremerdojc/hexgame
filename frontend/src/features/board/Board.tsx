@@ -110,6 +110,8 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   const thisPlayersTurn = currentPlayerName == loggedInUsername;
 
+
+
   useEffect(() => {
     if (cells.length === 0) return;
 
@@ -149,7 +151,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     renderer.render();
     incrementRenderCount();
 
-  }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo]);
+  }, [cells, zoom, offset, selectedCell, selectedElement, showMoveInfo, canvasWidth, canvasHeight]);
 
   // ===========================
   // Mouse things
@@ -474,6 +476,8 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
   // TODO 
   // Add a second canvas for rendering sprites
+  
+  
 
   return (
     <canvas
@@ -481,6 +485,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
       ref={canvasRef}
       width={canvasWidth}
       height={canvasHeight}
+      key={`${canvasWidth}${canvasHeight}`}
 
       // DESKTOP
       onWheel={handleWheel}

@@ -7,7 +7,7 @@ User = get_user_model()
 class CreateGameForm(forms.Form):
     title = forms.CharField(required=True)
     usernames = forms.CharField(
-        help_text="Enter usernames separated by commas. (Yours is automatically included, do not add your own username.)"
+        help_text="Enter usernames seperated by commas, including yours. The turn order will be the order of the users."
     )
 
     minutes_per_turn = forms.IntegerField(min_value=1, max_value=200, initial=10, required=False)
@@ -27,11 +27,15 @@ class CreateGameForm(forms.Form):
         if len(duplicates_removed) != len(usernames):
             raise forms.ValidationError("Duplicate usernames were entered.")
 
-        users = list(User.objects.filter(username__in=usernames))
-        found_usernames = {user.username for user in users}
+        users = []
+        missing = []
+        for username in usernames:
+            try:
+                users.append(User.objects.get(username=username))
+            except User.DoesNotExist:
+                missing.append(username)
 
-        missing = [username for username in usernames if username not in found_usernames]
-        if missing:
+        if len(missing) > 0:
             raise forms.ValidationError(
                 f"These users do not exist: {', '.join(missing)}"
             )

@@ -25,7 +25,6 @@ def create_game_view(request):
         if form.is_valid():
             users = form.cleaned_data["usernames"]
             minutes_per_turn = form.cleaned_data["minutes_per_turn"]
-            # kick_if_inactive = form.cleaned_data["kick_if_inactive"]
             celldata = form.cleaned_data["celldata"]
 
             with transaction.atomic():
@@ -37,13 +36,7 @@ def create_game_view(request):
                     turn_number=1
                 )
 
-                # include the creator automatically
-                all_users = [request.user]
                 for user in users:
-                    if user != request.user:
-                        all_users.append(user)
-
-                for user in all_users:
                     Player.objects.create(user=user, game=game)
 
             return redirect("game", game_id=game.id)

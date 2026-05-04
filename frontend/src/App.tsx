@@ -21,7 +21,8 @@ import {
   setLoggedInUsername,
   setUserSubscribed,
   setTurnNumber,
-  setGameOver, getGameOver 
+  setGameOver, getGameOver,
+  setBoardOffset, setBoardZoom
 } from "@/features/board/boardSlice"
 
 // import {
@@ -55,7 +56,7 @@ declare global {
 }
 
 export const TESTING = window.location.host.includes(":5173");
-const TEST_GAME_ID = 22;
+const TEST_GAME_ID = 27;
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = TESTING && false;
 
@@ -224,13 +225,26 @@ function App() {
     return () => window.removeEventListener("message", onMessage);
   }, [dispatch, cells]);
 
-  // console.log(window.innerWidth, window.screen.width);
+  const [canvasWidth, setCanvasWidth] = useState(Math.min(document.documentElement.clientWidth, 900));
+  const [canvasHeight, setCanvasHeight] = useState(document.documentElement.clientHeight);
+
+  useEffect(() => {
+    function onResize() {
+      setCanvasWidth(Math.min(document.documentElement.clientWidth, 900));
+      setCanvasHeight(document.documentElement.clientHeight);
+      dispatch(setBoardZoom(1));
+      dispatch(setBoardOffset({x: 0, y: 0}));
+    }
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("onResize", onResize);
+  }, [dispatch]);
 
   return (
     <div className="app">
       <Board 
-        canvasWidth={Math.min(document.documentElement.clientWidth, 900)} 
-        canvasHeight={document.documentElement.clientHeight} 
+        canvasWidth={canvasWidth} 
+        canvasHeight={canvasHeight} 
       />
       { gameOver &&
         <div className="element-actions-menu"><div className="element-actions-menu-inner">

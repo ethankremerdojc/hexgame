@@ -32,8 +32,11 @@ class PlayerSerializer(serializers.ModelSerializer):
 #         ]
 
 class GameSerializer(serializers.ModelSerializer):
-    players = PlayerSerializer(many=True, read_only=True)
+    players = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
+
+    def get_players(self, obj):
+        return PlayerSerializer(obj.players, many=True).data
 
     def get_created_by(self, obj):
         return UserSerializer(obj.creator).data
