@@ -13,6 +13,7 @@ import {
 
 import {
   getSelectedCell,
+  setSelectedCell,
   getPlayerTurn,
   getCells, setCells,
 } from "../board/boardSlice.ts";
@@ -26,10 +27,14 @@ import {
 } from "../../App"
 
 import {
-  nameForTeamColor
+  nameForTeamColor,
+  nameForElementSubType
 } from "../board/vars"
 
 import './EditorMenu.css'
+
+import { ButtonSelect }  from "@/components/ButtonSelect/ButtonSelect"
+import type { ButtonSelectOption }  from "@/components/ButtonSelect/ButtonSelect"
 
 export default function EditorMenu() {
   const dispatch = useAppDispatch();
@@ -38,6 +43,10 @@ export default function EditorMenu() {
   const playerTurn = useAppSelector(getPlayerTurn);
   
   const [copiedCellContents, setCopiedCellContents]: [any, any] = useState([]);
+
+  const [selectedCellType, setSelectedCellType] = useState("");
+  const [selectedElementType, setSelectedElementType] = useState("");
+  const [selectedTeamColor, setSelectedTeamColor] = useState("");
 
   function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
     let newCells = structuredClone(oldCells);
@@ -69,11 +78,23 @@ export default function EditorMenu() {
     return newCells;
   }
 
+  function setCellTypeAndSave() {
+    if (selectedCell === null) {
+      return
+    }
+    let newCells = setCellType(selectedCell.x, selectedCell.y, Number(selectedCellType), cells);
+    dispatch(setCells(newCells));
+  }
+
   function addElementAndSave(subType: ElementSubType) {
     if (selectedCell === null) {
       return
     }
-    let element = objectToElement({type: ElementType.Item, subType: subType});
+    let t = ElementType.Item;
+    if (subType == ElementSubType.Trader) {
+      t = ElementType.Person;
+    }
+    let element = objectToElement({type: t, subType: subType});
     let newCells = addElement(selectedCell.x, selectedCell.y, element, cells);
     dispatch(setCells(newCells));
   }
@@ -88,6 +109,7 @@ export default function EditorMenu() {
       return
     }
     let newCells = setElements(selectedCell.x, selectedCell.y, copiedCellContents, cells);
+    setCopiedCellContents([]);
     dispatch(setCells(newCells));
   }
 
@@ -101,16 +123,6 @@ export default function EditorMenu() {
     }
     dispatch(setCells(newCells));
   }
-
-  function addTraderTile() {
-    if (selectedCell === null) {
-      throw new Error("selected cell is null")
-    }
-    let newCells = setCellType(selectedCell.x, selectedCell.y, CellType.Desert, cells);
-    let trader = objectToElement({type: ElementType.Person, subType: ElementSubType.Trader});
-    newCells = addElement(selectedCell.x, selectedCell.y, trader, newCells);
-    dispatch(setCells(newCells));
-  };
 
   function moveCapital(playerTeam: TeamColor) {
     // swap contents of whatever selected cell and current player team capital is
@@ -144,11 +156,9 @@ export default function EditorMenu() {
 
     for (var cell of newCells) {
       if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
-        console.log("setting sel cell els")
         cell.elements = oldCapitalCell.elements;
       }
       if (cell.x == oldCapitalCell.x && cell.y == oldCapitalCell.y) {
-        console.log("setting old cell els")
         cell.elements = [];
       }
     }
@@ -169,47 +179,106 @@ export default function EditorMenu() {
 
   const playerCount = getPlayerCount();
 
-  function getMoveCapitalButtons() {
+  function getMoveCapitalOptions(): ButtonSelectOption[] {
     if (playerCount === null) {
       throw new Error("Missing player count")
     }
 
     let result = [];
+
     for (let i=0; i < playerCount; i++) {
-      result.push(
-      <button key={`capital-button-${i}`} onClick={() => {
-        moveCapital(i)
-      }}>
-          Move {nameForTeamColor(i)}
-      </button>
-      )
+      result.push({label: nameForTeamColor(i), value: i})
     }
     return result
   }
+
+  function getCellTypeSelectorOptions(): ButtonSelectOption[] {
+    let result = [];
+    for (var cellType of Object.entries(CellType)) {
+      if (typeof(cellType[1]) == "string") {
+        continue
+      }
+      result.push({label: cellType[0], value: cellType[1]});
+    }
+    return result
+  }
+
+  function getElementSubTypeSelectorOptions(): ButtonSelectOption[] {
+
+    let allowedSubTypes = [
+      ElementSubType.Trader,
+
+      ElementSubType.Food,
+      ElementSubType.Wood,
+      ElementSubType.Ore,
+      ElementSubType.Clay,
+      ElementSubType.Gold,
+      ElementSubType.Sword,
+      ElementSubType.Bow,
+      ElementSubType.Shield,
+      ElementSubType.Cart,
+      ElementSubType.Horse,
+      ElementSubType.Cow,
+      ElementSubType.Leather,
+      ElementSubType.LeatherArmor
+    ];
+
+    let result = [];
+    for (var subType of allowedSubTypes) {
+      result.push({label: nameForElementSubType(subType), value: Number(subType)});
+    }
+    return result
+  }
+
+  getCellTypeSelectorOptions();
 
   return (
       <div className="editor-menu">
       {
         selectedCell ?
         <div className="editor-options">
-          <button onClick={() => addTraderTile()}>
-            Add Trader
-          </button>
-          <button onClick={() => addElementAndSave(ElementSubType.Horse)}>
-            Add Horse
-          </button>
-          <button onClick={() => addElementAndSave(ElementSubType.Cow)}>
-            Add Cow
-          </button>
-          {getMoveCapitalButtons()}
-          <button onClick={() => {clearSelectedCell()}}>
-            Clear Cell
-          </button>
-          <button onClick={() => copyCellContents()}>Copy Elements</button>
-          <button onClick={() => pasteCellContents()}>Paste Elements</button>
+          <ButtonSelect 
+            nullVal={{label: "- Cell Type -", value: ""}}
+            options={getCellTypeSelectorOptions()}
+            value={selectedCellType}
+            onChange={setSelectedCellType}
+            onButtonClick={() => {
+              setCellTypeAndSave();
+            }}
+          />
+
+          <ButtonSelect
+            buttonText={"Add"}
+            nullVal={{label: "- Element Type -", value: ""}}
+            options={getElementSubTypeSelectorOptions()}
+            value={selectedElementType}
+            onChange={setSelectedElementType}
+            onButtonClick={() => {
+              addElementAndSave(Number(selectedElementType));
+            }}
+          />
+
+          <ButtonSelect
+            buttonText={"Move Capital"}
+            nullVal={{label: "- Color -", value: ""}}
+            options={getMoveCapitalOptions()}
+            value={selectedTeamColor}
+            onChange={setSelectedTeamColor}
+            onButtonClick={() => {
+              moveCapital(Number(selectedTeamColor));
+            }}
+          />
+
+          <div style={{display: "flex", justifyContent: "space-between", gap: "var(--font-size-xxsmall)"}}>
+            <button onClick={() => copyCellContents()}>Copy</button>
+            <button onClick={() => pasteCellContents()} disabled={copiedCellContents.length == 0}>Paste</button>
+            <button onClick={() => {clearSelectedCell()}} className="inverted" style={{color: "red"}}>Clear</button>
+          </div>
+
+          <button onClick={() => {dispatch(setSelectedCell(null))}} className="inverted" style={{color: "red"}}>Close</button>
           {
             window.__editing_live_game &&
-            <button onClick={() => {
+            <button className="inverted" style={{color: "red"}} onClick={() => {
               postUpdateToBackend(cells, playerTurn, getGameId(), true).then(r => {
                 console.log(r);
                 alert("succesffuly updated game")

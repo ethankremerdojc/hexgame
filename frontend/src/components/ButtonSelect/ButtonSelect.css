@@ -1,0 +1,12 @@
+.button-select {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-small);
+  gap: var(--font-size-xxxsmall);
+
+  select, button {
+    color: white;
+    font-size: var(--font-size-xsmall)
+    font-weight: 500;
+  }
+}

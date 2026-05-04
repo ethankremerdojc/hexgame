@@ -55,6 +55,40 @@ export enum ElementSubType {
   Leather,
   LeatherArmor
 }
+//
+// function getElementTypeForElementSubType(subType: ElementSubType) {
+//   switch (subType) {
+//   case ElementSubType.Capital:
+//   case ElementSubType.Village:
+//   case ElementSubType.Farm:
+//   case ElementSubType.SawMill:
+//   case ElementSubType.Quarry:
+//   case ElementSubType.BrickFactory:
+//       return ElementType.Building;
+//
+//   case ElementSubType.Villager:
+//   case ElementSubType.Trader:
+//       return ElementType.Person;
+//
+//   case ElementSubType.Food:
+//   case ElementSubType.Wood:
+//   case ElementSubType.Ore:
+//   case ElementSubType.Clay:
+//   case ElementSubType.Gold:
+//   case ElementSubType.Sword:
+//   case ElementSubType.Bow:
+//   case ElementSubType.Shield:
+//   case ElementSubType.Cart:
+//   case ElementSubType.Horse:
+//   case ElementSubType.Cow:
+//   case ElementSubType.Leather:
+//   case ElementSubType.LeatherArmor:
+//     return ElementType.Item;
+//
+//   default:
+//      throw new Error("Unknown element sub type.");
+//   }
+// }
 
 export const MATERIAL_ELEMENT_SUBTYPES: ElementSubType[] = [
     ElementSubType.Wood,

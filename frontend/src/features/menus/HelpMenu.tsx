@@ -146,7 +146,8 @@ function HowToPlay() {
           <li>
             Cow: Produces leather, can be purchased from trader. <br/>
             Produces 1 leather per cow if there is a working villager on the same tile, if the tile is either 'field' or 'forest'<br/>
-            Requires 1 hand.
+            Requires 1 hand.<br/>
+            If there are more than 3 cows on a particular tile, that tile will still only generate 3 leather.
           </li>
         </ul>
 

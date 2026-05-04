@@ -239,7 +239,7 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
       break;
 
     default:
-      throw new Error(`unknown element subtype: ${subType}`);
+      throw new Error(`unknown element subtype: ${subType}, type: ${typeof(subType)}`);
       break;
   }
 }

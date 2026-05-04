@@ -265,10 +265,11 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
     let cows = cell.elements.filter(el => el.subType == ElementSubType.Cow);
     if (cows.length > 0) {
       if (workers.length > 0 && COW_PRODUCING_TILES.includes(Number(cell.type))) {
-        cell.elements.push(objectToElement({type: ElementType.Item, subType: ElementSubType.Leather, count: cows[0].count}));
+        let leatherCount = Math.min(cows[0].count, 3);
+        let leatherEl = {type: ElementType.Item, subType: ElementSubType.Leather, count: leatherCount};
+        cell.elements.push(objectToElement(leatherEl));
       }
     }
-
 
     if (workers.length < 1) { continue }
 
