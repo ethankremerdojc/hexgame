@@ -76,14 +76,15 @@ def update_game(request):
                 game.turn_number += 1
 
     game.save()
-    PlayerEvent.objects.create(player=player)
+    new_player = list(game.players)[game.current_player_turn]
+    PlayerEvent.objects.create(player=new_player)
 
     if not game.archived:
         if PushSubscription.objects.filter(user=player.user).exists():
             send_push_notif(
                 player.user, 
                 f"Your Turn ({player.user.username}) in game {game.id}",
-                "Last player made their move.",
+                f"{player.username} made their move.",
                 game.id
             )
 
