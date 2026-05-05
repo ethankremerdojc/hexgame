@@ -42,6 +42,8 @@ class Game(models.Model):
             IMPOSSIBLE: "Impossible"
         }
 
+    difficulty = models.CharField(choices=Difficulty.DIFFICULTY_CHOICES, default=Difficulty.MEDIUM)
+
     @property
     def user_players(self):
         return [p.user for p in self.players]
