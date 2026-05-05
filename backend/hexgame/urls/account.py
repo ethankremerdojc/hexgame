@@ -10,5 +10,6 @@ urlpatterns = [
         template_name="hexgame/account/login.html",
         redirect_authenticated_user=True,
     ), name="login"),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout")
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("stats/<str:username>/", stats_view, name="stats"),
 ]

@@ -1,0 +1,55 @@
+{% extends 'hexgame/base.html' %}
+{% block title %}Stats | {{ player.username }}{% endblock title %}
+
+{% block extracss %}
+
+  .user-stats {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: var(--font-size-large);
+
+    h1, h2 {
+      font-weight: 400;
+
+      b {
+        font-weight: 700;
+      }
+    }
+  }
+
+  .other-users {
+    a {
+      display: block;
+      text-decoration: underline;
+    }
+  }
+{% endblock extracss %}
+
+{% block content %}
+
+<section class="user-stats">
+  <h1>User: <b>{{ player.username }}</b></h1>
+
+  <h1>Times</h1>
+  <h2>Avg Time Per Move: <b>{{ times.avg }}</b></h2>
+  <h2>Longest move time: <b>{{ times.longest }}</b></h2>
+  <h2>Shortest move time: <b>{{ times.shortest }}</b></h2>
+  <h2>Total time other people have been waiting for this player: <b>{{ times.total_time_waiting }}</b></h2>
+
+  <h1>Games</h1>
+  <h2>Number of games played/in: <b>{{ games.all.count }}</b></h2>
+  <h2>Number of archived games: <b>{{ games.archived.count }}</b></h2>
+  <h2>Number of non-archived games: <b>{{ games.non_archived.count }}</b></h2>
+
+  <h1>Other Users</h1>
+  <ul class="other-users">
+    {% for other_user in other_users %}
+      <a href="{% url 'stats' username=other_user.username %}">{{ other_user.username }}</a>
+    {% endfor %}
+  </ul>
+
+</section>
+
+{% endblock content %}

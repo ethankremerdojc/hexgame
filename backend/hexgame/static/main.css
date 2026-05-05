@@ -113,6 +113,7 @@ a {
 
 .content-inner {
   padding: var(--font-size-xsmall);
+  min-height: calc(100vh - calc(2 * var(--header-height)) - calc(2 * var(--font-size-xsmall)));
   /* height: calc(100% - calc(2 * var(--font-size-xsmall))); */
 }
 

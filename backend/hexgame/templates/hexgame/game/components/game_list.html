@@ -87,8 +87,11 @@
   }
 
   .game-last-player {
-    span {
+    span a {
+      font-size: var(--font-size-xsmall);
+      display: block;
       color: white;
+      text-decoration: underline;
     }
   }
 
@@ -251,7 +254,7 @@
           </td>
           <td class="game-last-player">
             {% for player in game.players %}
-              <span>{{ player.user.username }}</span>
+              <span><a href="{% url 'stats' username=player.user.username %}">{{ player.user.username }}</a></span>
             {% endfor %}
             <!-- <b style="display: block;">{{ game.last_player_turn_user.username }}</b>{{ game.time_since_last_update_string }} ago -->
         </td>

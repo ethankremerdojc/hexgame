@@ -3,6 +3,7 @@ from hexgame.models import *
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from datetime import timedelta
 
 def get_games(user, archived):
     players = Player.objects.filter(user=user)
@@ -19,6 +20,63 @@ def get_games(user, archived):
 def home_view(request):
     games = get_games(request.user, archived=False)
     return render(request, "hexgame/home.html", games)
+
+def format_timedelta(td):
+    total_seconds = int(td.total_seconds())
+    days, remainder = divmod(total_seconds, 3600 * 24)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{days} days, {hours} hours, {minutes:02} minutes {seconds:02} seconds"
+
+def get_game_times(user):
+
+    # For each game, get the game updates for this player, and check time for the time
+    # of that update compared to the previous
+    
+    times = []
+    
+    events = PlayerEvent.objects.filter(player__user=user)
+
+    for event in events:
+        previous_event = event.get_previous_event()
+
+        if not previous_event: # first event
+            continue
+
+        times.append(event.timestamp - previous_event.timestamp)
+
+    times = sorted(times)
+
+    # giving datetime.timedelta(0) as the start value makes sum work on tds 
+    total_time = sum(times, timedelta(0))
+
+    return {
+        "avg": format_timedelta(total_time / len(times)),
+        "shortest": format_timedelta(times[0]),
+        "longest": format_timedelta(times[-1]),
+        "total_time_waiting": format_timedelta(total_time)
+    }
+
+def stats_view(request, username):
+    player = User.objects.get(username=username)
+
+    all_games = Game.objects.filter(
+        id__in=Player.objects.filter(user=player).values_list('game__id', flat=True)
+    )
+
+    archived_games = all_games.filter(archived=True)
+    non_archived_games = all_games.filter(archived=False)
+
+    return render(request, "hexgame/account/stats.html", {
+        "player": player,
+        "other_users": User.objects.exclude(id=player.id),
+        "games": {
+            "archived": archived_games,
+            "non_archived": non_archived_games,
+            "all": all_games
+        },
+        "times": get_game_times(player)
+    })
 
 @login_required
 def archive_view(request):

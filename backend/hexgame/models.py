@@ -61,6 +61,10 @@ class Game(models.Model):
         return self.chat_messages.latest('id')
 
     @property
+    def events(self):
+        return PlayerEvent.objects.filter(player__in=self.players).order_by('timestamp')
+
+    @property
     def creator(self):
         return self.players[0].user
 
@@ -145,6 +149,17 @@ class Player(models.Model):
 class PlayerEvent(models.Model):
     player = models.ForeignKey('Player', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def get_previous_event(self):
+        game_events = self.player.game.events
+
+        if self == game_events.first():
+            return None
+
+        list_events = list(game_events)
+        event_index = list_events.index(self)
+        previous_event = list_events[event_index - 1]
+        return previous_event
 
 class PushSubscription(models.Model):
     endpoint = models.TextField(unique=True)
