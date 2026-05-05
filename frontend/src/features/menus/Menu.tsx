@@ -735,12 +735,6 @@ export function ElementActionsMenu() {
         }
 
         <div className="element-actions-top-buttons">
-          <SignupButton
-            dispatch={dispatch}
-            userSubscribed={userSubscribed}
-            loggedInUsername={loggedInUsername}
-          />
-
           {helpMenuOpen ?
             <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
               Close Help
@@ -750,6 +744,17 @@ export function ElementActionsMenu() {
               Help
             </button>
           }
+
+          { !userSubscribed ?
+            <SignupButton
+              dispatch={dispatch}
+              userSubscribed={userSubscribed}
+              loggedInUsername={loggedInUsername}
+            />
+            : <div></div>
+          }
+
+
 
           { currentPlayerName == loggedInUsername && <>
             {
@@ -779,15 +784,12 @@ export function ElementActionsMenu() {
       </div>
       
       {
-        helpMenuOpen || currentPlayerName == loggedInUsername && selectedElement &&
-        <div className="element-actions-bottom">
-          {
-            helpMenuOpen ?
-              <HelpMenu />
-            :
-            <> { currentPlayerName == loggedInUsername && <ElementActionOptions /> } </>
-          }
-        </div>
+        helpMenuOpen ?
+          <div className="element-actions-bottom"><HelpMenu /></div>
+        :
+          <>{ currentPlayerName == loggedInUsername && selectedElement &&
+            <div className="element-actions-bottom"><ElementActionOptions /></div>
+          }</>
       }
 
     </div></div>
