@@ -257,5 +257,12 @@
         </div>
       </div>
     {% endif %}
+    <script defer>
+      const chatInput = document.getElementById("chatTogglerInput");
+      const chatMessages = document.getElementById("chat-messages");
+      chatInput.addEventListener("click", () => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      })
+    </script>
   </section>
 {% endblock content %}
