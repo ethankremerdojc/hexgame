@@ -82,7 +82,7 @@ def update_game(request):
         if PushSubscription.objects.filter(user=new_player.user).exists():
             send_push_notif(
                 new_player.user, 
-                f"Your Turn ({player.user.username}) in game {game.id}",
+                f"HexGame | Your Turn in game {game.title if game.title else game.id}",
                 f"{player.user.username} made their move.",
                 game.id
             )
