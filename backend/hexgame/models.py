@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 # from datetime import datetime
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 class GameManager(models.Manager):
     def archived(self):
@@ -49,6 +49,14 @@ class Game(models.Model):
     @property
     def players(self):
         return Player.objects.filter(game=self).order_by('id')
+
+    @property
+    def chat_messages(self):
+        return ChatMessage.objects.filter(player__in=self.players)
+
+    @property
+    def latest_message(self):
+        return self.chat_messages.latest('id')
 
     @property
     def creator(self):
@@ -147,3 +155,7 @@ class ChatMessage(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     player = models.ForeignKey('Player', null=True, on_delete=models.SET_NULL)
     message = models.TextField()
+
+    @property
+    def timestamp_str(self):
+        return datetime.strftime(self.timestamp, "%-m/%d/%Y")

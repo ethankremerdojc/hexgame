@@ -481,8 +481,8 @@ function ElementActionOptions() {
 
       {
         actionHandling ? <>
-        <p className="action-handling-text">{getActionVerb(actionHandling)}</p>
         <div className="element-action-options">
+          <p className="action-handling-text">{getActionVerb(actionHandling)}</p>
           <div key={"back-button"} id="backButton">
             <button onClick={getActionHandler("back")}>
               <span key="span1"><img src={backSvg} /></span><span key="span2">Back</span>
@@ -655,6 +655,7 @@ function ElementActionOptions() {
 
 function SignupButton({dispatch, userSubscribed, loggedInUsername}: any) {
   return (<button
+    className="subscribe-button"
     disabled={userSubscribed}
     onClick={
     async () => {
@@ -676,13 +677,14 @@ function SignupButton({dispatch, userSubscribed, loggedInUsername}: any) {
       })
     }
   }>
-    {userSubscribed ? "Subscribed!" : "Subscribe"}
+    {userSubscribed ? "Subbed!" : "Notifis"}
   </button>)
 }
 
 export function ElementActionsMenu() {
   const dispatch = useAppDispatch();
   const playerTurn =        useAppSelector(getPlayerTurn);
+  const selectedElement =        useAppSelector(getSelectedElement);
 
   // ==========================================
 
@@ -716,69 +718,78 @@ export function ElementActionsMenu() {
 
   return (
     <div className="element-actions-menu"><div className="element-actions-menu-inner">
-      <div className="element-actions-top-buttons">
-        <SignupButton
-          dispatch={dispatch}
-          userSubscribed={userSubscribed}
-          loggedInUsername={loggedInUsername}
-        />
-
-        {helpMenuOpen ?
-          <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
-            Close Help
-          </button>
-          :
-          <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>
-            Help
-          </button>
-        }
-      </div>
-      {
-        helpMenuOpen ?
-          <HelpMenu />
-        :
-        <>
-          <div className="element-actions-middle-buttons">
-            <p className="round-number-text">Turn #: {turnNumber}</p>
+      <div className="element-actions-top">
+        {
+          !helpMenuOpen &&
+          <div className="turninfo">
+            <p className="round-number-text">Round {turnNumber}</p>
             <p className="player-turn-text">
-                Current Player's Turn:&nbsp;
                 <span style={{color: colorForTeam(playerTurn)}}>
-                  {currentPlayerName == loggedInUsername ? "You" : currentPlayerName}
+                  {currentPlayerName == loggedInUsername ? "Your turn" : currentPlayerName + "'s turn"}
                 </span>
             </p>
-            <p className="players">Players: ({ usernames.map((username: string, index: number) => 
-                <span key={username} style={{color: colorForTeam(index)}}>{username}</span>)} )
+            <p className="players">Players:<br />{ usernames.map((username: string, index: number) => 
+                <span key={username} style={{color: colorForTeam(index)}}>{username}</span>)}
             </p>
-            { currentPlayerName == loggedInUsername && <ElementActionOptions /> }
           </div>
-          {
-            currentPlayerName == loggedInUsername && 
-            <div className="element-actions-bottom-buttons">
-              {
-                !confirmingResetTurn && 
-                <> 
-                { confirmingEndTurn ? <>
-                  <button onClick={endTurnHandler} className="warning-text">Really End Turn?</button>
-                  <button onClick={() => setConfirmingEndTurn(false)}>Cancel</button>
+        }
+
+        <div className="element-actions-top-buttons">
+          <SignupButton
+            dispatch={dispatch}
+            userSubscribed={userSubscribed}
+            loggedInUsername={loggedInUsername}
+          />
+
+          {helpMenuOpen ?
+            <button className="help-toggle" onClick={() => setHelpMenuOpen(false)}>
+              Close Help
+            </button>
+            :
+            <button className="help-toggle" onClick={() => {setHelpMenuOpen(true)}}>
+              Help
+            </button>
+          }
+
+          { currentPlayerName == loggedInUsername && <>
+            {
+              !confirmingResetTurn && 
+              <> 
+              { confirmingEndTurn ? <>
+                <button onClick={() => setConfirmingEndTurn(false)} className="inverted">Cancel</button>
+                <button onClick={endTurnHandler} className="inverted warning-text">Are You Sure?</button>
+              </>
+              :
+              <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
+              } </>
+            }
+            {
+              !confirmingEndTurn &&
+              <> { confirmingResetTurn ? <>
+                  <button onClick={() => setConfirmingResetTurn(false)} className="inverted">Cancel</button>
+                  <button onClick={resetTurnHandler} className="inverted warning-text">Really Reset Turn?</button>
                 </>
                 :
-                <><button onClick={() => setConfirmingEndTurn(true)}>End Turn</button></>
-                } </>
-              }
-              {
-                !confirmingEndTurn &&
-                <> { confirmingResetTurn ? <>
-                    <button onClick={resetTurnHandler} className="warning-text">Really Reset Turn?</button>
-                    <button onClick={() => setConfirmingResetTurn(false)}>Cancel</button>
-                  </>
-                  :
-                  <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
-                } </>
-              }
-            </div>
+                <button onClick={() => setConfirmingResetTurn(true)}>Undo ALL</button>
+              } </>
+            } 
+            </>
           }
-        </>
+        </div>
+      </div>
+      
+      {
+        helpMenuOpen || currentPlayerName == loggedInUsername && selectedElement &&
+        <div className="element-actions-bottom">
+          {
+            helpMenuOpen ?
+              <HelpMenu />
+            :
+            <> { currentPlayerName == loggedInUsername && <ElementActionOptions /> } </>
+          }
+        </div>
       }
+
     </div></div>
   )
 };

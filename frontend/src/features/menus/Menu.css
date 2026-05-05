@@ -1,11 +1,14 @@
+p {
+  line-height: var(--font-size-xsmall);
+}
+
 .element-actions-menu,
-.element-actions-menu-inner,
 .element-actions,
 .element-action-items,
 .element-turn-actions,
 .element-action-options
 {
-  gap: var(--font-size-xsmall);
+  gap: var(--font-size-xxsmall);
 }
 
 .element-actions-menu {
@@ -18,10 +21,15 @@
   padding: var(--font-size-xsmall) 0;
   /* top: 0; */
   z-index: 1;
+
+  button {
+    font-size: var(--font-size-xsmall);
+  }
 }
 
 .element-actions-menu-inner {
   display: flex;
+  gap: var(--font-size-small);
   justify-content: center;
   align-items: center;
   flex-direction: column;
@@ -37,11 +45,12 @@
   align-items: center;
   flex-direction: column;
   width: 100%;
-  margin: var(--font-size-xsmall) 0;
 
   .element-action-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 
     #backButton {
       grid-column: 2;
@@ -59,24 +68,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 100px;
+
+    p {
+      font-size: var(--font-size-xsmall);
+    }
+
+    /* width: 50px; */
     color: var(--text-color) !important;
+    padding: var(--font-size-xxxsmall);
+
     span {
       display: flex;
       align-items: center;
-      gap: clamp(0.5rem, 1.5vh, 1.5rem);
+      gap: var(--font-size-xxxsmall);
+      font-size: var(--font-size-xsmall);
+
       img {
-        width: clamp(1rem, 3vh, 3rem);
-        height: clamp(1rem, 3vh, 3rem);
-        padding: 4px;
-      }
-
-      div {
-
+        width: var(--font-size-medium);
+        height: var(--font-size-medium);
       }
     }
   }
 }
+
 
 .element-action-items {
   display: grid;
@@ -93,15 +107,19 @@
   align-items: center;
 }
 
-.player-turn-text, .round-number-text {
+.player-turn-text, .round-number-text, .players {
   width: 100%;
-  text-align: center;
   color: #e3e3e3;
   font-size: var(--font-size-xsmall);
+  line-height: var(--font-size-xsmall);
 
   span {
     font-weight: 600;
   }
+}
+
+.players span {
+  margin: 0 var(--border-width);
 }
 
 .action-handling-text {
@@ -111,7 +129,8 @@
 }
 
 .warning-text {
-  color: red;
+  color: red !important;
+  font-weight: bold;
 }
 
 .droptake-label {
@@ -143,27 +162,25 @@
   gap: var(--font-size-xsmall);
 }
 
-.element-actions-top-buttons, .element-actions-bottom-buttons {
+.element-actions-top, .element-actions-bottom {
+  width: 100%;
   display: flex;
   gap: var(--font-size-xsmall);
   justify-content: space-between;
 }
 
+.element-actions-top-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--font-size-xxsmall);
 
-.element-actions-middle-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--font-size-xsmall);
+  button {
+    padding: calc(2 * var(--border-width));
+  }
 }
 
 .rename-block {
   display: flex;
   flex-direction: column;
   gap: var(--font-size-small);
-}
-
-.players {
-  font-size: var(--font-size-xsmall);
-  display: flex;
-  gap: var(--font-size-xxsmall);
 }

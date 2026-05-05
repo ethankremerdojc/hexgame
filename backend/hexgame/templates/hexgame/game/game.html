@@ -1,4 +1,6 @@
 {% extends 'hexgame/base.html' %}
+{% load static %}
+
 {% block title %}
   {% if game.title %}
     {{ game.title }}
@@ -42,14 +44,17 @@
       border: var(--border);
       width: max(280px, 25vw);
       box-shadow: var(--bottom-right-border-shadow);
+      position: relative;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .chat-toggler {
+      position: absolute;
+      top: 0;
+      right: 0;
     }
 
     @media screen and (max-width: 1200px) {
-
-
-      /* .content { */
-      /*   height: calc(92vh - calc(2*var(--header-height))); */
-      /* } */
 
       .game-container {
         flex-direction: column;
@@ -57,14 +62,29 @@
       }
 
       {% if user in game.user_players %}
-        .game-iframe-container {
-          height: calc(65% - var(--font-size-small));
+
+        .game-container:has(#chatTogglerInput:not(:checked)) {
+          .game-iframe-container {
+            height: calc(65% - var(--font-size-small));
+          }
+
+          .chat-container {
+            width: 100%;
+            height: 35%;
+          }
         }
 
-        .chat-container {
-          width: 100%;
-          height: 35%;
+        .game-container:has(#chatTogglerInput:checked) {
+          .game-iframe-container {
+            height: calc(100% - var(--font-size-small) - var(--font-size-medium));
+          }
+
+          .chat-container {
+            width: 100%;
+            height: var(--font-size-medium);
+          }
         }
+
       {% else %}
         .game-iframe-container {
           height: calc(100% - var(--font-size-small));
@@ -135,8 +155,106 @@
     </div>
     
     {% if user in game.user_players %}
+      
+      <style>
+      
+        /* ---------------------------------------------- */
+        /* Checkbox toggler for opening/closing the chat  */
+        /* ---------------------------------------------- */
+
+        /* Chat Open */
+        .chat-container:has(#chatTogglerInput:checked) {
+          #chatContainer {
+            display: none;
+          }
+
+          #closedChat {
+            display: block;
+          }
+        }
+
+        /* Chat Closed */
+        .chat-container:has(#chatTogglerInput:not(:checked)) {
+          #chatContainer {
+            display: block;
+          }
+
+          #closedChat {
+            display: none;
+          }
+
+          #chatTogglerSvg {
+            transform: rotate(180deg);
+          }
+        }
+
+        /* ---------------------------------------------- */
+
+        #chatTogglerSvg {
+          padding: var(--border-width);
+        }
+
+        #latest-message {
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--font-size-xxsmall);
+
+          i, b, p {
+            display: inline;
+            padding: 0;
+            font-size: var(--font-size-xsmall);
+          }
+        }
+
+        #chatContainer {
+          height: 100%;
+          overflow-y: auto;
+        }
+
+        .chat-toggler {
+          position: relative;
+
+          input, img {
+            position: absolute;
+            top: 0;
+            right: 0;
+          }
+          input {
+            opacity: 0;
+          }
+          img {
+            width: var(--font-size-small);
+            height: var(--font-size-small);
+          }
+        }
+
+
+
+      </style>
+
       <div class="chat-container">
-        {% include "hexgame/game/components/chat.html" with game=game %}
+        <div class="chat-toggler">
+          <img src="{% static 'images/arrow.svg' %}" id="chatTogglerSvg">
+          <input type="checkbox" id="chatTogglerInput">
+        </div>
+
+        <div id="closedChat">
+          <div class="closed-chat-latest-message">
+            {% with latest_message=game.latest_message %}
+              <span id="latest-message">
+                <p>Last Message:</p>
+                <b>{{latest_message.player.user.username}}</b>
+                <i>{{latest_message.timestamp_str}}</i>
+              </span> 
+            {% endwith %}
+          </div>
+        </div>
+
+        <div id="chatContainer">
+          {% include "hexgame/game/components/chat.html" with game=game %}
+        </div>
       </div>
     {% endif %}
   </section>
