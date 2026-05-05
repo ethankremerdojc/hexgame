@@ -161,30 +161,36 @@
         /* ---------------------------------------------- */
         /* Checkbox toggler for opening/closing the chat  */
         /* ---------------------------------------------- */
-
-        /* Chat Open */
-        .chat-container:has(#chatTogglerInput:checked) {
-          #chatContainer {
-            display: none;
-          }
-
-          #closedChat {
-            display: block;
-          }
+        
+        #closedChat, .chat-toggler {
+          display: none;
         }
 
-        /* Chat Closed */
-        .chat-container:has(#chatTogglerInput:not(:checked)) {
-          #chatContainer {
-            display: block;
+        @media screen and (max-width: 1200px) {
+          /* Chat Open */
+          .chat-container:has(#chatTogglerInput:checked) {
+            #chatContainer {
+              display: none;
+            }
+
+            #closedChat {
+              display: block;
+            }
           }
 
-          #closedChat {
-            display: none;
-          }
+          /* Chat Closed */
+          .chat-container:has(#chatTogglerInput:not(:checked)) {
+            #chatContainer {
+              display: block;
+            }
 
-          #chatTogglerSvg {
-            transform: rotate(180deg);
+            #closedChat {
+              display: none;
+            }
+
+            #chatTogglerSvg {
+              transform: rotate(180deg);
+            }
           }
         }
 
