@@ -159,6 +159,7 @@ class PlayerEvent(models.Model):
         list_events = list(game_events)
         event_index = list_events.index(self)
         previous_event = list_events[event_index - 1]
+        print(f"Event: {event}, previous: {previous_event}")
         return previous_event
 
 class PushSubscription(models.Model):
