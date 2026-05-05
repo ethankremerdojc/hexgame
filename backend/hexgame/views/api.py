@@ -84,7 +84,7 @@ def update_game(request):
             send_push_notif(
                 player.user, 
                 f"Your Turn ({player.user.username}) in game {game.id}",
-                f"{player.username} made their move.",
+                f"{player.user.username} made their move.",
                 game.id
             )
 
