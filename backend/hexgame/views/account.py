@@ -45,8 +45,6 @@ def get_game_times(user):
         times.append(event.timestamp - previous_event.timestamp)
 
     times = sorted(times)
-    return times
-    pprint(times)
 
     # giving datetime.timedelta(0) as the start value makes sum work on tds 
     total_time = sum(times, timedelta(0))

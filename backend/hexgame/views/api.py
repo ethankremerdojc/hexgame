@@ -61,6 +61,7 @@ def update_game(request):
     new_cells = request.POST.get("cells")
 
     game.board_state = json.loads(new_cells)
+    player = list(game.players)[game.current_player_turn]
 
     if game_over:
         game.complete = True
@@ -75,10 +76,8 @@ def update_game(request):
                 game.turn_number += 1
 
     game.save()
-
-    player = list(game.players)[game.current_player_turn]
     PlayerEvent.objects.create(player=player)
-    
+
     if not game.archived:
         if PushSubscription.objects.filter(user=player.user).exists():
             send_push_notif(
