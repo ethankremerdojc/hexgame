@@ -18,7 +18,6 @@ def notification_subscribe_view(request):
 
         sub = data["subscription"]
 
-        print(sub)
         endpoint = sub["endpoint"]
         keys = sub["keys"]
         p256dh = keys["p256dh"]
