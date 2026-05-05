@@ -79,9 +79,9 @@ def update_game(request):
     PlayerEvent.objects.create(player=new_player)
 
     if not game.archived:
-        if PushSubscription.objects.filter(user=player.user).exists():
+        if PushSubscription.objects.filter(user=new_player.user).exists():
             send_push_notif(
-                player.user, 
+                new_player.user, 
                 f"Your Turn ({player.user.username}) in game {game.id}",
                 f"{player.user.username} made their move.",
                 game.id
