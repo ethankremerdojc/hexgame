@@ -4,6 +4,7 @@
     width: min(90vw, 800px);
     padding: var(--font-size-small);
     border-radius: var(--font-size-xsmall);
+    position: relative;
 
     h1 {
       color: white;
@@ -91,7 +92,22 @@
     }
   }
 
+  .mobile-archive-link {
+    display: none;
+  }
+
   @media screen and (max-width: 1100px) {
+
+    .mobile-archive-link {
+      display: block;
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: var(--font-size-xsmall);
+      a {
+        font-size: var(--font-size-xsmall);
+      }
+    }
 
     .archive-form {
       width: 100%;
@@ -185,6 +201,9 @@
 
 <div class="games-list">
   <h1>{{ title }}</h1>
+  {% if is_own %}
+    <div class="mobile-archive-link"><a class="archive-link" href="/archive/">Archive</a></div>
+  {% endif %}
   <table class="games-list-table">
     <thead>
       <tr class="games-list-head-tr">
