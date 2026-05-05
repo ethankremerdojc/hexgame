@@ -51,9 +51,9 @@ def get_game_times(user):
 
     return {
         "avg": format_timedelta(total_time / len(times)) if len(times) else "---",
-        "shortest": format_timedelta(times[0]),
-        "longest": format_timedelta(times[-1]),
-        "total_time_waiting": format_timedelta(total_time)
+        "shortest": format_timedelta(times[0]) if len(times) else "---",
+        "longest": format_timedelta(times[-1]) if len(times) else "---",
+        "total_time_waiting": format_timedelta(total_time) if len(times) else "---"
     }
 
 def stats_view(request, username):
