@@ -13,7 +13,14 @@ header {
   align-items: center;
   justify-content: space-between;
 
-  h1, h2 {
+  h1 {
+    color: white;
+  }
+  h2 a {
+    u {
+      color: white;
+      text-decoration: underline;
+    }
     color: white;
   }
 }
@@ -34,6 +41,10 @@ header {
       font-size: var(--font-size-medium);
     }
 
+    h2 a {
+      color: white !important;
+    }
+
     button {
       font-size: var(--font-size-xsmall);
       padding: var(--border-width);
@@ -51,7 +62,7 @@ header {
     </div>
     <div class="header-inner-right">
       {% if user.username %}
-        <h2>User: {{ user.username }}</h2>
+        <h2><a href="{% url 'stats' username=user.username %}">User: <u>{{ user.username }}</u></a></h2>
         <form method="post" action="{% url 'logout' %}" class="logout-form">
             {% csrf_token %}
             <button type="submit" class="inverted">Logout</button>
