@@ -50,7 +50,7 @@ def get_game_times(user):
     total_time = sum(times, timedelta(0))
 
     return {
-        "avg": format_timedelta(total_time / len(times)),
+        "avg": format_timedelta(total_time / len(times)) if len(times) else "---",
         "shortest": format_timedelta(times[0]),
         "longest": format_timedelta(times[-1]),
         "total_time_waiting": format_timedelta(total_time)
