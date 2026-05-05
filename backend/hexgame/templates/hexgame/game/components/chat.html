@@ -44,7 +44,11 @@
       <textarea name="message" placeholder="message" id="message-textarea"></textarea>
       <button type="submit">Send</button>
     </form>
-  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="message">
+      <p>Send a message to other players</p>
+    </div>
+  </div>
 </div>
 
 <script defer>
@@ -55,7 +59,9 @@
   var messageCount = 0;
 
   function updateChatList(messages) {
-    messagesDiv.innerHTML = "";
+    if (messages.length > 0) {
+      messagesDiv.innerHTML = "";
+    }
 
     for (var message of messages) {
       let newMessage = document.createElement("div");

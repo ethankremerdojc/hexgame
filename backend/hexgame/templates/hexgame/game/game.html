@@ -254,10 +254,17 @@
         <div id="closedChat">
           <div class="closed-chat-latest-message">
             {% with latest_message=game.latest_message %}
+              {% comment %}
+                At some point have js update below
+              {% endcomment %}
               <span id="latest-message">
-                <p>Last Message:</p>
-                <b>{{latest_message.player.user.username}}</b>
-                <i>{{latest_message.timestamp_str}}</i>
+                {% if latest_message %}
+                  <p>Chat | Last Message:</p>
+                  <b>{{latest_message.player.user.username}}</b>
+                  <i>{{latest_message.timestamp_str}}</i>
+                {% else %}
+                  <p>Chat</p>
+                {% endif %}
               </span> 
             {% endwith %}
           </div>
