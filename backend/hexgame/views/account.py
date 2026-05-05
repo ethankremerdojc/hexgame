@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from datetime import timedelta
+from pprint import pprint
 
 def get_games(user, archived):
     players = Player.objects.filter(user=user)
@@ -22,11 +23,9 @@ def home_view(request):
     return render(request, "hexgame/home.html", games)
 
 def format_timedelta(td):
-    total_seconds = int(td.total_seconds())
-    days, remainder = divmod(total_seconds, 3600 * 24)
-    hours, remainder = divmod(remainder, 3600)
+    hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    return f"{days} days, {hours} hours, {minutes:02} minutes {seconds:02} seconds"
+    return f"{td.days} days, {hours} hours, {minutes} minutes {seconds} seconds"
 
 def get_game_times(user):
 
@@ -46,6 +45,7 @@ def get_game_times(user):
         times.append(event.timestamp - previous_event.timestamp)
 
     times = sorted(times)
+    pprint(times)
 
     # giving datetime.timedelta(0) as the start value makes sum work on tds 
     total_time = sum(times, timedelta(0))
