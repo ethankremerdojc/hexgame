@@ -40,7 +40,7 @@ import {
 import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
 
-// import { TESTING } from "@/App.tsx"
+import { TESTING } from "@/App.tsx"
 import { notificationSubscribe } from "@/app/api"
 import { getSvgForSubType } from "../board/boardRenderer"
 
@@ -754,9 +754,7 @@ export function ElementActionsMenu() {
             : <div></div>
           }
 
-
-
-          { currentPlayerName == loggedInUsername && <>
+          { (currentPlayerName == loggedInUsername || TESTING) && <>
             {
               !confirmingResetTurn && 
               <> 
@@ -787,7 +785,7 @@ export function ElementActionsMenu() {
         helpMenuOpen ?
           <div className="element-actions-bottom"><HelpMenu /></div>
         :
-          <>{ currentPlayerName == loggedInUsername && selectedElement &&
+          <>{ ((currentPlayerName == loggedInUsername || TESTING) && selectedElement) &&
             <div className="element-actions-bottom"><ElementActionOptions /></div>
           }</>
       }

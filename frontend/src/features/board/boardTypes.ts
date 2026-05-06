@@ -53,7 +53,13 @@ export enum ElementSubType {
 
   Cow,
   Leather,
-  LeatherArmor
+  LeatherArmor,
+
+  Spear,
+  Mace,
+  IronArmor,
+
+  Forge
 }
 //
 // function getElementTypeForElementSubType(subType: ElementSubType) {
@@ -102,10 +108,26 @@ export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [
   ElementSubType.Sword,
   ElementSubType.Bow,
   ElementSubType.Shield,
+  ElementSubType.Spear,
+  ElementSubType.Mace,
+  ElementSubType.IronArmor,
   ElementSubType.Cart,
   ElementSubType.Horse,
   ElementSubType.Cow,
   ElementSubType.LeatherArmor
+]
+
+export const WEAPON_SUBTYPES: ElementSubType[] = [
+  ElementSubType.Sword,
+  ElementSubType.Spear,
+  ElementSubType.Mace,
+  ElementSubType.Bow,
+]
+
+export const ARMOR_SUBTYPES: ElementSubType[] = [
+  ElementSubType.Shield,
+  ElementSubType.LeatherArmor,
+  ElementSubType.IronArmor
 ]
 
 export enum CellType {
@@ -141,18 +163,12 @@ export function getHandsRequiredToHold(elementSubType: ElementSubType) {
       return 2
       break;
     case ElementSubType.Horse:
-      return 1
-      break;
     case ElementSubType.Cow:
-      return 1
-      break;
     case ElementSubType.Bow:
-      return 1
-      break;
     case ElementSubType.Shield:
-      return 1
-      break;
     case ElementSubType.Sword:
+    case ElementSubType.Mace:
+    case ElementSubType.Spear:
       return 1
       break;
     default:

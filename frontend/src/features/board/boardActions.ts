@@ -8,14 +8,12 @@ import type {
 
 import {
   ElementType, ElementSubType, ElementAction, CellType,
-  objectToElement,
+  objectToElement, WEAPON_SUBTYPES, ARMOR_SUBTYPES
 } from "./boardTypes"
 
 import {
-  PERSON_BASE_DAMAGE,
-  SHIELD_ARMOR_INCREASE_AMOUNT,
-  SWORD_DAMAGE_INCREASE_AMOUNT,
-  LEATHER_ARMOR_INCREASE_AMOUNT,
+  getDamageAmount,
+  getArmorAmount,
   PERSON_BASE_HEALTH,
   getBuildingCost
 } from "./vars"
@@ -210,40 +208,87 @@ export default class BoardActions {
     return newCells
   }
 
-  static doDamage(agressor: Element, defender: Element, ignoreShield: boolean=false) {
+  // static doDamage(agressor: Element, defender: Element, ignoreShield: boolean=false): Element {
+  //
+  //   function getShieldFactor(person: Element) {
+  //     let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Shield).length > 0;
+  //     return isHoldingShield ? SHIELD_ARMOR_INCREASE_AMOUNT : 0
+  //   }
+  //
+  //   function getSwordFactor(person: Element) {
+  //     let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Sword).length > 0;
+  //     return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
+  //   };
+  //
+  //   function getArmorFactor(person: Element) {
+  //     let isWearingLeatherArmor = person.heldElements.filter((el: Element) => el.subType == ElementSubType.LeatherArmor).length > 0;
+  //     return isWearingLeatherArmor ? LEATHER_ARMOR_INCREASE_AMOUNT : 0
+  //   }
+  //
+  //   let defenderArmor = getArmorFactor(defender);
+  //
+  //   if (!ignoreShield) {
+  //     defenderArmor += getShieldFactor(defender);
+  //   }
+  //
+  //   let agressorDamage = PERSON_BASE_DAMAGE + getSwordFactor(agressor);
+  //
+  //   if (agressorDamage > defenderArmor) {
+  //     defender.health = defender.health - (agressorDamage - defenderArmor);
+  //   }
+  //
+  //   if (defender.health < 1) { return null }
+  //   return defender
+  // }
 
-    function getShieldFactor(person: Element) {
-      let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Shield).length > 0;
-      return isHoldingShield ? SHIELD_ARMOR_INCREASE_AMOUNT : 0
+  static doDamage(agressor: Element, defender: Element): Element { // returns the state of the defender
+    let weaponEls = agressor.heldElements.filter((el: Element) => WEAPON_SUBTYPES.includes(el.subType));
+
+    let ignoreShield = false;
+    let ignoreLeatherArmor = false;
+
+    let damageAmount = 0;
+
+    if (weaponEls.length == 0) {
+      damageAmount = getDamageAmount(null);
+    } else {
+      let weaponType = weaponEls[0].subType;
+      damageAmount = getDamageAmount(weaponType);
+
+      if (weaponType == ElementSubType.Bow) {
+        ignoreShield = true;
+      }
+      if (weaponType == ElementSubType.Mace) {
+        ignoreLeatherArmor = true;
+      }
     }
 
-    function getSwordFactor(person: Element) {
-      let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Sword).length > 0;
-      return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
-    };
+    let armorAmount = 0;
+    let armorEls;
 
-    function getArmorFactor(person: Element) {
-      let isWearingLeatherArmor = person.heldElements.filter((el: Element) => el.subType == ElementSubType.LeatherArmor).length > 0;
-      return isWearingLeatherArmor ? LEATHER_ARMOR_INCREASE_AMOUNT : 0
+    console.log("ignore shield", ignoreShield, "ignore leather armor", ignoreLeatherArmor)
+
+    if (ignoreShield) {
+      let nonShieldArmors = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.Shield);
+      armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
+    } else if (ignoreLeatherArmor) {
+      let nonLeatherArmors = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.LeatherArmor);
+      armorEls = defender.heldElements.filter((el: Element) => nonLeatherArmors.includes(el.subType));     
+    } else {
+      armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
     }
 
-
-    let defenderArmor = getArmorFactor(defender);
-
-    if (!ignoreShield) {
-      defenderArmor += getShieldFactor(defender);
+    for (var armorEl of armorEls) {
+      armorAmount += getArmorAmount(armorEl.subType);
     }
 
-    let agressorDamage = PERSON_BASE_DAMAGE + getSwordFactor(agressor);
+    if (armorAmount >= damageAmount) return defender;
 
-    if (agressorDamage > defenderArmor) {
-      defender.health = defender.health - (agressorDamage - defenderArmor);
-    }
+    defender.health = defender.health - (damageAmount - armorAmount);
 
-    if (defender.health < 1) {
-      return null
-    }
+    if (defender.health < 1) { return null }
     return defender
+
   }
 
   static makePersonsFight(_personElem: Element, _targetElem: Element, cells: Cell[]): Cell[] {
@@ -375,11 +420,10 @@ export default class BoardActions {
       result.push(ElementAction.Fight)
     }
 
-    let resourcesForHealing = [{subType: ElementSubType.Food, count: 1}];
-    if (personElem.health < PERSON_BASE_HEALTH && BoardUtils.resourcesExistForPerson(resourcesForHealing, personElem, cells)) {
+    if (BoardUtils.personCanHeal(personElem, cells)) {
       result.push(ElementAction.Heal)
     }
-    
+
     if (BoardUtils.personCanReproduce(personElem, cells)) {
       result.push(ElementAction.Reproduce)
     }

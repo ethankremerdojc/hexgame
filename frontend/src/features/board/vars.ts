@@ -13,10 +13,23 @@ export const PERSON_BASE_HEALTH = 10;
 export const STARTING_FOOD = 15;
 export const STARTING_GOLD = 10;
 
-export const SHIELD_ARMOR_INCREASE_AMOUNT = 2;
-export const SWORD_DAMAGE_INCREASE_AMOUNT = 3;
-export const LEATHER_ARMOR_INCREASE_AMOUNT = 2;
 export const NO_FOOD_PENALTY = 3;
+
+export const getDamageAmount = (weapon:ElementSubType|null) => {
+  if (weapon === null) return 3;
+  if (weapon === ElementSubType.Sword) return 7;
+  if (weapon === ElementSubType.Spear) return 5;
+  if (weapon === ElementSubType.Mace) return 8;
+  if (weapon === ElementSubType.Bow) return 5;
+
+  throw new Error("Unhandled weapon type");
+}
+
+export const getArmorAmount = (item:ElementSubType) => {
+  if (item==ElementSubType.Shield) return 3;
+  if (item==ElementSubType.LeatherArmor) return 2;
+  if (item==ElementSubType.IronArmor) return 3;
+}
 
 export function getTradeCostForSubType(subType: ElementSubType) {
   if (subType == ElementSubType.Horse) { return 7 };
@@ -57,10 +70,14 @@ export const THINGS_THAT_CAN_BE_BUILT = [
   ElementSubType.Quarry,
   ElementSubType.BrickFactory,
   ElementSubType.SawMill,
+  ElementSubType.Forge,
   ElementSubType.Village,
   ElementSubType.Sword,
   ElementSubType.Bow,
   ElementSubType.Shield,
+  ElementSubType.Mace,
+  ElementSubType.Spear,
+  ElementSubType.IronArmor,
   ElementSubType.Cart,
   ElementSubType.Villager,
   ElementSubType.LeatherArmor
@@ -133,6 +150,25 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
         count: 2
       })
       break;
+    case ElementSubType.Forge:
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Clay,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubType.Leather,
+        count: 2
+      })
+      break;
+
 
     // Items
     case ElementSubType.Sword:
@@ -169,6 +205,39 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
       ingredients.push({
         subType: ElementSubType.Leather,
         count: 3
+      })
+      break;
+
+    case ElementSubType.Mace:
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 4
+      })
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      break;
+
+    case ElementSubType.Spear:
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 1
+      })
+      ingredients.push({
+        subType: ElementSubType.Wood,
+        count: 2
+      })
+      break;
+
+    case ElementSubType.IronArmor:
+      ingredients.push({
+        subType: ElementSubType.Ore,
+        count: 4
+      })
+      ingredients.push({
+        subType: ElementSubType.Leather,
+        count: 2
       })
       break;
     case ElementSubType.Cart:
@@ -233,7 +302,13 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
     "Horse",
     "Cow",
     "Leather",
-    "Leather Armor"
+    "Leather Armor",
+
+    "Spear",
+    "Mace",
+    "Iron Armor",
+
+    "Forge"
   ][elemSubType]
 }
 

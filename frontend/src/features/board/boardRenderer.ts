@@ -3,7 +3,8 @@ import type {
 } from "./boardTypes"
 
 import {
-  CellType, ElementType, ElementSubType
+  CellType, ElementType, ElementSubType,
+  ITEMS_YOU_CAN_HOLD_ONE_OF
 } from "./boardTypes"
 
 import BoardUtils from "./boardUtils.ts"
@@ -96,6 +97,18 @@ import leatherSvg from "./svg/leather.svg";
 import leatherArmorSvgRaw from "./svg/leather-armor.svg?raw";
 import leatherArmorSvg from "./svg/leather-armor.svg";
 
+import maceSvgRaw from "./svg/mace.svg?raw";
+import maceSvg from "./svg/mace.svg";
+
+import spearSvgRaw from "./svg/spear.svg?raw";
+import spearSvg from "./svg/spear.svg";
+
+import ironArmorSvgRaw from "./svg/iron-armor.svg?raw";
+import ironArmorSvg from "./svg/iron-armor.svg";
+
+import forgeSvgRaw from "./svg/forge.svg?raw";
+import forgeSvg from "./svg/forge.svg";
+
 import noSvgRaw from "./svg/actions/noIcon.svg?raw";
 
 export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
@@ -125,6 +138,12 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
         return quarrySvgRaw;
       }
       return quarrySvg;
+      break;
+    case ElementSubType.Forge:
+      if (raw) {
+        return forgeSvgRaw;
+      }
+      return forgeSvg;
       break;
     case ElementSubType.SawMill:
       if (raw) {
@@ -219,6 +238,26 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
       }
       return shieldSvg;
       break;
+
+    case ElementSubType.Mace:
+      if (raw) {
+        return maceSvgRaw;
+      }
+      return maceSvg;
+      break;
+    case ElementSubType.Spear:
+      if (raw) {
+        return spearSvgRaw;
+      }
+      return spearSvg;
+      break;
+    case ElementSubType.IronArmor:
+      if (raw) {
+        return ironArmorSvgRaw;
+      }
+      return ironArmorSvg;
+      break;
+
     case ElementSubType.Cart:
       if (raw) {
         return cartSvgRaw;
@@ -332,6 +371,7 @@ export default class BoardRenderer {
         let key = Number(_key);
         let canvasEl;
 
+        //TODO if we store each based on radius, it won't add much
         switch (Number(key)) {
           case CellType.Field:
             canvasEl = getGrassCanvas(this.opts.radius);
@@ -522,14 +562,7 @@ export default class BoardRenderer {
     // held elements
     for (let i=0; i<element.heldElements.length; i++) {
       let heldElement = element.heldElements[i];
-      if ([
-        ElementSubType.Sword,
-        ElementSubType.Bow,
-        ElementSubType.Shield,
-        ElementSubType.Cart,
-        ElementSubType.Horse,
-        ElementSubType.LeatherArmor
-      ].includes(heldElement.subType)) {
+      if (ITEMS_YOU_CAN_HOLD_ONE_OF.includes(heldElement.subType)) {
         continue
       }
       let heldElemSvg = this.getSvgForElement(heldElement);
@@ -548,20 +581,30 @@ export default class BoardRenderer {
 
     let holdingSword = element.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
     let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
+    let holdingMace = element.heldElements.filter(el => el.subType == ElementSubType.Mace).length > 0;
+    let holdingSpear = element.heldElements.filter(el => el.subType == ElementSubType.Spear).length > 0;
     let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
     let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
     let wearingLeatherArmor = element.heldElements.filter(el => el.subType == ElementSubType.LeatherArmor).length > 0;
+    let wearingIronArmor = element.heldElements.filter(el => el.subType == ElementSubType.IronArmor).length > 0;
     let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
 
     if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, this.ctx,
-        elemPos.x + objectSize, elemPos.y,
+        elemPos.x + objectSize*1.5, elemPos.y,
         toolSize, objectSize,
       );
     }
 
     if (wearingLeatherArmor) {
       drawSvgToCanvas(leatherArmorSvgRaw, this.ctx,
+        elemPos.x - objectSize*0.12, elemPos.y+objectSize*0.65,
+        objectSize*1.24, objectSize*0.35,
+      );
+    }
+
+    if (wearingIronArmor) {
+      drawSvgToCanvas(ironArmorSvgRaw, this.ctx,
         elemPos.x - objectSize*0.12, elemPos.y+objectSize*0.65,
         objectSize*1.24, objectSize*0.35,
       );
@@ -583,18 +626,24 @@ export default class BoardRenderer {
       }
     }
 
-    if (holdingSword) {
-      drawSvgToCanvas(swordSvgRaw, this.ctx,
+    if (holdingSword || holdingSpear || holdingMace || holdingBow) {
+      let svg: null|string = null;
+
+      if (holdingSword) {
+        svg = swordSvgRaw;
+      } else if (holdingMace) {
+        svg = maceSvgRaw;
+      } else if (holdingSpear) {
+        svg = spearSvgRaw;
+      } else {
+        svg = bowSvgRaw;
+      }
+
+      drawSvgToCanvas(svg, this.ctx,
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
     }
-    if (holdingBow) {
-      drawSvgToCanvas(bowSvgRaw, this.ctx,
-        elemPos.x + objectSize*1.1, elemPos.y,
-        toolSize, objectSize,
-      );
-    };
 
     if (holdingShield) {
       drawSvgToCanvas(shieldSvgRaw, this.ctx,
@@ -609,7 +658,6 @@ export default class BoardRenderer {
       );
     }
 
-
     //todo determine better 'has actions'
     if (!element.hasActionAvailable) {
       drawSvgToCanvas(noSvgRaw, this.ctx,
@@ -623,7 +671,7 @@ export default class BoardRenderer {
     this.ctx.fillStyle = "red";
     this.ctx.font = `${miniItemSize*1.8}px serif`;
     let healthStr: string = element.health.toString();
-    this.ctx.fillText(healthStr, elemPos.x + objectSize*1.4, elemPos.y + miniItemSize*1.5);
+    this.ctx.fillText(healthStr, elemPos.x - miniItemSize*1.8, elemPos.y - miniItemSize*0.25);
 
     if (isSelected) {
       this.drawHighlightBox(elemPos, objectSize, "yellow");

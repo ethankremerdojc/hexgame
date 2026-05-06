@@ -1,14 +1,16 @@
 import { useState } from "react";
 
+import {
+  ElementSubType
+} from "../board/boardTypes";
+
 import { 
   THINGS_THAT_CAN_BE_BUILT, 
   getBuildingCost, 
   nameForElementSubType, 
   getSpecificItemBuildingCost,
-  PERSON_BASE_DAMAGE,
-  SWORD_DAMAGE_INCREASE_AMOUNT,
-  SHIELD_ARMOR_INCREASE_AMOUNT,
-  LEATHER_ARMOR_INCREASE_AMOUNT,
+  getDamageAmount,
+  getArmorAmount,
   NO_FOOD_PENALTY
 } from "../board/vars"
 import { getSvgForSubType } from "../board/boardRenderer"
@@ -76,6 +78,7 @@ function HowToPlay() {
           <li>SawMill: For producing wood</li>
           <li>Brick Factory: For producing bricks</li>
           <li>Quarry: For producing Stone</li>
+          <li>Forge: For making advanced weapons and armor</li>
         </ul>
 
         <h2>Villagers</h2>
@@ -100,11 +103,19 @@ function HowToPlay() {
             You can not hold a shield and bow, or any two of horse, cart or weapon.
           </li>
           <li>
-            Fight: Deal damage to an enemy villager. The base damage is {PERSON_BASE_DAMAGE}, which can be altered by weapons, shields and armor<br/>
-            The enemy will also deal damage to your villager at the same time.<br />
-            Sword: Adds {SWORD_DAMAGE_INCREASE_AMOUNT} damage.<br />
-            Shield: Reduces damage by {SHIELD_ARMOR_INCREASE_AMOUNT}.<br />
-            Leather Armor: Reduces damage by {LEATHER_ARMOR_INCREASE_AMOUNT}.<br />
+            Fight: Deal damage to an enemy villager, then the enemy will also deal damage to your villager at the same time.<br />
+            <ul>
+              <li>Base Damage: {getDamageAmount(null)}</li>
+              <li>Bow: Deals {getDamageAmount(ElementSubType.Bow)} damage. (Ignores Shield).<br /></li>
+              <li>Spear: Deals {getDamageAmount(ElementSubType.Spear)} damage.<br /></li>
+              <li>Leather Armor: Reduces damage by {getArmorAmount(ElementSubType.LeatherArmor)}.<br /></li>
+
+              <li><b><u style={{color: "white"}}>Below require a 'forge'</u></b></li>
+              <li>Sword: Deals {getDamageAmount(ElementSubType.Sword)} damage.<br /></li>
+              <li>Mace: Deals {getDamageAmount(ElementSubType.Mace)} damage. (Ignores Leather armor)<br /></li>
+              <li>Iron Armor: Reduces damage by {getArmorAmount(ElementSubType.IronArmor)}.<br /></li>
+              <li>Shield: Reduces damage by {getArmorAmount(ElementSubType.Shield)}.<br /></li>
+            </ul>
           </li>
           <li>
             Build: Build a structure or item with the items in your villagers inventory and on the ground.<br />
@@ -118,7 +129,7 @@ function HowToPlay() {
             Your villagers will automatically work if they didn't do any other actions.
           </li>
           <li>
-            Heal: Heal by 1 health for 1 food.
+            Heal: Heal by 1 health for 1 food. You can not heal if there is an enemy on the same cell as you.
           </li>
           <li>
             Clone: Create a new villager. This must be done either on a capital or a village, and requires 10 food.
@@ -127,7 +138,7 @@ function HowToPlay() {
             Trade: On a tile with a trader, trade any 2 of a resource for any 1 resource. You can also buy a horse for 7 of any one resource.
           </li>
           <li>
-            Shoot: If your villager has a bow, they can do {PERSON_BASE_DAMAGE} damage to another villager in an adjacent tile, without having that villager do damage to them.<br/>
+            Shoot: If your villager has a bow, they can do {getDamageAmount(ElementSubType.Bow)} damage to another villager in an adjacent tile, without having that villager do damage to them.<br/>
             Shooting ignores shields, but not armor.
           </li>
 

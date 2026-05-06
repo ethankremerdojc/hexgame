@@ -8,10 +8,13 @@ import {
   ElementSubType, 
   CellType, 
   MATERIAL_ELEMENT_SUBTYPES,
-  getHandsRequiredToHold
+  getHandsRequiredToHold,
+  ITEMS_YOU_CAN_HOLD_ONE_OF,
+  WEAPON_SUBTYPES
 } from "./boardTypes"
 
 import {
+  PERSON_BASE_HEALTH,
   PERSON_MAX_CARRY_WEIGHT,
   CART_CARRY_WEIGHT_INCREASE,
   getBuildingCost,
@@ -437,17 +440,29 @@ export default class BoardUtils {
   static getAvailableThingsToBuild(cell: Cell): any[] {
     let result = [];
 
-    if (cell.elements.filter(el => el.type == ElementType.Building).length == 0) {
+    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building).length != 0;
+    let forgeExists = cell.elements.filter(el => el.subType == ElementSubType.Forge).length != 0;
+
+    if (!buildingExists) {
       if (cell.type != CellType.Desert) {
         result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
       }
       result.push([ElementType.Building, ElementSubType.Village]);
+      result.push([ElementType.Building, ElementSubType.Forge]);
     }
+
     result.push([ElementType.Item, ElementSubType.Bow]);
-    result.push([ElementType.Item, ElementSubType.Sword]);
-    result.push([ElementType.Item, ElementSubType.Shield]);
+
     result.push([ElementType.Item, ElementSubType.Cart]);
     result.push([ElementType.Item, ElementSubType.LeatherArmor]);
+    result.push([ElementType.Item, ElementSubType.Spear]);
+
+    if (forgeExists) {
+      result.push([ElementType.Item, ElementSubType.Sword]);
+      result.push([ElementType.Item, ElementSubType.Shield]);
+      result.push([ElementType.Item, ElementSubType.Mace]);
+      result.push([ElementType.Item, ElementSubType.IronArmor]);
+    }
 
     return result
   }
@@ -631,7 +646,40 @@ export default class BoardUtils {
     return villagerCapacity > currentTeamPersons;
   }
 
+  static personCanHeal(personElem: Element, cells: Cell[]): boolean {
+    if (personElem.health >= PERSON_BASE_HEALTH) return false;
+
+    let resourcesForHealing = [{subType: ElementSubType.Food, count: 1}];
+    let resourcesExist = BoardUtils.resourcesExistForPerson(resourcesForHealing, personElem, cells);
+    if (!resourcesExist) return false;
+
+    const elementParent = BoardUtils.getElementParentCell(personElem, cells);
+    if (BoardUtils.enemyExistsOnCell(personElem, elementParent)) return false;
+    return true
+  }
+
   static personCanHoldItem(personElem: Element, elementSubType: ElementSubType): boolean {
+
+    if (ITEMS_YOU_CAN_HOLD_ONE_OF.includes(elementSubType)) {
+      if (personElem.heldElements.filter((el: Element) => el.subType == elementSubType).length > 0) {
+        return false
+      }
+    }
+    
+    let armors = [ElementSubType.IronArmor, ElementSubType.LeatherArmor];
+    let currentArmors = personElem.heldElements.filter((el: Element) => armors.includes(el.subType));
+    if (currentArmors.length > 0 && armors.includes(elementSubType)) {
+      return false
+    }
+
+    // can't hold 2 weapons
+    if (WEAPON_SUBTYPES.includes(elementSubType)) {
+      for (var item of personElem.heldElements) {
+        if (WEAPON_SUBTYPES.includes(item.subType)) {
+          return false
+        }
+      }
+    }
 
     if (BoardUtils.getPersonRemainingCarryWeight(personElem) < 1) {
       return false
@@ -643,22 +691,22 @@ export default class BoardUtils {
       ElementSubType.Bow,
       ElementSubType.Shield,
       ElementSubType.Cow,
-      ElementSubType.Horse
+      ElementSubType.Horse,
+      ElementSubType.Mace,
+      ElementSubType.Spear,
     ]
 
     let currentCapacity = 0;
 
     for (var subType of subTypesToCheck) {
       let holdingItemCount = personElem.heldElements.filter((el: Element) => el.subType == subType).length;
+
       if (holdingItemCount > 0) {
         currentCapacity += getHandsRequiredToHold(subType) * holdingItemCount;
       }
     };
 
     let handsRequired = getHandsRequiredToHold(elementSubType);
-
-    console.log(currentCapacity, handsRequired);
-
 
     return currentCapacity + handsRequired <= 2
   }
