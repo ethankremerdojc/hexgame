@@ -22,9 +22,10 @@ class Game(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     kick_if_inactive = models.BooleanField()
 
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="creator_user")
     complete = models.BooleanField(default=False)
     archived = models.BooleanField(default=False)
-    winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    winner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="winner_user")
 
     spectatable = models.BooleanField(default=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -65,7 +66,7 @@ class Game(models.Model):
         return PlayerEvent.objects.filter(player__in=self.players).order_by('timestamp')
 
     @property
-    def creator(self):
+    def old_creator(self):
         return self.players[0].user
 
     @property
