@@ -45,6 +45,14 @@ class Game(models.Model):
 
     difficulty = models.CharField(choices=Difficulty.DIFFICULTY_CHOICES, default=Difficulty.MEDIUM)
 
+    def __str__(self):
+        return f"Game {self.id} | Creator: {self.creator} | players: {', '.join(self.player_usernames)}"
+
+
+    @property
+    def player_usernames(self):
+        return [u.username for u in self.user_players]
+
     @property
     def user_players(self):
         return [p.user for p in self.players]
@@ -64,10 +72,6 @@ class Game(models.Model):
     @property
     def events(self):
         return PlayerEvent.objects.filter(player__in=self.players).order_by('timestamp')
-
-    @property
-    def old_creator(self):
-        return self.players[0].user
 
     @property
     def current_player_turn_user(self):

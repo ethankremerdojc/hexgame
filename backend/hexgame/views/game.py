@@ -25,15 +25,20 @@ def create_game_view(request):
         if form.is_valid():
             users = form.cleaned_data["usernames"]
             minutes_per_turn = form.cleaned_data["minutes_per_turn"]
+            title = form.cleaned_data["title"]
+            spectatable = form.cleaned_data["spectatable"]
             celldata = form.cleaned_data["celldata"]
 
             with transaction.atomic():
                 game = Game.objects.create(
                     current_player_turn=0,
-                    board_state=json.loads(celldata),   # or whatever your initial board state should be
+                    title=title,
+                    spectatable=spectatable,
+                    board_state=json.loads(celldata),
                     minutes_per_turn=minutes_per_turn,
                     kick_if_inactive=False,
-                    turn_number=1
+                    turn_number=1,
+                    creator=request.user
                 )
 
                 for user in users:
