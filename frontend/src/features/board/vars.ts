@@ -29,6 +29,7 @@ export const getArmorAmount = (item:ElementSubType) => {
   if (item==ElementSubType.Shield) return 3;
   if (item==ElementSubType.LeatherArmor) return 2;
   if (item==ElementSubType.IronArmor) return 3;
+  return 0
 }
 
 export function getTradeCostForSubType(subType: ElementSubType) {

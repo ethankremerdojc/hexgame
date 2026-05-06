@@ -241,7 +241,7 @@ export default class BoardActions {
   //   return defender
   // }
 
-  static doDamage(agressor: Element, defender: Element): Element { // returns the state of the defender
+  static doDamage(agressor: Element, defender: Element): Element|null { // returns the state of the defender
     let weaponEls = agressor.heldElements.filter((el: Element) => WEAPON_SUBTYPES.includes(el.subType));
 
     let ignoreShield = false;
@@ -266,13 +266,11 @@ export default class BoardActions {
     let armorAmount = 0;
     let armorEls;
 
-    console.log("ignore shield", ignoreShield, "ignore leather armor", ignoreLeatherArmor)
-
     if (ignoreShield) {
-      let nonShieldArmors = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.Shield);
+      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.Shield);
       armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
     } else if (ignoreLeatherArmor) {
-      let nonLeatherArmors = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.LeatherArmor);
+      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.LeatherArmor);
       armorEls = defender.heldElements.filter((el: Element) => nonLeatherArmors.includes(el.subType));     
     } else {
       armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
@@ -374,7 +372,7 @@ export default class BoardActions {
     newPersonShooting.hasActionAvailable = false;
 
     let newPersonToShoot = parentCell.elements.filter((el: Element) => el.id == personToShoot.id)[0];
-    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot, true);
+    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
 
     if (!hurtPerson) {
       parentCell.elements = [...parentCell.elements, ...newPersonToShoot.heldElements];
