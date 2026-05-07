@@ -6,7 +6,10 @@ import {
 }  from "@/features/game/gameTypes"
 
 import {
-  THINGS_THAT_CAN_BE_BUILT
+  THINGS_THAT_CAN_BE_BUILT,
+  COW_PRODUCING_TILES,
+  WORKER_ITEM_GENERATION_AMOUNT,
+  BUILDING_ITEM_GENERATION_AMOUNT
 }  from "@/features/game/gameVars"
 
 import BoardUtils from "@/features/board/boardUtils"
@@ -182,7 +185,7 @@ export function nameForTeamColor(teamColor: number) {
   return Object.keys(TeamColors)[teamColor]
 }
 
-export function itemTypeForCellTypes(cellType: CellTypes): ElementSubTypes {
+export function itemTypeForCellType(cellType: CellTypes): ElementSubTypes {
   if (cellType == CellTypes.Field) {
     return ElementSubTypes.Food
   }
@@ -413,4 +416,172 @@ export function getTradeCostForSubType(subType: ElementSubTypes) {
   if (subType == ElementSubTypes.Horse) { return 7 };
   if (subType == ElementSubTypes.Cow) { return 6 };
   return 2
+}
+
+export function getHandsRequiredToHold(elementSubType: ElementSubTypes) {
+  switch (elementSubType) {
+    case ElementSubTypes.Cart:
+      return 2
+      break;
+    case ElementSubTypes.Horse:
+    case ElementSubTypes.Cow:
+    case ElementSubTypes.Bow:
+    case ElementSubTypes.Shield:
+    case ElementSubTypes.Sword:
+    case ElementSubTypes.Mace:
+    case ElementSubTypes.Spear:
+      return 1
+      break;
+    default:
+      return 0
+      break;
+  }
+}
+
+export function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
+  // verify that there is only 1 capital and it is the one of the current team
+  let capitals = [];
+
+  for (var cell of cells) {
+    let cellCapitals: Element[] = cell.elements.filter((el: Element) => el.subType == ElementSubTypes.Capital);
+    if (cellCapitals.length < 1) { continue }
+    capitals.push(cellCapitals[0]);
+  }
+
+  console.log("num capitals: ", capitals.length);
+
+  if (capitals.length > 1) { return false };
+
+  if (capitals[0].team == playerTurn) { return true };
+
+  throw new Error("Somehow the only capital is one of a different player.");
+}
+
+export function depleteFoodForPersonsOnTeam(playerTeam: number, newCells: Cell[]): Cell[] {
+  let cellsWithPlayersOnTeam = newCells.filter(
+    cell => cell.elements.filter(
+      elem => elem.type == ElementTypes.Person && elem.team == playerTeam
+    ).length > 0);
+
+  for (var cell of cellsWithPlayersOnTeam) {
+    let persons = cell.elements.filter(elem => elem.type == ElementTypes.Person && elem.team == playerTeam);
+
+    for (var person of persons) {
+      if (person.health === null) {
+        throw new Error(`Person had no health attribute.`)
+      }
+
+      let foodElementsOnTile = cell.elements.filter(el => el.subType == ElementSubTypes.Food);
+
+      if (foodElementsOnTile.length > 0) {
+        let foodElem = foodElementsOnTile[0];
+        if (foodElem.count == 1) {
+          cell.elements = cell.elements.filter(el => el.id != foodElem.id);
+        } else {
+          foodElem.count -= 1;
+        }
+
+        continue
+      }
+
+      let foodElementsHeld = person.heldElements.filter(el => el.subType == ElementSubTypes.Food);
+
+      if (foodElementsHeld.length > 0) {
+        let foodElem = foodElementsHeld[0];
+        if (foodElem.count == 1) {
+          person.heldElements = person.heldElements.filter(el => el.id != foodElem.id);
+        } else {
+          foodElem.count -= 1;
+        }
+      } else {
+        person.health -= NO_FOOD_PENALTY;
+        if (person.health < 1) {
+          cell.elements = [...cell.elements, ...person.heldElements];
+          cell.elements = cell.elements.filter(el => el.id != person.id);
+        }
+      }
+    }
+  }
+
+  return newCells;
+}
+
+export function makePersonsWithActionOnTeamWork(playerTeam: number, cells: Cell[]): Cell[] {
+  let cellsWithPlayersOnTeam = cells.filter(
+    cell => cell.elements.filter(
+      elem => elem.type == ElementTypes.Person && elem.team == playerTeam
+    ).length > 0);
+
+  for (var cell of cellsWithPlayersOnTeam) {
+    let persons = cell.elements.filter(elem => elem.type == ElementTypes.Person && elem.team == playerTeam);
+    for (var person of persons) {
+      if (person.hasActionAvailable) {
+        if (cell.type == CellTypes.Desert) {
+          person.isScavenging = true;
+        } else {
+          person.isWorking = true;
+        }
+      }
+    }
+  }
+
+  return cells
+}
+
+export function setupNewTurn(newCells: Cell[], playerTurn: number, roundNumber: number): Cell[] {
+  let cellsWithOwnPersons = newCells.filter(
+    cell => cell.elements.filter(el => el.type == ElementTypes.Person && el.team == playerTurn).length > 0);
+
+  for (var cell of cellsWithOwnPersons) {
+
+    let ownPersons = cell.elements.filter(el => el.type == ElementTypes.Person && el.team == playerTurn);
+    let workers = ownPersons.filter(el => el.isWorking);
+    let scavengers = ownPersons.filter(el => el.isScavenging);
+
+    for (var p of ownPersons) {
+      p.hasActionAvailable = true;
+      p.isWorking = false;
+      p.isScavenging = false;
+
+      let horses = p.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Horse);
+      for (var horse of horses) {
+        horse.hasActionAvailable = true;
+      }
+    }
+
+    let horses = cell.elements.filter(el => el.subType == ElementSubTypes.Horse);
+    for (var horse of horses) {
+      horse.hasActionAvailable = true;
+    };
+
+    let cows = cell.elements.filter(el => el.subType == ElementSubTypes.Cow);
+    if (cows.length > 0) {
+      if (workers.length > 0 && COW_PRODUCING_TILES.includes(Number(cell.type))) {
+        let leatherCount = Math.min(cows[0].count, 3);
+        let leatherEl = {type: ElementTypes.Item, subType: ElementSubTypes.Leather, count: leatherCount};
+        cell.elements.push(objectToElement(leatherEl));
+      }
+    }
+
+    for (var scavenger of scavengers) {
+      let scavengedItem = BoardUtils.getScavengedItem(scavenger, roundNumber);
+      cell.elements.push(scavengedItem);
+    }
+
+    if (workers.length < 1) { continue }
+
+    let buildingExists = cell.elements.filter(el => el.type == ElementTypes.Building && el.subType != ElementSubTypes.Capital && el.subType != ElementSubTypes.Village).length > 0;
+
+    let itemCreationCount;
+    if (buildingExists) {
+      itemCreationCount = BUILDING_ITEM_GENERATION_AMOUNT * workers.length;
+    } else {
+      itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
+    };
+
+    cell.elements.push(objectToElement({type: ElementTypes.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount}));
+  }
+
+  newCells = prepareCellsForStateSave(newCells);
+  return newCells
 }

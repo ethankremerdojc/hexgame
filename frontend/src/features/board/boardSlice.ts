@@ -32,14 +32,6 @@ const boardSlice = createSlice({
   name: "board",
   initialState,
   reducers: {
-    // TODO 
-    // Figure out how to do this
-    // revertToBeginningOfTurn(state) {
-    //   state.cells = prepareCellsForStateSave(state.backupCells);
-    //   state.selectedCell = null;
-    //   state.showMoveInfo = false;
-    //   state.selectedElement = null;
-    // },
     setBackupCells(state, action: PayloadAction<Cell[]>) {
       state.backupCells = action.payload;
     },
@@ -57,6 +49,11 @@ const boardSlice = createSlice({
     },
     setShowMoveInfo(state, action: PayloadAction<boolean>) {
       state.showMoveInfo = action.payload;
+    },
+    clearAll(state) {
+      state.selectedCell = null;
+      state.selectedElement = null;
+      state.showMoveInfo = null;
     }
   }
 })
@@ -66,6 +63,7 @@ export const getSelectedElement = (state: RootState): Element|null => state.boar
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
+export const getBackupCells = (state: RootState): boolean => state.board.backupCells;
 
 export const { 
   setBackupCells,
@@ -74,6 +72,7 @@ export const {
   setBoardOffset,
   setBoardZoom,
   setShowMoveInfo,
+  clearAll
 } = boardSlice.actions;
 
 export default boardSlice.reducer;

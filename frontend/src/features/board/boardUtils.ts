@@ -10,26 +10,27 @@ import {
   ElementTypes, 
   ElementSubTypes, 
   CellTypes, 
-  // MATERIAL_ELEMENT_SUBTYPES,
-  // getHandsRequiredToHold,
-  // ITEMS_YOU_CAN_HOLD_ONE_OF,
-  // WEAPON_SUBTYPES,
-  // objectToElement
 } from "@/features/game/gameTypes"
 
 import {
   PERSON_BASE_HEALTH,
   PERSON_MAX_CARRY_WEIGHT,
   CART_CARRY_WEIGHT_INCREASE,
-  getBuildingCost,
-  nameForElementSubTypes,
-  getTradeCostForSubType,
+  MATERIAL_ELEMENT_SUBTYPES,
+  ITEMS_YOU_CAN_HOLD_ONE_OF,
+  WEAPON_SUBTYPES,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
   SCAVENGE_CHANCES
-} from "./vars"
+} from "@/features/game/gameVars"
 
-
+import {
+  getBuildingCost,
+  nameForElementSubType,
+  getTradeCostForSubType,
+  getHandsRequiredToHold,
+  objectToElement
+} from "@/features/game/gameUtils"
 
 export default class BoardUtils {
 

@@ -53,7 +53,7 @@ export default function EditorMenu() {
   const [copiedCellContents, setCopiedCellContents]: [any, any] = useState([]);
 
   const [selectedCellType, setSelectedCellType] = useState("");
-  const [selectedElementType, setSelectedElementType] = useState("");
+  const [selectedElementTypes, setSelectedElementTypes] = useState("");
   const [selectedTeamColor, setSelectedTeamColor] = useState("");
 
   function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
@@ -98,9 +98,9 @@ export default function EditorMenu() {
     if (selectedCell === null) {
       return
     }
-    let t = ElementType.Item;
+    let t = ElementTypes.Item;
     if (subType == ElementSubType.Trader) {
-      t = ElementType.Person;
+      t = ElementTypes.Person;
     }
     let element = objectToElement({type: t, subType: subType});
     let newCells = addElement(selectedCell.x, selectedCell.y, element, cells);
@@ -262,10 +262,10 @@ export default function EditorMenu() {
             buttonText={"Add"}
             nullVal={{label: "- Element Type -", value: ""}}
             options={getElementSubTypeSelectorOptions()}
-            value={selectedElementType}
-            onChange={setSelectedElementType}
+            value={selectedElementTypes}
+            onChange={setSelectedElementTypes}
             onButtonClick={() => {
-              addElementAndSave(Number(selectedElementType));
+              addElementAndSave(Number(selectedElementTypes));
             }}
           />
 

@@ -3,12 +3,20 @@ import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
 import {
+  postUpdateToBackend 
+} from "@/app/api"
+
+import {
   TeamColors
 } from "@/features/game/gameTypes"
 
 
 import {
   prepareCellsForStateSave,
+  depleteFoodForPersonsOnTeam,
+  makePersonsWithActionOnTeamWork,
+  checkForWinner,
+  setupNewTurn,
 } from "@/features/game/gameUtils"
 
 import BoardUtils from "@/features/board/boardUtils"
@@ -64,7 +72,46 @@ const gameSlice = createSlice({
     },
     setGameOver(state, action: PayloadAction<boolean>) {
       state.gameOver = action.payload;
-    }
+    },
+    endTurn(state) {
+      let currentPlayerTurn = state.playerTurn;
+      if (currentPlayerTurn == state.playerCount - 1) {
+        state.playerTurn = 0;
+      } else {
+        state.playerTurn += 1;
+      }
+
+      //TODO Figure out how to do this
+      // state.selectedCell = null;
+      // state.selectedElement = null;
+      // state.showMoveInfo = false;
+
+      let cells = depleteFoodForPersonsOnTeam(currentPlayerTurn, state.cells);
+      cells = makePersonsWithActionOnTeamWork(currentPlayerTurn, state.cells);
+
+      const winnerExists = checkForWinner(cells, currentPlayerTurn);
+      if (winnerExists) {
+        console.log("winner exists")
+        state.cells = cells;
+        state.gameOver = true;
+        postUpdateToBackend(
+          state.cells,
+          state.playerTurn,
+          state.gameId,
+          false,
+          state.loggedInUsername
+        );
+      } else {
+        state.cells = setupNewTurn(cells, state.playerTurn, state.turnNumber);
+        state.backupCells = state.cells;
+
+        if (state.playerTurn == 0) {
+          state.turnNumber += 1;
+        }
+
+        postUpdateToBackend(state.cells, state.playerTurn, state.gameId);
+      }
+    },
   }
 });
 
@@ -86,7 +133,8 @@ export const {
   setUsernames,
   setLoggedInUsername,
   setRoundNumber,
-  setGameOver
+  setGameOver,
+  endTurn
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

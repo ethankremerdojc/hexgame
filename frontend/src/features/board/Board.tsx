@@ -373,7 +373,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
         dispatch(setActionHandling(""));
         dispatch(setActionItemsToSelectFrom([]));
 
-        if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
+        if (selectedElement && selectedElement.type == ElementTypes.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 
           // let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);

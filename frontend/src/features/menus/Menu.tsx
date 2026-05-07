@@ -13,15 +13,12 @@ import {
   TeamColors
 } from "@/features/game/gameTypes"
 
-// import {
-//   objectToElement,
-//   ITEMS_YOU_CAN_HOLD_ONE_OF
-// } from "../board/boardTypes"
-
 import {
   setSelectedCell,
   getSelectedElement, setSelectedElement,
-  setShowMoveInfo
+  setShowMoveInfo,
+  getBackupCells,
+  clearAll
 } from "@/features/board/boardSlice"
 
 import {
@@ -37,9 +34,7 @@ import {
   getPlayerTurn,
   getCurrentPlayerName,
   getLoggedInUsername,
-  // endTurn, 
-  // revertToBeginningOfTurn,
-  // prepareCellsForStateSave,
+  endTurn,
 } from "@/features/game/gameSlice"
 
 import { 
@@ -54,7 +49,12 @@ import {
   nameForElementSubType,
   objectToElement,
   nameForTeamColor,
+  prepareCellsForStateSave,
 } from "@/features/game/gameUtils"
+
+import {
+  ITEMS_YOU_CAN_HOLD_ONE_OF
+} from "@/features/game/gameVars"
 
 import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"
@@ -206,7 +206,7 @@ function ElementActionOptions() {
   // ==========================================
 
   let availableActions: ElementAction[] = [];
-  if (selectedElement && selectedElement.type == ElementType.Person) {
+  if (selectedElement && selectedElement.type == ElementTypes.Person) {
     availableActions = BoardActions.getAvailableActions(selectedElement, cells);
   };
 
@@ -282,7 +282,7 @@ function ElementActionOptions() {
   }
 
   const destroyHandler = () => {
-    let building = parentCell.elements.filter((el: Element) => el.type == ElementType.Building)[0];
+    let building = parentCell.elements.filter((el: Element) => el.type == ElementTypes.Building)[0];
     dispatch(setActionItemsToSelectFrom(["Destroy " + nameForElementSubType(building.subType)]));
   }
 
@@ -292,7 +292,7 @@ function ElementActionOptions() {
     clearActionData(newCells);
   }
 
-  const buildElem = (type: ElementType, subType: ElementSubType) => {
+  const buildElem = (type: ElementTypes, subType: ElementSubType) => {
     dispatch(setShowMoveInfo(false));
     const newCells = BoardActions.build(selectedElement, type, subType, cells);
     dispatch(setCells(newCells));
@@ -320,8 +320,8 @@ function ElementActionOptions() {
   }
 
   const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType, giveAmount: number) => {
-    let depletingResource: Element = objectToElement({type: ElementType.Item, subType: giveType, count: giveAmount});
-    let receivingResource: Element = objectToElement({type: ElementType.Item, subType: receiveType, count: 1});
+    let depletingResource: Element = objectToElement({type: ElementTypes.Item, subType: giveType, count: giveAmount});
+    let receivingResource: Element = objectToElement({type: ElementTypes.Item, subType: receiveType, count: 1});
     let newCells = BoardActions.trade(selectedElement, depletingResource, receivingResource, cells);
 
     setTradeOfferingChosen(null);
@@ -742,13 +742,17 @@ export function ElementActionsMenu() {
   const [confirmingResetTurn, setConfirmingResetTurn] = useState(false);
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
 
+  const backupCells = useAppSelector(getBackupCells);
+
   const endTurnHandler = () => {
     dispatch(endTurn());
+    dispatch(clearAll());
     setConfirmingEndTurn(false);
   }
 
   const resetTurnHandler = () => {
-    dispatch(revertToBeginningOfTurn());
+    dispatch(setCells(backupCells));
+    dispatch(clearAll());
     setConfirmingResetTurn(false);
   }
 

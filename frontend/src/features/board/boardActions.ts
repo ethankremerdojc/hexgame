@@ -8,15 +8,21 @@ import type {
 
 import {
   ElementTypes, ElementSubTypes, ElementActions, CellTypes,
-  // objectToElement, WEAPON_SUBTYPES, ARMOR_SUBTYPES
 } from "@/features/game/gameTypes"
 
 import {
+  PERSON_BASE_HEALTH,
+  WEAPON_SUBTYPES, 
+  ARMOR_SUBTYPES,
+} from "@/features/game/gameVars"
+
+import { 
   getDamageAmount,
   getArmorAmount,
-  PERSON_BASE_HEALTH,
-  getBuildingCost
-} from "./vars"
+  getBuildingCost,
+  objectToElement,
+  getElementId
+} from "@/features/game/gameUtils"
 
 import BoardUtils from "./boardUtils"
 
