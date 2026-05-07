@@ -116,7 +116,7 @@ export const USABLE_ITEMS: ElementSubType[] = [
   ElementSubType.LeatherArmor
 ]
 
-export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = USABLE_ITEMS + [ElementSubType.Cow]
+export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [...USABLE_ITEMS, ElementSubType.Cow]
 
 export const WEAPON_SUBTYPES: ElementSubType[] = [
   ElementSubType.Sword,
@@ -155,6 +155,7 @@ export type Element = {
   weight: number|null,
   hasActionAvailable: boolean|null,
   isWorking: boolean|null,
+  isScavenging: boolean|null,
 
 }
 
@@ -207,6 +208,14 @@ export function objectToElement(_obj: any): Element {
     }
   }
 
+  if (obj.isWorking === undefined) {
+    obj.isWorking = null;
+  }
+
+  if (obj.isScavenging === undefined) {
+    obj.isScavenging = null;
+  }
+
   if (obj.hasActionAvailable === undefined) {
     obj.hasActionAvailable = null;
   }
@@ -244,5 +253,6 @@ export enum ElementAction {
   Reproduce,
   Trade,
   Shoot,
-  Rename
+  Rename,
+  Scavenge
 }

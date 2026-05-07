@@ -61,10 +61,11 @@ import workSvg from "../board/svg/actions/workIcon.svg";
 import backSvg from "../board/svg/actions/backIcon.svg";
 import noSvg from "../board/svg/actions/noIcon.svg";
 import healSvg from "../board/svg/actions/healIcon.svg";
+import shovelSvg from "../board/svg/shovel.svg";
 
 import { signupForNotifications } from "@/app/notifications";
 
-export const ELEMENT_ACTION_DETAILS: object[] = [
+export const ELEMENT_ACTION_DETAILS: object[] = [ // ORDER SENSITIVE
   { // Move
     title: "move",
     helpText: "Move to an adjacent tile.",
@@ -113,6 +114,10 @@ export const ELEMENT_ACTION_DETAILS: object[] = [
     title: "rename",
     helpText: "Rename Villager"
   },
+  { // Scavenge
+    title: "scavenge",
+    helpText: "Dig in sand for some loot!"
+  },
 ]
 
 export function getActionDetails(actionType: number): any {
@@ -144,6 +149,9 @@ function iconForActionType(actionType: string) {
       break;
     case "trade":
       return tradeSvg
+      break;
+    case "scavenge":
+      return shovelSvg
       break;
     case "work":
       return workSvg
@@ -320,6 +328,16 @@ function ElementActionOptions() {
     dispatch(setActionItemsToSelectFrom(["Clone Villager?"]));
   }
 
+  const scavengeHandler = () => {
+    dispatch(setActionItemsToSelectFrom(["Really Scavenge?"]));
+  }
+
+  const scavenge = () => {
+    const newCells = BoardActions.scavenge(selectedElement, cells);
+    dispatch(setCells(newCells));
+    clearActionData(newCells); 
+  }
+
   const clone = () => {
     const newCells = BoardActions.reproducePerson(selectedElement, cells);
     dispatch(setCells(newCells));
@@ -341,6 +359,7 @@ function ElementActionOptions() {
   const renameHandler = () => {
     dispatch(setActionHandling("rename"));
   }
+
 
   const rename = (newName: string) => {
     let newCells = BoardActions.renamePerson(selectedElement, newName, cells);
@@ -382,12 +401,17 @@ function ElementActionOptions() {
     else if (title == "trade") {
       actionFunc = tradeHandler
     }
+    else if (title == "scavenge") {
+      actionFunc = scavengeHandler
+    }
     else if (title == "shoot") {
       actionFunc = shootHandler
     }
     else if (title == "rename") {
       actionFunc = renameHandler
     }
+
+
 
 
     else if (title == "back") {
@@ -541,6 +565,13 @@ function ElementActionOptions() {
           {
             actionHandling == "work" &&
             <button className="fullwidth-option" key={"workbutton"} onClick={() => { work() }}>
+              {/* First item is just a message based on current villager */}
+              {itemsToSelectFrom[0]} 
+            </button>
+          }
+          {
+            actionHandling == "scavenge" &&
+            <button className="fullwidth-option" key={"scavengebutton"} onClick={() => { scavenge() }}>
               {/* First item is just a message based on current villager */}
               {itemsToSelectFrom[0]} 
             </button>

@@ -205,13 +205,14 @@ function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): 
     ).length > 0);
 
   for (var cell of cellsWithPlayersOnTeam) {
-    if (cell.type == CellType.Desert) {
-      continue
-    }
     let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
     for (var person of persons) {
       if (person.hasActionAvailable) {
-        person.isWorking = true;
+        if (cell.type == CellType.Desert) {
+          person.isScavenging = true;
+        } else {
+          person.isWorking = true;
+        }
       }
     }
   }
@@ -238,7 +239,7 @@ function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
   throw new Error("Somehow the only capital is one of a different player.");
 }
 
-function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
+function setupNewTurn(newCells: Cell[], playerTurn: TeamColor, roundNumber: number): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
     cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
 
@@ -246,10 +247,12 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
 
     let ownPersons = cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn);
     let workers = ownPersons.filter(el => el.isWorking);
+    let scavengers = ownPersons.filter(el => el.isScavenging);
 
     for (var p of ownPersons) {
       p.hasActionAvailable = true;
       p.isWorking = false;
+      p.isScavenging = false;
 
       let horses = p.heldElements.filter((el: Element) => el.subType == ElementSubType.Horse);
       for (var horse of horses) {
@@ -269,6 +272,11 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor): Cell[] {
         let leatherEl = {type: ElementType.Item, subType: ElementSubType.Leather, count: leatherCount};
         cell.elements.push(objectToElement(leatherEl));
       }
+    }
+
+    for (var scavenger of scavengers) {
+      let scavengedItem = BoardUtils.getScavengedItem(scavenger, roundNumber);
+      cell.elements.push(scavengedItem);
     }
 
     if (workers.length < 1) { continue }
@@ -412,7 +420,7 @@ const boardSlice = createSlice({
           state.loggedInUsername
         );
       } else {
-        state.cells = setupNewTurn(cells, state.playerTurn);
+        state.cells = setupNewTurn(cells, state.playerTurn, state.turnNumber);
         state.backupCells = state.cells;
 
         if (state.playerTurn == 0) {

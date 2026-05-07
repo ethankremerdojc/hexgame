@@ -22,7 +22,7 @@ import BoardUtils from "./boardUtils"
 
 export default class BoardActions {
 
-  static moveElement(cells: Cell[], elem: Element, cellToMoveTo: Cell): Cell[] {
+ static moveElement(cells: Cell[], elem: Element, cellToMoveTo: Cell): Cell[] {
     let newCells = [];
 
     let elemParentCell = BoardUtils.getElementParentCell(elem, cells);
@@ -208,39 +208,6 @@ export default class BoardActions {
     return newCells
   }
 
-  // static doDamage(agressor: Element, defender: Element, ignoreShield: boolean=false): Element {
-  //
-  //   function getShieldFactor(person: Element) {
-  //     let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Shield).length > 0;
-  //     return isHoldingShield ? SHIELD_ARMOR_INCREASE_AMOUNT : 0
-  //   }
-  //
-  //   function getSwordFactor(person: Element) {
-  //     let isHoldingShield = person.heldElements.filter((el: Element) => el.subType == ElementSubType.Sword).length > 0;
-  //     return isHoldingShield ? SWORD_DAMAGE_INCREASE_AMOUNT : 0
-  //   };
-  //
-  //   function getArmorFactor(person: Element) {
-  //     let isWearingLeatherArmor = person.heldElements.filter((el: Element) => el.subType == ElementSubType.LeatherArmor).length > 0;
-  //     return isWearingLeatherArmor ? LEATHER_ARMOR_INCREASE_AMOUNT : 0
-  //   }
-  //
-  //   let defenderArmor = getArmorFactor(defender);
-  //
-  //   if (!ignoreShield) {
-  //     defenderArmor += getShieldFactor(defender);
-  //   }
-  //
-  //   let agressorDamage = PERSON_BASE_DAMAGE + getSwordFactor(agressor);
-  //
-  //   if (agressorDamage > defenderArmor) {
-  //     defender.health = defender.health - (agressorDamage - defenderArmor);
-  //   }
-  //
-  //   if (defender.health < 1) { return null }
-  //   return defender
-  // }
-
   static doDamage(agressor: Element, defender: Element): Element|null { // returns the state of the defender
     let weaponEls = agressor.heldElements.filter((el: Element) => WEAPON_SUBTYPES.includes(el.subType));
 
@@ -363,6 +330,15 @@ export default class BoardActions {
     return newCells
   };
 
+  static scavenge(personElem: Element, cells: Cell[]): Cell[] {
+    let newCells = structuredClone(cells);
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
+    let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+    newPerson.isScavenging = true;
+    newPerson.hasActionAvailable = false;
+    return newCells;
+  }
+
   static shoot(personShooting: Element, personToShoot: Element, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
     let parentCell = BoardUtils.getElementParentCell(personToShoot, newCells);
@@ -433,6 +409,11 @@ export default class BoardActions {
 
     if (BoardUtils.personCanShoot(personElem, cells)) {
       result.push(ElementAction.Shoot)
+    }
+
+    if (elementParent.type == CellType.Desert) {
+      console.log("adding scavenge")
+      result.push(ElementAction.Scavenge)
     }
 
     result.push(ElementAction.Rename)

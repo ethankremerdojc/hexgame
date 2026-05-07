@@ -43,6 +43,7 @@ export const COW_PRODUCING_TILES: CellType[] = [
   CellType.Forest
 ]
 
+
 export const CELL_INFO_BY_TYPE = {
   0: { // Field
     color: "rgb(16 108 14)",
@@ -83,6 +84,19 @@ export const THINGS_THAT_CAN_BE_BUILT = [
   ElementSubType.Villager,
   ElementSubType.LeatherArmor
 ]
+
+export const COMMON_SCAVENGABLE_ITEMS: ElementSubType[] = [
+  ElementSubType.Spear,
+  ElementSubType.Bow,
+  ElementSubType.LeatherArmor
+];
+
+export const RARE_SCAVENGABLE_ITEMS: ElementSubType[] = [
+  ElementSubType.Mace,
+  ElementSubType.Sword,
+  ElementSubType.IronArmor,
+  ElementSubType.Cart
+];
 
 export function getBuildingCost(elementToBuildType: ElementSubType) {
   if (!THINGS_THAT_CAN_BE_BUILT.includes(elementToBuildType)) {

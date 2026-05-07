@@ -67,3 +67,9 @@
     margin: var(--border-width);
   }
 }
+
+.scavengable-items {
+  b {
+    margin: 0 var(--font-size-xxxsmall);
+  }
+}

@@ -104,6 +104,9 @@ import maceSvg from "./svg/mace.svg";
 import spearSvgRaw from "./svg/spear.svg?raw";
 import spearSvg from "./svg/spear.svg";
 
+import shovelSvgRaw from "./svg/shovel.svg?raw";
+import shovelSvg from "./svg/shovel.svg";
+
 import ironArmorSvgRaw from "./svg/iron-armor.svg?raw";
 import ironArmorSvg from "./svg/iron-armor.svg";
 
@@ -557,6 +560,12 @@ export default class BoardRenderer {
 
     if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, this.ctx,
+        elemPos.x + objectSize*1.5, elemPos.y,
+        toolSize, objectSize,
+      );
+    }
+    if (element.isScavenging) {
+      drawSvgToCanvas(shovelSvgRaw, this.ctx,
         elemPos.x + objectSize*1.5, elemPos.y,
         toolSize, objectSize,
       );

@@ -10,7 +10,8 @@ import {
   MATERIAL_ELEMENT_SUBTYPES,
   getHandsRequiredToHold,
   ITEMS_YOU_CAN_HOLD_ONE_OF,
-  WEAPON_SUBTYPES
+  WEAPON_SUBTYPES,
+  objectToElement
 } from "./boardTypes"
 
 import {
@@ -19,10 +20,60 @@ import {
   CART_CARRY_WEIGHT_INCREASE,
   getBuildingCost,
   nameForElementSubType,
-  getTradeCostForSubType
+  getTradeCostForSubType,
+  COMMON_SCAVENGABLE_ITEMS,
+  RARE_SCAVENGABLE_ITEMS,
 } from "./vars"
 
+
+
 export default class BoardUtils {
+
+  // #CHATGPT-SPECIAL
+  static getPseudoRandomFromPersonAndRoundNumber(elementId: string, roundNumber: number): number {
+    // use personElem id + round number, convert to float between 0 and 1
+    const str = `${elementId}:${roundNumber}`;
+
+    let hash = 1779033703;
+
+    for (let i = 0; i < str.length; i++) {
+      hash = Math.imul(hash ^ str.charCodeAt(i), 3432918353);
+      hash = (hash << 13) | (hash >>> 19);
+    }
+
+    // Final avalanche mix
+    hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+    hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+    hash ^= hash >>> 16;
+
+    return (hash >>> 0) / 4294967296;
+  }
+
+  static getScavengedItem(personElem: Element, roundNumber: number): Element {
+    let randomNum = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id, roundNumber);
+
+    let options: ElementSubType[];
+
+    console.log(roundNumber);
+
+    if (randomNum < 0.75) {
+      options = MATERIAL_ELEMENT_SUBTYPES;
+    } else if (randomNum < 0.93) {
+      options = COMMON_SCAVENGABLE_ITEMS;
+    } else {
+      options = RARE_SCAVENGABLE_ITEMS;
+    }
+
+    let randomNum2 = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id + "item", roundNumber);
+    let index = Math.floor(randomNum2 * options.length);
+    let result = objectToElement({type: ElementType.Item, subType: options[index]});
+    console.log({
+      num1: randomNum,
+      num2: randomNum2
+    })
+    return result
+  }
+
   static getElemSizes(radius: number): any {
     let halfRadius = radius/2;
     let buildingSize = radius*0.4;
