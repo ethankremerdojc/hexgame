@@ -665,7 +665,7 @@ export default class BoardUtils {
         return false
       }
     }
-    
+
     let armors = [ElementSubType.IronArmor, ElementSubType.LeatherArmor];
     let currentArmors = personElem.heldElements.filter((el: Element) => armors.includes(el.subType));
     if (currentArmors.length > 0 && armors.includes(elementSubType)) {

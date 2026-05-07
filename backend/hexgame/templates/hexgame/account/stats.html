@@ -43,6 +43,8 @@
   <h2>Number of archived games: <b>{{ games.archived.count }}</b></h2>
   <h2>Number of non-archived games: <b>{{ games.non_archived.count }}</b></h2>
 
+  <h2>Total turns taken: <b>{{ total_turns }}</b></h2>
+
   <h1>Other Users</h1>
   <ul class="other-users">
     {% for other_user in other_users %}

@@ -4,7 +4,8 @@ import type {
 
 import {
   CellType, ElementType, ElementSubType,
-  ITEMS_YOU_CAN_HOLD_ONE_OF
+  ITEMS_YOU_CAN_HOLD_ONE_OF,
+  USABLE_ITEMS
 } from "./boardTypes"
 
 import BoardUtils from "./boardUtils.ts"
@@ -351,6 +352,7 @@ export default class BoardRenderer {
       let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, this.opts.radius, this.opts.offsetX, this.opts.offsetY);
 
       this.drawHex(pixelOrigin, hexPoints, cell, cellHighlighted);
+      this.drawElements(pixelOrigin, cell);
     }
   }
 
@@ -406,7 +408,6 @@ export default class BoardRenderer {
     points: Coordinate[],
     cell: Cell,
     cellHighlighted: boolean,
-    debug: boolean=false
   ) {
    
     let polyStart = performance.now();
@@ -414,17 +415,8 @@ export default class BoardRenderer {
     this.ctx.translate(origin.x, origin.y);
     this.polyPath3(points);
     this.ctx.restore();
-    let fillStart = performance.now();
 
     this.fillCell(cell.type);
-
-    let elemsStart = performance.now();
-
-    if (cell.elements.length > 0) {
-      this.drawElements(origin, cell);
-    }
-
-    let end = performance.now();
 
     this.ctx.save();
     this.ctx.lineWidth = 4;
@@ -435,32 +427,6 @@ export default class BoardRenderer {
     } else if (cellHighlighted) {
       this.ctx.strokeStyle = "yellow";
       this.ctx.stroke();
-    }
-
-
-    let polyTime = [Math.round((fillStart - polyStart) * 10000) / 10000, "poly"];
-    let fillTime = [Math.round((elemsStart - fillStart) * 10000) / 10000, "fill"];
-    let elemTime = [Math.round((end - elemsStart) * 10000) / 10000, "elem"];
-
-    let highest: any = polyTime;
-
-    for (var item of [fillTime, elemTime]) {
-      if (item[0] > highest[0]) {
-        highest = item;
-      }
-    }
-
-    let totalTime = Math.round((end - polyStart) * 10000) / 10000;
-
-    if (debug && totalTime > 0) {
-      console.log({
-        // "poly time": polyTime[0] + "ms",
-        // "fill time": fillTime[0] + "ms",
-        // "elems time": elemTime[0] + "ms",
-        "total time": totalTime + "ms",
-        "highest time": highest[1],
-        "highest %": Math.round((highest[0] / totalTime) * 100)
-      })
     }
 
     this.ctx.restore();
@@ -491,7 +457,7 @@ export default class BoardRenderer {
   }
 
   //===================== Elements ==========================
-  
+
   getSvgForElement(element: Element) {
     let subType = element.subType;
 
@@ -560,11 +526,11 @@ export default class BoardRenderer {
     let miniItemSize = itemSize / 1.5;
 
     // held elements
-    for (let i=0; i<element.heldElements.length; i++) {
-      let heldElement = element.heldElements[i];
-      if (ITEMS_YOU_CAN_HOLD_ONE_OF.includes(heldElement.subType)) {
-        continue
-      }
+    let nonUsableElements = element.heldElements.filter((el: Element) => !USABLE_ITEMS.includes(el.subType));
+
+    for (let i=0; i<nonUsableElements.length; i++) {
+      let heldElement = nonUsableElements[i];
+
       let heldElemSvg = this.getSvgForElement(heldElement);
 
       drawSvgToCanvas(heldElemSvg, this.ctx,

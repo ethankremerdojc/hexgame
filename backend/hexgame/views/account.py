@@ -74,7 +74,8 @@ def stats_view(request, username):
             "non_archived": non_archived_games,
             "all": all_games
         },
-        "times": get_game_times(player)
+        "times": get_game_times(player),
+        "total_turns": PlayerEvent.objects.filter(player__user=player).count()
     })
 
 @login_required

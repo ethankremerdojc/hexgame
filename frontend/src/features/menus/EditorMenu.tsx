@@ -118,7 +118,7 @@ export default function EditorMenu() {
     let newCells = structuredClone(cells);
     for (var cell of newCells) {
       if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
-        cell.elements = [];
+        cell.elements = cell.elements.filter((el: Element) => [ElementSubType.Capital, ElementSubType.Villager].includes(el.subType));
       }
     }
     dispatch(setCells(newCells));

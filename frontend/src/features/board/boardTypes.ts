@@ -104,7 +104,7 @@ export const MATERIAL_ELEMENT_SUBTYPES: ElementSubType[] = [
     ElementSubType.Leather
 ];
 
-export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [
+export const USABLE_ITEMS: ElementSubType[] = [
   ElementSubType.Sword,
   ElementSubType.Bow,
   ElementSubType.Shield,
@@ -113,9 +113,10 @@ export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [
   ElementSubType.IronArmor,
   ElementSubType.Cart,
   ElementSubType.Horse,
-  ElementSubType.Cow,
   ElementSubType.LeatherArmor
 ]
+
+export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = USABLE_ITEMS + [ElementSubType.Cow]
 
 export const WEAPON_SUBTYPES: ElementSubType[] = [
   ElementSubType.Sword,
