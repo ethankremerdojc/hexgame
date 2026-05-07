@@ -15,6 +15,7 @@ import {
   NO_FOOD_PENALTY,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
+  SCAVENGE_CHANCES
 } from "../board/vars"
 import { getSvgForSubType } from "../board/boardRenderer"
 
@@ -148,9 +149,9 @@ function HowToPlay() {
             Scavenge: If your villager is in the desert, dig for a random item. <br/>
             Probabilities: 
             <ul className="scavengable-items">
-              <li>75% chance to get one of ({MATERIAL_ELEMENT_SUBTYPES.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
-              <li>18% chance to get one of ({COMMON_SCAVENGABLE_ITEMS.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
-              <li>7% chance to get one of ({RARE_SCAVENGABLE_ITEMS.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
+              <li>{Math.floor(SCAVENGE_CHANCES.MATERIAL * 100)}% chance to get one of ({MATERIAL_ELEMENT_SUBTYPES.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
+              <li>{Math.floor(SCAVENGE_CHANCES.COMMON * 100)}% chance to get one of ({COMMON_SCAVENGABLE_ITEMS.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
+              <li>{Math.floor(SCAVENGE_CHANCES.RARE * 100)}% chance to get one of ({RARE_SCAVENGABLE_ITEMS.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>
             </ul>
           </li>
 

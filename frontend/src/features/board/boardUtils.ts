@@ -23,6 +23,7 @@ import {
   getTradeCostForSubType,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
+  SCAVENGE_CHANCES
 } from "./vars"
 
 
@@ -51,14 +52,11 @@ export default class BoardUtils {
 
   static getScavengedItem(personElem: Element, roundNumber: number): Element {
     let randomNum = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id, roundNumber);
-
     let options: ElementSubType[];
 
-    console.log(roundNumber);
-
-    if (randomNum < 0.75) {
+    if (randomNum < SCAVENGE_CHANCES.MATERIAL) {
       options = MATERIAL_ELEMENT_SUBTYPES;
-    } else if (randomNum < 0.93) {
+    } else if (randomNum < SCAVENGE_CHANCES.COMMON + SCAVENGE_CHANCES.MATERIAL) {
       options = COMMON_SCAVENGABLE_ITEMS;
     } else {
       options = RARE_SCAVENGABLE_ITEMS;
@@ -67,10 +65,6 @@ export default class BoardUtils {
     let randomNum2 = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id + "item", roundNumber);
     let index = Math.floor(randomNum2 * options.length);
     let result = objectToElement({type: ElementType.Item, subType: options[index]});
-    console.log({
-      num1: randomNum,
-      num2: randomNum2
-    })
     return result
   }
 

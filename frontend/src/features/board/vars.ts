@@ -15,6 +15,12 @@ export const STARTING_GOLD = 10;
 
 export const NO_FOOD_PENALTY = 3;
 
+export const SCAVENGE_CHANCES = {
+  MATERIAL: 0.8,
+  COMMON: 0.15,
+  RARE: 0.05
+}
+
 export const getDamageAmount = (weapon:ElementSubType|null) => {
   if (weapon === null) return 3;
   if (weapon === ElementSubType.Sword) return 7;
