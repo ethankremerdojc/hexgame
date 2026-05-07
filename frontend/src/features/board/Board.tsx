@@ -1,26 +1,37 @@
 import React, { useEffect, useRef, useState  } from "react";
 
-
 import type {
-  Coordinate, Cell, Element
-} from "./boardTypes"
+  Cell, Element
+} from "@/features/game/gameTypes"
 
 import {
-  ElementType
-} from "./boardTypes"
+  ElementType, ElementSubType, ElementAction, CellType,
+} from "@/features/game/gameTypes"
+
+import type {
+  Coordinate
+} from "@/features/board/boardTypes"
 
 import {
   getCells, setCells,
+  getCurrentPlayerName,
+  getLoggedInUsername,
+  getPlayerTurn,
+  getPlayerCount,
+} from "@/features/game/gameSlice"
+
+import {
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
   getShowMoveInfo, setShowMoveInfo,
-  getPlayerTurn, getPlayerCount,
+} from "@/features/board/boardSlice"
+
+import {
   setActionHandling,
   setActionItemsToSelectFrom,
-  getCurrentPlayerName, getLoggedInUsername
-} from "./boardSlice.ts";
+} from "@/features/menus/menuSlice"
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 

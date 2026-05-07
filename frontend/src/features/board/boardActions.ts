@@ -1,15 +1,15 @@
-import {
-  getElementId
-} from "./boardSlice"
+// import {
+//   getElementId
+// } from "./boardSlice"
 
 import type {
   Cell, Element
-} from "./boardTypes"
+} from "@/features/game/gameTypes"
 
 import {
   ElementType, ElementSubType, ElementAction, CellType,
-  objectToElement, WEAPON_SUBTYPES, ARMOR_SUBTYPES
-} from "./boardTypes"
+  // objectToElement, WEAPON_SUBTYPES, ARMOR_SUBTYPES
+} from "@/features/game/gameTypes"
 
 import {
   getDamageAmount,

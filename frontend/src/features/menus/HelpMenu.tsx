@@ -1,9 +1,12 @@
 import { useState } from "react";
 
-import {
-  ElementSubType,
-  MATERIAL_ELEMENT_SUBTYPES
-} from "../board/boardTypes";
+import { 
+  ElementSubType
+} from "@/features/game/gameTypes"
+
+// import {
+//   MATERIAL_ELEMENT_SUBTYPES
+// } from "../board/boardTypes";
 
 import { 
   THINGS_THAT_CAN_BE_BUILT, 
@@ -17,6 +20,7 @@ import {
   RARE_SCAVENGABLE_ITEMS,
   SCAVENGE_CHANCES
 } from "../board/vars"
+
 import { getSvgForSubType } from "../board/boardRenderer"
 
 import "./HelpMenu.css";
@@ -147,6 +151,7 @@ function HowToPlay() {
           </li>
           <li>
             Scavenge: If your villager is in the desert, dig for a random item. <br/>
+            Your villager will automatically scavenge if no other action is performed. <br />
             Probabilities: 
             <ul className="scavengable-items">
               <li>{Math.floor(SCAVENGE_CHANCES.MATERIAL * 100)}% chance to get one of ({MATERIAL_ELEMENT_SUBTYPES.map((item) => <b key={item}>{nameForElementSubType(item)}</b>)})</li>

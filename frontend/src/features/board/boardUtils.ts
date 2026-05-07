@@ -1,18 +1,21 @@
 import type {
   Cell, Element, Coordinate, TeamColor
-} from "./boardTypes"
+} from "@/features/game/gameTypes"
 
 import {
   HexPosition, 
+} from "@/features/board/boardTypes"
+
+import {
   ElementType, 
   ElementSubType, 
   CellType, 
-  MATERIAL_ELEMENT_SUBTYPES,
-  getHandsRequiredToHold,
-  ITEMS_YOU_CAN_HOLD_ONE_OF,
-  WEAPON_SUBTYPES,
-  objectToElement
-} from "./boardTypes"
+  // MATERIAL_ELEMENT_SUBTYPES,
+  // getHandsRequiredToHold,
+  // ITEMS_YOU_CAN_HOLD_ONE_OF,
+  // WEAPON_SUBTYPES,
+  // objectToElement
+} from "@/features/game/gameTypes"
 
 import {
   PERSON_BASE_HEALTH,

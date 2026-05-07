@@ -1,11 +1,15 @@
 import type {
-  Cell, Element, Coordinate
-} from "./boardTypes"
+  Cell, Element
+} from "@/features/game/gameTypes"
+
+import type {
+  Coordinate
+} from "@/features/board/boardTypes"
 
 import {
   CellType, ElementType, ElementSubType,
-  USABLE_ITEMS
-} from "./boardTypes"
+  // USABLE_ITEMS
+} from "@/features/game/gameTypes"
 
 import BoardUtils from "./boardUtils.ts"
 

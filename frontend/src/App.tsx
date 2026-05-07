@@ -8,22 +8,37 @@ import {
 } from "@/features/board/boardGenerator.ts";
 
 import {
-  getCells,
-  setCells, setBackupCells,
-  // getPlayerCount,
-  setPlayerCount,
-  setPlayerTurn,
-  setViewOnly, getViewOnly,
-  setGameId,
-  setUsernames,
-  getCurrentPlayerName,
-  getLoggedInUsername,
-  setLoggedInUsername,
-  setUserSubscribed,
-  setTurnNumber,
-  setGameOver, getGameOver,
-  setBoardOffset, setBoardZoom
+  setSelectedCell,
+  getSelectedElement, setSelectedElement,
+  setShowMoveInfo,
+  setBackupCells,
 } from "@/features/board/boardSlice"
+
+import {
+  setActionHandling, getActionHandling,
+  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
+  setUserSubscribed, getUserSubscribed,
+  getViewOnly
+} from "@/features/menus/menuSlice"
+
+import {
+  getCells, setCells,
+  getRoundNumber, setRoundNumber,
+  getUsernames, setUsernames,
+  getPlayerTurn, setPlayerTurn,
+  getCurrentPlayerName,
+  getLoggedInUsername, setLoggedInUsername,
+  getGameOver, setGameOver,
+  setPlayerCount,
+  setGameId,
+  // endTurn, 
+  // revertToBeginningOfTurn,
+  // prepareCellsForStateSave,
+} from "@/features/game/gameSlice"
+
+import {
+  prepareCellsForStateSave,
+} from "@/features/game/gameUtils"
 
 // import {
 // nameForTeamColor
@@ -108,7 +123,7 @@ function App() {
     dispatch(setPlayerCount(game.players.length));
     dispatch(setPlayerTurn(game.current_player_turn));
     dispatch(setGameId(game.id));
-    dispatch(setTurnNumber(game.turn_number));
+    dispatch(setRoundNumber(game.turn_number));
     dispatch(setUserSubscribed(backendContext.subscribed));
     dispatch(setUsernames(getUsernamesFromGameObj(game)));
     dispatch(setGameOver(game.complete));

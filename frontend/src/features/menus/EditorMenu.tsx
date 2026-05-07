@@ -1,22 +1,31 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
-import type { Element, Cell } from "../board/boardTypes"
+import type { 
+  Element, Cell
+} from "@/features/game/gameTypes"
 
 import {
-  CellType,
   ElementType,
+  CellType,
   ElementSubType,
-  TeamColor,
-  objectToElement
-} from "../board/boardTypes"
+  TeamColor
+} from "@/features/game/gameTypes"
+
+// import {
+//   objectToElement
+// } from "../board/boardTypes"
 
 import {
   getSelectedCell,
   setSelectedCell,
+} from "@/features/board/boardSlice"
+
+
+import {
   getPlayerTurn,
   getCells, setCells,
-} from "../board/boardSlice.ts";
+} from "@/features/game/gameSlice"
 
 import {
   postUpdateToBackend

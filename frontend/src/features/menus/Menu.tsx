@@ -1,33 +1,46 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
-import type { Element, Cell } from "../board/boardTypes"
+import type { 
+  Element, Cell
+} from "@/features/game/gameTypes"
 
 import {
   ElementType,
+  CellType,
   ElementSubType,
   ElementAction,
-  objectToElement,
-  ITEMS_YOU_CAN_HOLD_ONE_OF
-} from "../board/boardTypes"
+  TeamColor
+} from "@/features/game/gameTypes"
+
+// import {
+//   objectToElement,
+//   ITEMS_YOU_CAN_HOLD_ONE_OF
+// } from "../board/boardTypes"
+
+import {
+  setSelectedCell,
+  getSelectedElement, setSelectedElement,
+  setShowMoveInfo
+} from "@/features/board/boardSlice"
+
+import {
+  setActionHandling, getActionHandling,
+  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
+  setUserSubscribed, getUserSubscribed,
+} from "@/features/menus/menuSlice"
 
 import {
   getCells, setCells,
-  setSelectedCell,
-  getSelectedElement, setSelectedElement,
-  getTurnNumber,
+  getRoundNumber,
   getUsernames,
-  setShowMoveInfo,
   getPlayerTurn,
-  setActionHandling, getActionHandling,
-  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
   getCurrentPlayerName,
   getLoggedInUsername,
-  endTurn, revertToBeginningOfTurn,
-  prepareCellsForStateSave,
-
-  setUserSubscribed, getUserSubscribed,
-} from "../board/boardSlice.ts";
+  // endTurn, 
+  // revertToBeginningOfTurn,
+  // prepareCellsForStateSave,
+} from "@/features/game/gameSlice"
 
 import { 
   getBuildingCost,
@@ -737,7 +750,7 @@ export function ElementActionsMenu() {
   const loggedInUsername = useAppSelector(getLoggedInUsername);
   const usernames = useAppSelector(getUsernames);
   const userSubscribed = useAppSelector(getUserSubscribed);
-  const turnNumber = useAppSelector(getTurnNumber);
+  const roundNumber = useAppSelector(getRoundNumber);
 
   if (window.__editor_mode__) {
     return (
@@ -753,7 +766,7 @@ export function ElementActionsMenu() {
         {
           !helpMenuOpen &&
           <div className="turninfo">
-            <p className="round-number-text">Round {turnNumber}</p>
+            <p className="round-number-text">Round {roundNumber}</p>
             <p className="player-turn-text">
                 <span style={{color: colorForTeam(playerTurn)}}>
                   {currentPlayerName == loggedInUsername ? "Your turn" : currentPlayerName + "'s turn"}

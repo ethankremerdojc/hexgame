@@ -8,15 +8,18 @@ import {
   randomItem, getEnumValueByIndex
 } from "./utils.js";
 
-import type {
-  Cell
-} from "./boardTypes"
-
-import BoardUtils from "./boardUtils"
+import type { 
+  Element, Cell
+} from "@/features/game/gameTypes"
 
 import {
-  CellType, ElementType, ElementSubType, TeamColor
-} from "./boardTypes"
+  ElementType,
+  CellType,
+  ElementSubType,
+  TeamColor
+} from "@/features/game/gameTypes"
+
+import BoardUtils from "./boardUtils"
 
 export class BoardGenerator {
 

@@ -1,8 +1,8 @@
-import type { TeamColor } from "./boardTypes"
+import type { TeamColor } from "@/features/game/gameTypes"
 
 import {
   ElementSubType, CellType
-} from "./boardTypes"
+} from "@/features/game/gameTypes"
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 4;

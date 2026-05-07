@@ -1,5 +1,5 @@
-import type { Cell } from "@/features/board/boardTypes"
-import { TeamColor } from "@/features/board/boardTypes"
+import type { Cell } from "@/features/game/gameTypes"
+import { TeamColor } from "@/features/game/gameTypes"
 
 import {
   getCSRFToken
