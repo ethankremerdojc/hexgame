@@ -5,6 +5,10 @@ import {
   CellTypes,
 }  from "@/features/game/gameTypes"
 
+import {
+  THINGS_THAT_CAN_BE_BUILT
+}  from "@/features/game/gameVars"
+
 import BoardUtils from "@/features/board/boardUtils"
 
 export function getRandomName(): string {
