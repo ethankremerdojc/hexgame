@@ -4,7 +4,6 @@ import type {
 
 import {
   CellType, ElementType, ElementSubType,
-  ITEMS_YOU_CAN_HOLD_ONE_OF,
   USABLE_ITEMS
 } from "./boardTypes"
 
@@ -105,7 +104,6 @@ import spearSvgRaw from "./svg/spear.svg?raw";
 import spearSvg from "./svg/spear.svg";
 
 import shovelSvgRaw from "./svg/shovel.svg?raw";
-import shovelSvg from "./svg/shovel.svg";
 
 import ironArmorSvgRaw from "./svg/iron-armor.svg?raw";
 import ironArmorSvg from "./svg/iron-armor.svg";
@@ -413,7 +411,6 @@ export default class BoardRenderer {
     cellHighlighted: boolean,
   ) {
    
-    let polyStart = performance.now();
     this.ctx.save();
     this.ctx.translate(origin.x, origin.y);
     this.polyPath3(points);
