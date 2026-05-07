@@ -1,7 +1,7 @@
-import type { TeamColor } from "@/features/game/gameTypes"
+import type { TeamColors } from "@/features/game/gameTypes"
 
 import {
-  ElementSubType, CellType
+  ElementSubTypes, CellTypes
 } from "@/features/game/gameTypes"
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
@@ -21,32 +21,32 @@ export const SCAVENGE_CHANCES = {
   RARE: 0.05
 }
 
-export const getDamageAmount = (weapon:ElementSubType|null) => {
+export const getDamageAmount = (weapon:ElementSubTypes|null) => {
   if (weapon === null) return 3;
-  if (weapon === ElementSubType.Sword) return 7;
-  if (weapon === ElementSubType.Spear) return 5;
-  if (weapon === ElementSubType.Mace) return 8;
-  if (weapon === ElementSubType.Bow) return 5;
+  if (weapon === ElementSubTypes.Sword) return 7;
+  if (weapon === ElementSubTypes.Spear) return 5;
+  if (weapon === ElementSubTypes.Mace) return 8;
+  if (weapon === ElementSubTypes.Bow) return 5;
 
   throw new Error("Unhandled weapon type");
 }
 
-export const getArmorAmount = (item:ElementSubType) => {
-  if (item==ElementSubType.Shield) return 3;
-  if (item==ElementSubType.LeatherArmor) return 2;
-  if (item==ElementSubType.IronArmor) return 3;
+export const getArmorAmount = (item:ElementSubTypes) => {
+  if (item==ElementSubTypes.Shield) return 3;
+  if (item==ElementSubTypes.LeatherArmor) return 2;
+  if (item==ElementSubTypes.IronArmor) return 3;
   return 0
 }
 
-export function getTradeCostForSubType(subType: ElementSubType) {
-  if (subType == ElementSubType.Horse) { return 7 };
-  if (subType == ElementSubType.Cow) { return 6 };
+export function getTradeCostForSubType(subType: ElementSubTypes) {
+  if (subType == ElementSubTypes.Horse) { return 7 };
+  if (subType == ElementSubTypes.Cow) { return 6 };
   return 2
 }
 
-export const COW_PRODUCING_TILES: CellType[] = [
-  CellType.Field,
-  CellType.Forest
+export const COW_PRODUCING_TILES: CellTypes[] = [
+  CellTypes.Field,
+  CellTypes.Forest
 ]
 
 
@@ -74,37 +74,37 @@ export const CELL_INFO_BY_TYPE = {
 }
 
 export const THINGS_THAT_CAN_BE_BUILT = [
-  ElementSubType.Farm,
-  ElementSubType.Quarry,
-  ElementSubType.BrickFactory,
-  ElementSubType.SawMill,
-  ElementSubType.Forge,
-  ElementSubType.Village,
-  ElementSubType.Sword,
-  ElementSubType.Bow,
-  ElementSubType.Shield,
-  ElementSubType.Mace,
-  ElementSubType.Spear,
-  ElementSubType.IronArmor,
-  ElementSubType.Cart,
-  ElementSubType.Villager,
-  ElementSubType.LeatherArmor
+  ElementSubTypes.Farm,
+  ElementSubTypes.Quarry,
+  ElementSubTypes.BrickFactory,
+  ElementSubTypes.SawMill,
+  ElementSubTypes.Forge,
+  ElementSubTypes.Village,
+  ElementSubTypes.Sword,
+  ElementSubTypes.Bow,
+  ElementSubTypes.Shield,
+  ElementSubTypes.Mace,
+  ElementSubTypes.Spear,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Cart,
+  ElementSubTypes.Villager,
+  ElementSubTypes.LeatherArmor
 ]
 
-export const COMMON_SCAVENGABLE_ITEMS: ElementSubType[] = [
-  ElementSubType.Spear,
-  ElementSubType.Bow,
-  ElementSubType.LeatherArmor
+export const COMMON_SCAVENGABLE_ITEMS: ElementSubTypes[] = [
+  ElementSubTypes.Spear,
+  ElementSubTypes.Bow,
+  ElementSubTypes.LeatherArmor
 ];
 
-export const RARE_SCAVENGABLE_ITEMS: ElementSubType[] = [
-  ElementSubType.Mace,
-  ElementSubType.Sword,
-  ElementSubType.IronArmor,
-  ElementSubType.Cart
+export const RARE_SCAVENGABLE_ITEMS: ElementSubTypes[] = [
+  ElementSubTypes.Mace,
+  ElementSubTypes.Sword,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Cart
 ];
 
-export function getBuildingCost(elementToBuildType: ElementSubType) {
+export function getBuildingCost(elementToBuildType: ElementSubTypes) {
   if (!THINGS_THAT_CAN_BE_BUILT.includes(elementToBuildType)) {
     throw new Error(`Unhandled subtype: ${elementToBuildType}`)
   }
@@ -113,168 +113,168 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
   switch (elementToBuildType) {
 
     // Buildings
-    case ElementSubType.Farm:
+    case ElementSubTypes.Farm:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 3
       })
       ingredients.push({
-        subType: ElementSubType.Clay,
+        subType: ElementSubTypes.Clay,
         count: 2
       })
       break;
-    case ElementSubType.Quarry:
+    case ElementSubTypes.Quarry:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 1
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 2
       })
       ingredients.push({
-        subType: ElementSubType.Clay,
+        subType: ElementSubTypes.Clay,
         count: 2
       })
       break;
-    case ElementSubType.BrickFactory:
+    case ElementSubTypes.BrickFactory:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 3
       })
       ingredients.push({
-        subType: ElementSubType.Clay,
+        subType: ElementSubTypes.Clay,
         count: 2
       })
       break;
-    case ElementSubType.SawMill:
+    case ElementSubTypes.SawMill:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 1
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 2
       })
       ingredients.push({
-        subType: ElementSubType.Clay,
-        count: 2
-      })
-      break;
-    case ElementSubType.Village:
-      ingredients.push({
-        subType: ElementSubType.Wood,
-        count: 2
-      })
-      ingredients.push({
-        subType: ElementSubType.Clay,
+        subType: ElementSubTypes.Clay,
         count: 2
       })
       break;
-    case ElementSubType.Forge:
+    case ElementSubTypes.Village:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 2
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Clay,
+        count: 2
+      })
+      break;
+    case ElementSubTypes.Forge:
+      ingredients.push({
+        subType: ElementSubTypes.Wood,
         count: 2
       })
       ingredients.push({
-        subType: ElementSubType.Clay,
+        subType: ElementSubTypes.Ore,
         count: 2
       })
       ingredients.push({
-        subType: ElementSubType.Leather,
+        subType: ElementSubTypes.Clay,
+        count: 2
+      })
+      ingredients.push({
+        subType: ElementSubTypes.Leather,
         count: 2
       })
       break;
 
 
     // Items
-    case ElementSubType.Sword:
+    case ElementSubTypes.Sword:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 1
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 3
       })
       break;
-    case ElementSubType.Bow:
+    case ElementSubTypes.Bow:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 3
       })
       ingredients.push({
-        subType: ElementSubType.Leather,
+        subType: ElementSubTypes.Leather,
         count: 1
       })
       break;
-    case ElementSubType.Shield:
+    case ElementSubTypes.Shield:
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 4
       })
       ingredients.push({
-        subType: ElementSubType.Leather,
+        subType: ElementSubTypes.Leather,
         count: 1
       })
       break;
-    case ElementSubType.LeatherArmor:
+    case ElementSubTypes.LeatherArmor:
       ingredients.push({
-        subType: ElementSubType.Leather,
+        subType: ElementSubTypes.Leather,
         count: 3
       })
       break;
 
-    case ElementSubType.Mace:
+    case ElementSubTypes.Mace:
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 4
       })
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 2
       })
       break;
 
-    case ElementSubType.Spear:
+    case ElementSubTypes.Spear:
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 1
       })
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 2
       })
       break;
 
-    case ElementSubType.IronArmor:
+    case ElementSubTypes.IronArmor:
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 4
       })
       ingredients.push({
-        subType: ElementSubType.Leather,
+        subType: ElementSubTypes.Leather,
         count: 2
       })
       break;
-    case ElementSubType.Cart:
+    case ElementSubTypes.Cart:
       ingredients.push({
-        subType: ElementSubType.Wood,
+        subType: ElementSubTypes.Wood,
         count: 4
       })
       ingredients.push({
-        subType: ElementSubType.Ore,
+        subType: ElementSubTypes.Ore,
         count: 2
       })
       break;
 
-    case ElementSubType.Villager:
+    case ElementSubTypes.Villager:
       ingredients.push({
-        subType: ElementSubType.Food,
+        subType: ElementSubTypes.Food,
         count: 10
       })
       break;
@@ -286,7 +286,7 @@ export function getBuildingCost(elementToBuildType: ElementSubType) {
   return ingredients
 }
 
-export function getSpecificItemBuildingCost(elementToBuildType: ElementSubType, ingredient: ElementSubType) {
+export function getSpecificItemBuildingCost(elementToBuildType: ElementSubTypes, ingredient: ElementSubTypes) {
   let buildingCost = getBuildingCost(elementToBuildType);
 
   for (var item of buildingCost) {
@@ -298,7 +298,7 @@ export function getSpecificItemBuildingCost(elementToBuildType: ElementSubType, 
   throw new Error("Ingredient requested not part of building cost.");
 }
 
-export function nameForElementSubType(elemSubType: ElementSubType): string {
+export function nameForElementSubTypes(elemSubType: ElementSubTypes): string {
   return [
     "Capital",
     "Village",
@@ -333,7 +333,7 @@ export function nameForElementSubType(elemSubType: ElementSubType): string {
   ][elemSubType]
 }
 
-export function colorForTeam(teamVal: TeamColor|null): string {
+export function colorForTeam(teamVal: TeamColors|null): string {
   if (teamVal === null) { return "" }
 
   return [
@@ -348,7 +348,7 @@ export function colorForTeam(teamVal: TeamColor|null): string {
   ][teamVal]
 }
 
-export function nameForTeamColor(color: TeamColor): string {
+export function nameForTeamColors(color: TeamColors): string {
   return [
     "White",
     "Purple",
@@ -361,18 +361,18 @@ export function nameForTeamColor(color: TeamColor): string {
   ][color]
 }
 
-export function itemTypeForCellType(cellType: CellType): ElementSubType {
-  if (cellType == CellType.Field) {
-    return ElementSubType.Food
+export function itemTypeForCellTypes(cellType: CellTypes): ElementSubTypes {
+  if (cellType == CellTypes.Field) {
+    return ElementSubTypes.Food
   }
-  if (cellType == CellType.Forest) {
-    return ElementSubType.Wood
+  if (cellType == CellTypes.Forest) {
+    return ElementSubTypes.Wood
   }
-  if (cellType == CellType.Mountain) {
-    return ElementSubType.Ore
+  if (cellType == CellTypes.Mountain) {
+    return ElementSubTypes.Ore
   }
-  if (cellType == CellType.ClayField) {
-    return ElementSubType.Clay
+  if (cellType == CellTypes.ClayField) {
+    return ElementSubTypes.Clay
   }
   throw new Error(`unhandled cell type`)
 }

@@ -1,4 +1,4 @@
-export enum TeamColor {
+export enum TeamColors {
   White,
   Purple,
   Red,
@@ -18,13 +18,13 @@ export enum HexPosition {
   BottomRight,
 }
 
-export enum ElementType {
+export enum ElementTypes {
   Building,
   Person,
   Item
 }
 
-export enum ElementSubType {
+export enum ElementSubTypes {
   // buildings 
   Capital,
   Village,
@@ -62,76 +62,76 @@ export enum ElementSubType {
   Forge
 }
 //
-// function getElementTypeForElementSubType(subType: ElementSubType) {
+// function getElementTypesForElementSubTypes(subType: ElementSubTypes) {
 //   switch (subType) {
-//   case ElementSubType.Capital:
-//   case ElementSubType.Village:
-//   case ElementSubType.Farm:
-//   case ElementSubType.SawMill:
-//   case ElementSubType.Quarry:
-//   case ElementSubType.BrickFactory:
-//       return ElementType.Building;
+//   case ElementSubTypes.Capital:
+//   case ElementSubTypes.Village:
+//   case ElementSubTypes.Farm:
+//   case ElementSubTypes.SawMill:
+//   case ElementSubTypes.Quarry:
+//   case ElementSubTypes.BrickFactory:
+//       return ElementTypes.Building;
 //
-//   case ElementSubType.Villager:
-//   case ElementSubType.Trader:
-//       return ElementType.Person;
+//   case ElementSubTypes.Villager:
+//   case ElementSubTypes.Trader:
+//       return ElementTypes.Person;
 //
-//   case ElementSubType.Food:
-//   case ElementSubType.Wood:
-//   case ElementSubType.Ore:
-//   case ElementSubType.Clay:
-//   case ElementSubType.Gold:
-//   case ElementSubType.Sword:
-//   case ElementSubType.Bow:
-//   case ElementSubType.Shield:
-//   case ElementSubType.Cart:
-//   case ElementSubType.Horse:
-//   case ElementSubType.Cow:
-//   case ElementSubType.Leather:
-//   case ElementSubType.LeatherArmor:
-//     return ElementType.Item;
+//   case ElementSubTypes.Food:
+//   case ElementSubTypes.Wood:
+//   case ElementSubTypes.Ore:
+//   case ElementSubTypes.Clay:
+//   case ElementSubTypes.Gold:
+//   case ElementSubTypes.Sword:
+//   case ElementSubTypes.Bow:
+//   case ElementSubTypes.Shield:
+//   case ElementSubTypes.Cart:
+//   case ElementSubTypes.Horse:
+//   case ElementSubTypes.Cow:
+//   case ElementSubTypes.Leather:
+//   case ElementSubTypes.LeatherArmor:
+//     return ElementTypes.Item;
 //
 //   default:
 //      throw new Error("Unknown element sub type.");
 //   }
 // }
 
-export const MATERIAL_ELEMENT_SUBTYPES: ElementSubType[] = [
-    ElementSubType.Wood,
-    ElementSubType.Food,
-    ElementSubType.Ore,
-    ElementSubType.Clay,
-    ElementSubType.Leather
+export const MATERIAL_ELEMENT_SUBTYPES: ElementSubTypes[] = [
+    ElementSubTypes.Wood,
+    ElementSubTypes.Food,
+    ElementSubTypes.Ore,
+    ElementSubTypes.Clay,
+    ElementSubTypes.Leather
 ];
 
-export const USABLE_ITEMS: ElementSubType[] = [
-  ElementSubType.Sword,
-  ElementSubType.Bow,
-  ElementSubType.Shield,
-  ElementSubType.Spear,
-  ElementSubType.Mace,
-  ElementSubType.IronArmor,
-  ElementSubType.Cart,
-  ElementSubType.Horse,
-  ElementSubType.LeatherArmor
+export const USABLE_ITEMS: ElementSubTypes[] = [
+  ElementSubTypes.Sword,
+  ElementSubTypes.Bow,
+  ElementSubTypes.Shield,
+  ElementSubTypes.Spear,
+  ElementSubTypes.Mace,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Cart,
+  ElementSubTypes.Horse,
+  ElementSubTypes.LeatherArmor
 ]
 
-export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubType[] = [...USABLE_ITEMS, ElementSubType.Cow]
+export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubTypes[] = [...USABLE_ITEMS, ElementSubTypes.Cow]
 
-export const WEAPON_SUBTYPES: ElementSubType[] = [
-  ElementSubType.Sword,
-  ElementSubType.Spear,
-  ElementSubType.Mace,
-  ElementSubType.Bow,
+export const WEAPON_SUBTYPES: ElementSubTypes[] = [
+  ElementSubTypes.Sword,
+  ElementSubTypes.Spear,
+  ElementSubTypes.Mace,
+  ElementSubTypes.Bow,
 ]
 
-export const ARMOR_SUBTYPES: ElementSubType[] = [
-  ElementSubType.Shield,
-  ElementSubType.LeatherArmor,
-  ElementSubType.IronArmor
+export const ARMOR_SUBTYPES: ElementSubTypes[] = [
+  ElementSubTypes.Shield,
+  ElementSubTypes.LeatherArmor,
+  ElementSubTypes.IronArmor
 ]
 
-export enum CellType {
+export enum CellTypes {
   Field,
   Desert,
   Forest,
@@ -140,10 +140,10 @@ export enum CellType {
 }
 
 export type Element = {
-  type: ElementType,
-  subType: ElementSubType,
+  type: ElementTypes,
+  subType: ElementSubTypes,
 
-  team: TeamColor|null,
+  team: TeamColors|null,
   position: HexPosition|null,
   id: string,
   count: number,
@@ -158,18 +158,18 @@ export type Element = {
   isScavenging: boolean|null,
 }
 
-export function getHandsRequiredToHold(elementSubType: ElementSubType) {
+export function getHandsRequiredToHold(elementSubType: ElementSubTypes) {
   switch (elementSubType) {
-    case ElementSubType.Cart:
+    case ElementSubTypes.Cart:
       return 2
       break;
-    case ElementSubType.Horse:
-    case ElementSubType.Cow:
-    case ElementSubType.Bow:
-    case ElementSubType.Shield:
-    case ElementSubType.Sword:
-    case ElementSubType.Mace:
-    case ElementSubType.Spear:
+    case ElementSubTypes.Horse:
+    case ElementSubTypes.Cow:
+    case ElementSubTypes.Bow:
+    case ElementSubTypes.Shield:
+    case ElementSubTypes.Sword:
+    case ElementSubTypes.Mace:
+    case ElementSubTypes.Spear:
       return 1
       break;
     default:
@@ -230,7 +230,7 @@ export function objectToElement(_obj: any): Element {
 export type Cell = {
   x: number,
   y: number,
-  type: CellType,
+  type: CellTypes,
   elements: Element[]
 }
 
@@ -240,7 +240,7 @@ export type Coordinate = {
 }
 
 
-export enum ElementAction {
+export enum ElementActions {
   Move,
   Take,
   Drop,

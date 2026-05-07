@@ -7,9 +7,12 @@ import type {
 } from "@/features/board/boardTypes"
 
 import {
-  CellTypes, ElementType, ElementSubType,
-  // USABLE_ITEMS
+  CellTypes, ElementTypes, ElementSubTypes,
 } from "@/features/game/gameTypes"
+
+import {
+  USABLE_ITEMS
+} from "@/features/game/gameVars"
 
 import BoardUtils from "./boardUtils.ts"
 
@@ -25,8 +28,6 @@ import {
   getClayfieldCanvas
 } from "./canvasPatterns.ts";
 import { drawSvgToCanvas } from "./utils.js";
-
-
 
 //buildings
 import capitalSvgRaw from "./svg/capital.svg?raw";
@@ -117,47 +118,47 @@ import forgeSvg from "./svg/forge.svg";
 
 import noSvgRaw from "./svg/actions/noIcon.svg?raw";
 
-export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
+export function getSvgForSubType(subType: ElementSubTypes, raw: boolean) {
   switch (subType) {
 
     // buildings
-    case ElementSubType.Capital:
+    case ElementSubTypes.Capital:
       if (raw) {
         return capitalSvgRaw;
       }
       return capitalSvg;
       break;
-    case ElementSubType.Village:
+    case ElementSubTypes.Village:
       if (raw) {
         return villageSvgRaw;
       }
       return villageSvg;
       break;
-    case ElementSubType.Farm:
+    case ElementSubTypes.Farm:
       if (raw) {
         return farmSvgRaw;
       }
       return farmSvg;
       break;
-    case ElementSubType.Quarry:
+    case ElementSubTypes.Quarry:
       if (raw) {
         return quarrySvgRaw;
       }
       return quarrySvg;
       break;
-    case ElementSubType.Forge:
+    case ElementSubTypes.Forge:
       if (raw) {
         return forgeSvgRaw;
       }
       return forgeSvg;
       break;
-    case ElementSubType.SawMill:
+    case ElementSubTypes.SawMill:
       if (raw) {
         return sawmillSvgRaw;
       }
       return sawmillSvg;
       break;
-    case ElementSubType.BrickFactory:
+    case ElementSubTypes.BrickFactory:
       if (raw) {
         return brickFactorySvgRaw;
       }
@@ -167,13 +168,13 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
 
 
     // Persons
-    case ElementSubType.Villager:
+    case ElementSubTypes.Villager:
       if (raw) {
         return personSvgRaw;
       }
       return personSvg;
       break;
-    case ElementSubType.Trader:
+    case ElementSubTypes.Trader:
       if (raw) {
         return traderSvgRaw;
       }
@@ -183,100 +184,100 @@ export function getSvgForSubType(subType: ElementSubType, raw: boolean) {
 
 
     // items
-    case ElementSubType.Food:
+    case ElementSubTypes.Food:
       if (raw) {
         return foodSvgRaw;
       }
       return foodSvg;
       break;
-    case ElementSubType.Gold:
+    case ElementSubTypes.Gold:
       if (raw) {
         return goldSvgRaw;
       }
       return goldSvg;
       break;
-    case ElementSubType.Wood:
+    case ElementSubTypes.Wood:
       if (raw) {
         return woodSvgRaw;
       }
       return woodSvg;
       break;
-    case ElementSubType.Ore:
+    case ElementSubTypes.Ore:
       if (raw) {
         return oreSvgRaw;
       }
       return oreSvg;
       break;
-    case ElementSubType.Clay:
+    case ElementSubTypes.Clay:
       if (raw) {
         return claySvgRaw;
       }
       return claySvg;
       break;
-    case ElementSubType.Leather:
+    case ElementSubTypes.Leather:
       if (raw) {
         return leatherSvgRaw;
       }
       return leatherSvg;
       break;
-    case ElementSubType.LeatherArmor:
+    case ElementSubTypes.LeatherArmor:
       if (raw) {
         return leatherArmorSvgRaw;
       }
       return leatherArmorSvg;
       break;
 
-    case ElementSubType.Sword:
+    case ElementSubTypes.Sword:
       if (raw) {
         return swordSvgRaw;
       }
       return swordSvg;
       break;
-    case ElementSubType.Bow:
+    case ElementSubTypes.Bow:
       if (raw) {
         return bowSvgRaw;
       }
       return bowSvg;
       break;
-    case ElementSubType.Shield:
+    case ElementSubTypes.Shield:
       if (raw) {
         return shieldSvgRaw;
       }
       return shieldSvg;
       break;
 
-    case ElementSubType.Mace:
+    case ElementSubTypes.Mace:
       if (raw) {
         return maceSvgRaw;
       }
       return maceSvg;
       break;
-    case ElementSubType.Spear:
+    case ElementSubTypes.Spear:
       if (raw) {
         return spearSvgRaw;
       }
       return spearSvg;
       break;
-    case ElementSubType.IronArmor:
+    case ElementSubTypes.IronArmor:
       if (raw) {
         return ironArmorSvgRaw;
       }
       return ironArmorSvg;
       break;
 
-    case ElementSubType.Cart:
+    case ElementSubTypes.Cart:
       if (raw) {
         return cartSvgRaw;
       }
       return cartSvg;
       break;
-    case ElementSubType.Horse:
+    case ElementSubTypes.Horse:
       if (raw) {
         return horseSvgRaw;
       }
       return horseSvg;
       break;
-    case ElementSubType.Cow:
+    case ElementSubTypes.Cow:
       if (raw) {
         return cowSvgRaw;
       }
@@ -341,7 +342,7 @@ export default class BoardRenderer {
 
     let cellsToMoveTo: Cell[] = [];
 
-    if (this.opts.showMoveInfo && this.selectedElement && this.selectedElement.type == ElementType.Person) {
+    if (this.opts.showMoveInfo && this.selectedElement && this.selectedElement.type == ElementTypes.Person) {
       cellsToMoveTo = BoardUtils.getCellsPersonCanMoveTo(this.selectedElement, this.cells);
     }
 
@@ -480,8 +481,8 @@ export default class BoardRenderer {
     cell: Cell,
   ) {
     let { buildingSize } = this.elemSizes;
-    let nonItemElements = cell.elements.filter(e => e.type != ElementType.Item);
-    let itemElements = cell.elements.filter(e => e.type == ElementType.Item);
+    let nonItemElements = cell.elements.filter(e => e.type != ElementTypes.Item);
+    let itemElements = cell.elements.filter(e => e.type == ElementTypes.Item);
 
     for (var element of nonItemElements) {
       let isSelected = this.selectedElement ? this.selectedElement.id == element.id : false;
@@ -491,14 +492,14 @@ export default class BoardRenderer {
       let elemColor = colorForTeam(element.team);
       let elemSvg = this.getSvgForElement(element);
 
-      if (element.type == ElementType.Building) {
+      if (element.type == ElementTypes.Building) {
         drawSvgToCanvas(elemSvg, this.ctx,
           elemPos.x, elemPos.y,
           buildingSize, buildingSize,
           elemColor
         );
       }
-      if (element.type == ElementType.Person) {
+      if (element.type == ElementTypes.Person) {
         this.drawPersonElement(element, elemPos, elemSvg, elemColor, isSelected);
       }
     }
@@ -523,7 +524,7 @@ export default class BoardRenderer {
       elemColor
     );
 
-    if (element.subType != ElementSubType.Villager) {
+    if (element.subType != ElementSubTypes.Villager) {
       return
     }
 
@@ -549,15 +550,15 @@ export default class BoardRenderer {
       this.ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
     }
 
-    let holdingSword = element.heldElements.filter(el => el.subType == ElementSubType.Sword).length > 0;
-    let holdingBow = element.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
-    let holdingMace = element.heldElements.filter(el => el.subType == ElementSubType.Mace).length > 0;
-    let holdingSpear = element.heldElements.filter(el => el.subType == ElementSubType.Spear).length > 0;
-    let holdingShield = element.heldElements.filter(el => el.subType == ElementSubType.Shield).length > 0;
-    let holdingCart = element.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
-    let wearingLeatherArmor = element.heldElements.filter(el => el.subType == ElementSubType.LeatherArmor).length > 0;
-    let wearingIronArmor = element.heldElements.filter(el => el.subType == ElementSubType.IronArmor).length > 0;
-    let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubType.Horse).length > 0;
+    let holdingSword = element.heldElements.filter(el => el.subType == ElementSubTypes.Sword).length > 0;
+    let holdingBow = element.heldElements.filter(el => el.subType == ElementSubTypes.Bow).length > 0;
+    let holdingMace = element.heldElements.filter(el => el.subType == ElementSubTypes.Mace).length > 0;
+    let holdingSpear = element.heldElements.filter(el => el.subType == ElementSubTypes.Spear).length > 0;
+    let holdingShield = element.heldElements.filter(el => el.subType == ElementSubTypes.Shield).length > 0;
+    let holdingCart = element.heldElements.filter(el => el.subType == ElementSubTypes.Cart).length > 0;
+    let wearingLeatherArmor = element.heldElements.filter(el => el.subType == ElementSubTypes.LeatherArmor).length > 0;
+    let wearingIronArmor = element.heldElements.filter(el => el.subType == ElementSubTypes.IronArmor).length > 0;
+    let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubTypes.Horse).length > 0;
 
     if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, this.ctx,
@@ -592,7 +593,7 @@ export default class BoardRenderer {
         objectSize*1.5, objectSize,
       );
 
-      let horse = element.heldElements.filter(el => el.subType == ElementSubType.Horse)[0];
+      let horse = element.heldElements.filter(el => el.subType == ElementSubTypes.Horse)[0];
 
       if (horse.hasActionAvailable === false) {
         drawSvgToCanvas(noSvgRaw, this.ctx,

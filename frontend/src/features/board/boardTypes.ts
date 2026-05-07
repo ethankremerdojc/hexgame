@@ -4,10 +4,10 @@ export type Coordinate = {
 }
 
 export const HexPosition = {
-  Center: "Center",
-  Top: "Top",
-  TopLeft: "TopLeft",
-  TopRight: "TopRight",
-  BottomLeft: "BottomLeft",
-  BottomRight: "BottomRight",
+  "Center": 0,
+  "Top": 1,
+  "TopLeft": 2,
+  "TopRight": 3,
+  "BottomLeft": 4,
+  "BottomRight": 5,
 }

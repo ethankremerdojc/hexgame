@@ -1,25 +1,28 @@
 import { useState } from "react";
 
 import { 
-  ElementSubType
+  ElementSubTypes
 } from "@/features/game/gameTypes"
 
-// import {
-//   MATERIAL_ELEMENT_SUBTYPES
-// } from "../board/boardTypes";
+import { 
+  nameForElementSubType
+} from "@/features/game/gameUtils"
 
 import { 
+  MATERIAL_ELEMENT_SUBTYPES,
   THINGS_THAT_CAN_BE_BUILT, 
-  getBuildingCost, 
-  nameForElementSubType, 
-  getSpecificItemBuildingCost,
-  getDamageAmount,
-  getArmorAmount,
   NO_FOOD_PENALTY,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
   SCAVENGE_CHANCES
-} from "../board/vars"
+} from "@/features/game/gameVars"
+
+import { 
+  getBuildingCost, 
+  getSpecificItemBuildingCost,
+  getDamageAmount,
+  getArmorAmount,
+} from "@/features/game/gameUtils"
 
 import { getSvgForSubType } from "../board/boardRenderer"
 
@@ -114,15 +117,15 @@ function HowToPlay() {
             Fight: Deal damage to an enemy villager, then the enemy will also deal damage to your villager at the same time.<br />
             <ul>
               <li>Base Damage: {getDamageAmount(null)}</li>
-              <li>Bow: Deals {getDamageAmount(ElementSubType.Bow)} damage. (Ignores Shield).<br /></li>
-              <li>Spear: Deals {getDamageAmount(ElementSubType.Spear)} damage.<br /></li>
-              <li>Leather Armor: Reduces damage by {getArmorAmount(ElementSubType.LeatherArmor)}.<br /></li>
+              <li>Bow: Deals {getDamageAmount(ElementSubTypes.Bow)} damage. (Ignores Shield).<br /></li>
+              <li>Spear: Deals {getDamageAmount(ElementSubTypes.Spear)} damage.<br /></li>
+              <li>Leather Armor: Reduces damage by {getArmorAmount(ElementSubTypes.LeatherArmor)}.<br /></li>
 
               <li><b><u style={{color: "white"}}>Below require a 'forge'</u></b></li>
-              <li>Sword: Deals {getDamageAmount(ElementSubType.Sword)} damage.<br /></li>
-              <li>Mace: Deals {getDamageAmount(ElementSubType.Mace)} damage. (Ignores Leather armor)<br /></li>
-              <li>Iron Armor: Reduces damage by {getArmorAmount(ElementSubType.IronArmor)}.<br /></li>
-              <li>Shield: Reduces damage by {getArmorAmount(ElementSubType.Shield)}.<br /></li>
+              <li>Sword: Deals {getDamageAmount(ElementSubTypes.Sword)} damage.<br /></li>
+              <li>Mace: Deals {getDamageAmount(ElementSubTypes.Mace)} damage. (Ignores Leather armor)<br /></li>
+              <li>Iron Armor: Reduces damage by {getArmorAmount(ElementSubTypes.IronArmor)}.<br /></li>
+              <li>Shield: Reduces damage by {getArmorAmount(ElementSubTypes.Shield)}.<br /></li>
             </ul>
           </li>
           <li>
@@ -146,7 +149,7 @@ function HowToPlay() {
             Trade: On a tile with a trader, trade any 2 of a resource for any 1 resource. You can also buy a horse for 7 of any one resource.
           </li>
           <li>
-            Shoot: If your villager has a bow, they can do {getDamageAmount(ElementSubType.Bow)} damage to another villager in an adjacent tile, without having that villager do damage to them.<br/>
+            Shoot: If your villager has a bow, they can do {getDamageAmount(ElementSubTypes.Bow)} damage to another villager in an adjacent tile, without having that villager do damage to them.<br/>
             Shooting ignores shields, but not armor.
           </li>
           <li>

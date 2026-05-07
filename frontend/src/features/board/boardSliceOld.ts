@@ -6,10 +6,10 @@ import {
 } from "@/app/api"
 
 import {
-  TeamColor,
-  ElementType,
-  ElementSubType,
-  CellType,
+  TeamColors,
+  ElementTypes,
+  ElementSubTypes,
+  CellTypes,
   // objectToElement
 } from "./boardTypes"
 
@@ -23,7 +23,7 @@ import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
   NO_FOOD_PENALTY,
-  itemTypeForCellType,
+  itemTypeForCellTypes,
   COW_PRODUCING_TILES
 } from "./vars"
 
@@ -47,11 +47,11 @@ export function updateElemAttributes(elem: Element): Element {
   let newElem = {...elem};
 
   // items need new ids each type we update, buildings and persons dont
-  if (elem.type == ElementType.Item || !elem.id) {
+  if (elem.type == ElementTypes.Item || !elem.id) {
     newElem.id = getElementId();
   }
 
-  if (newElem.type == ElementType.Person) {
+  if (newElem.type == ElementTypes.Person) {
     if (!newElem.name) {
       newElem.name = getRandomName();
     }
@@ -90,13 +90,13 @@ function updateCellElementPositions(elements: Element[]): Element[] {
   let personElements = [], buildingElements = [], itemElements = [];
 
   for (var elem of elements) {
-    if (elem.type == ElementType.Person) {
+    if (elem.type == ElementTypes.Person) {
       personElements.push(elem);
     }
-    if (elem.type == ElementType.Building) {
+    if (elem.type == ElementTypes.Building) {
       buildingElements.push(elem);
     }
-    if (elem.type == ElementType.Item) {
+    if (elem.type == ElementTypes.Item) {
       itemElements.push(elem);
     }
   }
@@ -149,21 +149,21 @@ export function prepareCellsForStateSave(cells: Cell[]): Cell[] {
   return newCells
 }
 
-function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): Cell[] {
+function depleteFoodForPersonsOnTeam(playerTeam: TeamColors, newCells: Cell[]): Cell[] {
   let cellsWithPlayersOnTeam = newCells.filter(
     cell => cell.elements.filter(
-      elem => elem.type == ElementType.Person && elem.team == playerTeam
+      elem => elem.type == ElementTypes.Person && elem.team == playerTeam
     ).length > 0);
 
   for (var cell of cellsWithPlayersOnTeam) {
-    let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
+    let persons = cell.elements.filter(elem => elem.type == ElementTypes.Person && elem.team == playerTeam);
 
     for (var person of persons) {
       if (person.health === null) {
         throw new Error(`Person had no health attribute.`)
       }
 
-      let foodElementsOnTile = cell.elements.filter(el => el.subType == ElementSubType.Food);
+      let foodElementsOnTile = cell.elements.filter(el => el.subType == ElementSubTypes.Food);
 
       if (foodElementsOnTile.length > 0) {
         let foodElem = foodElementsOnTile[0];
@@ -176,7 +176,7 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
         continue
       }
 
-      let foodElementsHeld = person.heldElements.filter(el => el.subType == ElementSubType.Food);
+      let foodElementsHeld = person.heldElements.filter(el => el.subType == ElementSubTypes.Food);
 
       if (foodElementsHeld.length > 0) {
         let foodElem = foodElementsHeld[0];
@@ -198,17 +198,17 @@ function depleteFoodForPersonsOnTeam(playerTeam: TeamColor, newCells: Cell[]): C
   return newCells;
 }
 
-function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): Cell[] {
+function makePersonsWithActionOnTeamWork(playerTeam: TeamColors, cells: Cell[]): Cell[] {
   let cellsWithPlayersOnTeam = cells.filter(
     cell => cell.elements.filter(
-      elem => elem.type == ElementType.Person && elem.team == playerTeam
+      elem => elem.type == ElementTypes.Person && elem.team == playerTeam
     ).length > 0);
 
   for (var cell of cellsWithPlayersOnTeam) {
-    let persons = cell.elements.filter(elem => elem.type == ElementType.Person && elem.team == playerTeam);
+    let persons = cell.elements.filter(elem => elem.type == ElementTypes.Person && elem.team == playerTeam);
     for (var person of persons) {
       if (person.hasActionAvailable) {
-        if (cell.type == CellType.Desert) {
+        if (cell.type == CellTypes.Desert) {
           person.isScavenging = true;
         } else {
           person.isWorking = true;
@@ -220,12 +220,12 @@ function makePersonsWithActionOnTeamWork(playerTeam: TeamColor, cells: Cell[]): 
   return cells
 }
 
-function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
+function checkForWinner(cells: Cell[], playerTurn: TeamColors): boolean {
   // verify that there is only 1 capital and it is the one of the current team
   let capitals = [];
 
   for (var cell of cells) {
-    let cellCapitals: Element[] = cell.elements.filter((el: Element) => el.subType == ElementSubType.Capital);
+    let cellCapitals: Element[] = cell.elements.filter((el: Element) => el.subType == ElementSubTypes.Capital);
     if (cellCapitals.length < 1) { continue }
     capitals.push(cellCapitals[0]);
   }
@@ -239,13 +239,13 @@ function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
   throw new Error("Somehow the only capital is one of a different player.");
 }
 
-function setupNewTurn(newCells: Cell[], playerTurn: TeamColor, roundNumber: number): Cell[] {
+function setupNewTurn(newCells: Cell[], playerTurn: TeamColors, roundNumber: number): Cell[] {
   let cellsWithOwnPersons = newCells.filter(
-    cell => cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn).length > 0);
+    cell => cell.elements.filter(el => el.type == ElementTypes.Person && el.team == playerTurn).length > 0);
 
   for (var cell of cellsWithOwnPersons) {
 
-    let ownPersons = cell.elements.filter(el => el.type == ElementType.Person && el.team == playerTurn);
+    let ownPersons = cell.elements.filter(el => el.type == ElementTypes.Person && el.team == playerTurn);
     let workers = ownPersons.filter(el => el.isWorking);
     let scavengers = ownPersons.filter(el => el.isScavenging);
 
@@ -254,22 +254,22 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor, roundNumber: numb
       p.isWorking = false;
       p.isScavenging = false;
 
-      let horses = p.heldElements.filter((el: Element) => el.subType == ElementSubType.Horse);
+      let horses = p.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Horse);
       for (var horse of horses) {
         horse.hasActionAvailable = true;
       }
     }
 
-    let horses = cell.elements.filter(el => el.subType == ElementSubType.Horse);
+    let horses = cell.elements.filter(el => el.subType == ElementSubTypes.Horse);
     for (var horse of horses) {
       horse.hasActionAvailable = true;
     };
 
-    let cows = cell.elements.filter(el => el.subType == ElementSubType.Cow);
+    let cows = cell.elements.filter(el => el.subType == ElementSubTypes.Cow);
     if (cows.length > 0) {
       if (workers.length > 0 && COW_PRODUCING_TILES.includes(Number(cell.type))) {
         let leatherCount = Math.min(cows[0].count, 3);
-        let leatherEl = {type: ElementType.Item, subType: ElementSubType.Leather, count: leatherCount};
+        let leatherEl = {type: ElementTypes.Item, subType: ElementSubTypes.Leather, count: leatherCount};
         cell.elements.push(objectToElement(leatherEl));
       }
     }
@@ -281,7 +281,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor, roundNumber: numb
 
     if (workers.length < 1) { continue }
 
-    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building && el.subType != ElementSubType.Capital && el.subType != ElementSubType.Village).length > 0;
+    let buildingExists = cell.elements.filter(el => el.type == ElementTypes.Building && el.subType != ElementSubTypes.Capital && el.subType != ElementSubTypes.Village).length > 0;
 
     let itemCreationCount;
     if (buildingExists) {
@@ -290,7 +290,7 @@ function setupNewTurn(newCells: Cell[], playerTurn: TeamColor, roundNumber: numb
       itemCreationCount = WORKER_ITEM_GENERATION_AMOUNT * workers.length;
     };
 
-    cell.elements.push(objectToElement({type: ElementType.Item, subType: itemTypeForCellType(cell.type), count: itemCreationCount}));
+    cell.elements.push(objectToElement({type: ElementTypes.Item, subType: itemTypeForCellTypes(cell.type), count: itemCreationCount}));
   }
 
   newCells = prepareCellsForStateSave(newCells);
@@ -306,7 +306,7 @@ export interface BoardState {
   offset: Coordinate,
   zoom: number,
   showMoveInfo: boolean,
-  playerTurn: TeamColor,
+  playerTurn: TeamColors,
 
   actionHandling: string,
   actionItemsToSelectFrom: any[],
@@ -332,7 +332,7 @@ const initialState: BoardState = {
   zoom: 1.0,
   showMoveInfo: false,
 
-  playerTurn: TeamColor.White,
+  playerTurn: TeamColors.White,
   actionHandling: "",
   actionItemsToSelectFrom: [],
 
@@ -380,7 +380,7 @@ const boardSlice = createSlice({
     setShowMoveInfo(state, action: PayloadAction<boolean>) {
       state.showMoveInfo = action.payload;
     },
-    setPlayerTurn(state, action: PayloadAction<TeamColor>) {
+    setPlayerTurn(state, action: PayloadAction<TeamColors>) {
       state.playerTurn = action.payload;
     },
     setPlayerCount(state, action: PayloadAction<number>) {
@@ -461,7 +461,7 @@ export const getSelectedElement = (state: RootState): Element|null => state.boar
 export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
-export const getPlayerTurn = (state: RootState): TeamColor => state.board.playerTurn;
+export const getPlayerTurn = (state: RootState): TeamColors => state.board.playerTurn;
 export const getPlayerCount = (state: RootState): number => state.board.playerCount;
 export const getActionHandling = (state: RootState): string => state.board.actionHandling;
 export const getActionItemsToSelectFrom = (state: RootState): any[] => state.board.actionItemsToSelectFrom;

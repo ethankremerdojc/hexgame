@@ -7,7 +7,7 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementType, ElementSubType, ElementAction, CellType,
+  ElementTypes, ElementSubTypes, ElementActions, CellTypes,
   // objectToElement, WEAPON_SUBTYPES, ARMOR_SUBTYPES
 } from "@/features/game/gameTypes"
 
@@ -46,7 +46,7 @@ export default class BoardActions {
         let newElements = [...cell.elements];
         let newElem = structuredClone(elem);
 
-        let horseElems = elem.heldElements.filter(el => el.subType == ElementSubType.Horse);
+        let horseElems = elem.heldElements.filter(el => el.subType == ElementSubTypes.Horse);
         let ridingHorse = horseElems.length > 0;
 
         let horseUsedAction = false;
@@ -121,7 +121,7 @@ export default class BoardActions {
       newPersonElem.heldElements = newPersonElem.heldElements.filter((e: Element) => e.id != elementToDrop.id);
     }
 
-    if (copiedDroppedElement.subType == ElementSubType.Cart) {
+    if (copiedDroppedElement.subType == ElementSubTypes.Cart) {
       elemParentCell.elements = [...elemParentCell.elements, ...newPersonElem.heldElements];
       newPersonElem.heldElements = [];
     }
@@ -174,17 +174,17 @@ export default class BoardActions {
     return newCells
   }
 
-  static build(personElem: Element, elementType: ElementType, elementSubType: ElementSubType, cells: Cell[]): Cell[] {
+  static build(personElem: Element, elementType: ElementTypes, elementSubType: ElementSubTypes, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
 
     let newEl: any = {type: elementType, subType: elementSubType};
 
-    if (elementType == ElementType.Person || elementSubType == ElementSubType.Village) {
+    if (elementType == ElementTypes.Person || elementSubType == ElementSubTypes.Village) {
       newEl.team = personElem.team;
     }
 
-    if (elementType == ElementType.Person) {
+    if (elementType == ElementTypes.Person) {
       newEl.health = PERSON_BASE_HEALTH;
       newEl.heldElements = [];
       newEl.hasActionAvailable = false;
@@ -202,7 +202,7 @@ export default class BoardActions {
   static destroyBuilding(personElem: Element, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
-    elemParentCell.elements = elemParentCell.elements.filter(e => e.type != ElementType.Building);
+    elemParentCell.elements = elemParentCell.elements.filter(e => e.type != ElementTypes.Building);
     let newPerson = elemParentCell.elements.filter((e: Element) => e.id == personElem.id)[0];
     newPerson.hasActionAvailable = false;
     return newCells
@@ -222,10 +222,10 @@ export default class BoardActions {
       let weaponType = weaponEls[0].subType;
       damageAmount = getDamageAmount(weaponType);
 
-      if (weaponType == ElementSubType.Bow) {
+      if (weaponType == ElementSubTypes.Bow) {
         ignoreShield = true;
       }
-      if (weaponType == ElementSubType.Mace) {
+      if (weaponType == ElementSubTypes.Mace) {
         ignoreLeatherArmor = true;
       }
     }
@@ -234,10 +234,10 @@ export default class BoardActions {
     let armorEls;
 
     if (ignoreShield) {
-      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.Shield);
+      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubTypes) => s != ElementSubTypes.Shield);
       armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
     } else if (ignoreLeatherArmor) {
-      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubType) => s != ElementSubType.LeatherArmor);
+      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubTypes) => s != ElementSubTypes.LeatherArmor);
       armorEls = defender.heldElements.filter((el: Element) => nonLeatherArmors.includes(el.subType));     
     } else {
       armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
@@ -258,7 +258,7 @@ export default class BoardActions {
 
   static makePersonsFight(_personElem: Element, _targetElem: Element, cells: Cell[]): Cell[] {
 
-    if (_personElem.type != ElementType.Person || _targetElem.type != ElementType.Person) {
+    if (_personElem.type != ElementTypes.Person || _targetElem.type != ElementTypes.Person) {
       throw new Error("Can only fight between two persons.");
     }
 
@@ -305,7 +305,7 @@ export default class BoardActions {
   }
 
   static healPerson(personElem: Element, cells: Cell[]): Cell[] {
-    let resources = [{subType: ElementSubType.Food, count: 1}];
+    let resources = [{subType: ElementSubTypes.Food, count: 1}];
     if (!BoardUtils.resourcesExistForPerson(resources, personElem, cells)) {
       throw new Error(`Resources did not exist to heal player.`);
     }
@@ -320,7 +320,7 @@ export default class BoardActions {
   }
 
   static reproducePerson(personElem: Element, cells: Cell[]): Cell[] {
-    return BoardActions.build(personElem, ElementType.Person, ElementSubType.Villager, cells);
+    return BoardActions.build(personElem, ElementTypes.Person, ElementSubTypes.Villager, cells);
   }
 
   static trade(personElem: Element, givenItem: Element, receivedItem: Element, cells: Cell[]): Cell[] {
@@ -357,9 +357,9 @@ export default class BoardActions {
     return newCells
   }
 
-  static getAvailableActions(personElem: Element, cells: Cell[]): ElementAction[] {
+  static getAvailableActions(personElem: Element, cells: Cell[]): ElementActions[] {
 
-    if (personElem.type !== ElementType.Person) {
+    if (personElem.type !== ElementTypes.Person) {
       throw new Error("Non-person elements do not have actions.")
     }
 
@@ -369,54 +369,54 @@ export default class BoardActions {
 
     const elementParent = BoardUtils.getElementParentCell(personElem, cells);
 
-    let result = [ElementAction.Move];
+    let result = [ElementActions.Move];
 
-    result.push(ElementAction.Build);
+    result.push(ElementActions.Build);
 
     if (BoardUtils.personCanDestroy(personElem, cells)) {
-      result.push(ElementAction.Destroy);
+      result.push(ElementActions.Destroy);
     }
     
-    if (elementParent.type != CellType.Desert) {
-      result.push(ElementAction.Work);
+    if (elementParent.type != CellTypes.Desert) {
+      result.push(ElementActions.Work);
     }
 
     let currentCarryWeight = BoardUtils.getPersonCarryingWeight(personElem);
     if (currentCarryWeight > 0) {
-      result.push(ElementAction.Drop)
+      result.push(ElementActions.Drop)
     };
 
     if (BoardUtils.personCanTakeAnyItem(personElem, cells)) {
-      result.push(ElementAction.Take)
+      result.push(ElementActions.Take)
     }
 
     if (BoardUtils.enemyExistsOnCell(personElem, elementParent)) {
-      result.push(ElementAction.Fight)
+      result.push(ElementActions.Fight)
     }
 
     if (BoardUtils.personCanHeal(personElem, cells)) {
-      result.push(ElementAction.Heal)
+      result.push(ElementActions.Heal)
     }
 
     if (BoardUtils.personCanReproduce(personElem, cells)) {
-      result.push(ElementAction.Reproduce)
+      result.push(ElementActions.Reproduce)
     }
     
     // do not deplete actions, but cannot drop or pickup anymore after an action that does
     if (BoardUtils.personCanTrade(personElem, cells)) {
-      result.push(ElementAction.Trade)
+      result.push(ElementActions.Trade)
     }
 
     if (BoardUtils.personCanShoot(personElem, cells)) {
-      result.push(ElementAction.Shoot)
+      result.push(ElementActions.Shoot)
     }
 
-    if (elementParent.type == CellType.Desert) {
+    if (elementParent.type == CellTypes.Desert) {
       console.log("adding scavenge")
-      result.push(ElementAction.Scavenge)
+      result.push(ElementActions.Scavenge)
     }
 
-    result.push(ElementAction.Rename)
+    result.push(ElementActions.Rename)
 
     return result
   }

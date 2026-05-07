@@ -6,15 +6,18 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementType,
-  CellType,
-  ElementSubType,
-  TeamColor
+  ElementTypes,
+  CellTypes,
+  ElementSubTypes,
+  TeamColors
 } from "@/features/game/gameTypes"
 
-// import {
-//   objectToElement
-// } from "../board/boardTypes"
+
+import { 
+  nameForElementSubType,
+  objectToElement,
+  nameForTeamColor,
+} from "@/features/game/gameUtils"
 
 import {
   getSelectedCell,
@@ -31,14 +34,10 @@ import {
   postUpdateToBackend
 } from "@/app/api.js"
 
+//TODO Figure out why lol
 import {
   getGameId
 } from "../../App"
-
-import {
-  nameForTeamColor,
-  nameForElementSubType
-} from "../board/vars"
 
 import './EditorMenu.css'
 

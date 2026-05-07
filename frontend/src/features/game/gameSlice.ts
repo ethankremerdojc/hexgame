@@ -3,7 +3,7 @@ import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
 import {
-  TeamColor
+  TeamColors
 } from "@/features/game/gameTypes"
 
 
@@ -16,7 +16,7 @@ import BoardUtils from "@/features/board/boardUtils"
 export interface GameState {
   cells: Cell[],
   playerCount: number,
-  playerTurn: TeamColor,
+  playerTurn: TeamColors,
   gameId: number,
   usernames: string[],
   loggedInUsername: string,
@@ -27,7 +27,7 @@ export interface GameState {
 const initialState: GameState = {
   cells: [],
   playerCount: 0,
-  playerTurn: TeamColor.White,
+  playerTurn: TeamColors.White,
   gameId: -1,
   usernames: [],
   loggedInUsername: "",
@@ -47,7 +47,7 @@ const gameSlice = createSlice({
     setPlayerCount(state, action: PayloadAction<number>) {
       state.playerCount = action.payload;
     },
-    setPlayerTurn(state, action: PayloadAction<TeamColor>) {
+    setPlayerTurn(state, action: PayloadAction<TeamColors>) {
       state.playerTurn = action.payload;
     },
     setGameId(state, action: PayloadAction<number>) {
@@ -70,7 +70,7 @@ const gameSlice = createSlice({
 
 export const getCells = (state: RootState): Cell[] => state.game.cells;
 export const getPlayerCount = (state: RootState): number => state.game.playerCount;
-export const getPlayerTurn = (state: RootState): TeamColor => state.game.playerTurn;
+export const getPlayerTurn = (state: RootState): TeamColors => state.game.playerTurn;
 export const getGameId = (state: RootState): number => state.game.gameId;
 export const getUsernames = (state: RootState): string[] => state.game.usernames;
 export const getLoggedInUsername = (state: RootState): string => state.game.loggedInUsername;

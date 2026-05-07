@@ -13,10 +13,10 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementType,
-  CellType,
-  ElementSubType,
-  TeamColor
+  ElementTypes,
+  CellTypes,
+  ElementSubTypes,
+  TeamColors
 } from "@/features/game/gameTypes"
 
 import BoardUtils from "./boardUtils"
@@ -38,7 +38,7 @@ export class BoardGenerator {
     const startCell = {
       x: Math.floor(boardWidth / 2),
       y: Math.floor(boardHeight / 2),
-      type: CellType.Field,
+      type: CellTypes.Field,
       elements: []
     };
 
@@ -99,19 +99,19 @@ export class BoardGenerator {
       };
     }
 
-    newCell.type = this.generateNewCellType(cell.type);
+    newCell.type = this.generateNewCellTypes(cell.type);
     newCell.elements = [];
 
     return newCell
   }
 
-  generateNewCellType(oldType: CellType, mutationRate: number=0.5): any {
+  generateNewCellTypes(oldType: CellTypes, mutationRate: number=0.5): any {
     let doMutation = Math.random() < mutationRate;
     if (!doMutation) { return oldType }
-    return this.getRandomCellTypeByRates();
+    return this.getRandomCellTypesByRates();
   }
 
-  getRandomCellTypeByRates(): any {
+  getRandomCellTypesByRates(): any {
     let rateTotal = 0;
 
     for (var info of Object.values(CELL_INFO_BY_TYPE)) {
@@ -142,7 +142,7 @@ export class BoardGenerator {
     let newBoard = [...board];
 
     for (let i=0; i<playerCount; i++) {
-      newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColor, i));
+      newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColors, i));
     }
 
     for (let i=0; i<traderCount; i++) {
@@ -152,46 +152,46 @@ export class BoardGenerator {
     return newBoard;
   }
 
-  addRandomCapitalToBoard(board: Cell[], color: TeamColor): Cell[] {
+  addRandomCapitalToBoard(board: Cell[], color: TeamColors): Cell[] {
     let newBoard = structuredClone(board);
 
-    let emptyNonDesertCells = newBoard.filter(cell => cell.elements.length == 0).filter(cell => cell.type != CellType.Desert);
+    let emptyNonDesertCells = newBoard.filter(cell => cell.elements.length == 0).filter(cell => cell.type != CellTypes.Desert);
 
     if (emptyNonDesertCells.length == 0) {
       throw new Error("No empty cells to add capital to.");
     }
 
     let randomCell = randomItem(emptyNonDesertCells);
-    let twoFood = {type: ElementType.Item, subType: ElementSubType.Food, count: 2};
+    let twoFood = {type: ElementTypes.Item, subType: ElementSubTypes.Food, count: 2};
 
-    randomCell.elements.push({type: ElementType.Building, subType: ElementSubType.Capital, team: color});
+    randomCell.elements.push({type: ElementTypes.Building, subType: ElementSubTypes.Capital, team: color});
 
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
-    randomCell.elements.push({type: ElementType.Person, subType: ElementSubType.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementTypes.Person, subType: ElementSubTypes.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
+    randomCell.elements.push({type: ElementTypes.Person, subType: ElementSubTypes.Villager, team: color, heldElements:[{...twoFood}], health: PERSON_BASE_HEALTH});
 
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Food, count: STARTING_FOOD});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Wood, count: 4});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Clay, count: 4});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Ore, count: 4});
-    randomCell.elements.push({type: ElementType.Item, subType: ElementSubType.Horse, count: 1});
+    randomCell.elements.push({type: ElementTypes.Item, subType: ElementSubTypes.Food, count: STARTING_FOOD});
+    randomCell.elements.push({type: ElementTypes.Item, subType: ElementSubTypes.Wood, count: 4});
+    randomCell.elements.push({type: ElementTypes.Item, subType: ElementSubTypes.Clay, count: 4});
+    randomCell.elements.push({type: ElementTypes.Item, subType: ElementSubTypes.Ore, count: 4});
+    randomCell.elements.push({type: ElementTypes.Item, subType: ElementSubTypes.Horse, count: 1});
     return newBoard;
   }
 
   addRandomTraderToBoard(board: Cell[]): Cell[] {
     let newBoard = structuredClone(board);
     let emptyCells = newBoard.filter(cell => cell.elements.length == 0);
-    let emptyDesertCells = emptyCells.filter(cell => cell.type == CellType.Desert);
+    let emptyDesertCells = emptyCells.filter(cell => cell.type == CellTypes.Desert);
 
     let desertCell;
 
     if (emptyDesertCells.length == 0) {
       desertCell = randomItem(emptyCells);
-      desertCell.type = CellType.Desert;
+      desertCell.type = CellTypes.Desert;
     } else {
       desertCell = randomItem(emptyDesertCells);
     }
 
-    let trader = {type: ElementType.Person, subType: ElementSubType.Trader};
+    let trader = {type: ElementTypes.Person, subType: ElementSubTypes.Trader};
     desertCell.elements.push(trader);
     return newBoard
   }

@@ -1,5 +1,5 @@
 import type {
-  Cell, Element, Coordinate, TeamColor
+  Cell, Element, Coordinate, TeamColors
 } from "@/features/game/gameTypes"
 
 import {
@@ -7,9 +7,9 @@ import {
 } from "@/features/board/boardTypes"
 
 import {
-  ElementType, 
-  ElementSubType, 
-  CellType, 
+  ElementTypes, 
+  ElementSubTypes, 
+  CellTypes, 
   // MATERIAL_ELEMENT_SUBTYPES,
   // getHandsRequiredToHold,
   // ITEMS_YOU_CAN_HOLD_ONE_OF,
@@ -22,7 +22,7 @@ import {
   PERSON_MAX_CARRY_WEIGHT,
   CART_CARRY_WEIGHT_INCREASE,
   getBuildingCost,
-  nameForElementSubType,
+  nameForElementSubTypes,
   getTradeCostForSubType,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
@@ -55,7 +55,7 @@ export default class BoardUtils {
 
   static getScavengedItem(personElem: Element, roundNumber: number): Element {
     let randomNum = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id, roundNumber);
-    let options: ElementSubType[];
+    let options: ElementSubTypes[];
 
     if (randomNum < SCAVENGE_CHANCES.MATERIAL) {
       options = MATERIAL_ELEMENT_SUBTYPES;
@@ -67,7 +67,7 @@ export default class BoardUtils {
 
     let randomNum2 = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id + "item", roundNumber);
     let index = Math.floor(randomNum2 * options.length);
-    let result = objectToElement({type: ElementType.Item, subType: options[index]});
+    let result = objectToElement({type: ElementTypes.Item, subType: options[index]});
     return result
   }
 
@@ -89,13 +89,13 @@ export default class BoardUtils {
 
   static getSizeForElement(elem: Element, radius: number): number {
     let { buildingSize, objectSize, toolSize } = BoardUtils.getElemSizes(radius);
-    if (elem.type == ElementType.Person) {
+    if (elem.type == ElementTypes.Person) {
       return objectSize
     }
-    if (elem.type == ElementType.Item) {
+    if (elem.type == ElementTypes.Item) {
       return toolSize
     }
-    if (elem.type == ElementType.Building) {
+    if (elem.type == ElementTypes.Building) {
       return buildingSize
     }
 
@@ -108,7 +108,7 @@ export default class BoardUtils {
     let halfRadius = radius / 2;
 
 
-    if (element.type == ElementType.Item) {
+    if (element.type == ElementTypes.Item) {
       return {x: -1, y: origin.y + radius*0.5};
     }
 
@@ -147,7 +147,7 @@ export default class BoardUtils {
         break;
     }
 
-    // if (element.type == ElementType.Person) {
+    // if (element.type == ElementTypes.Person) {
     //   let toolSize = objectSize / 3;
     //   elemPos.x -= toolSize;
     // }
@@ -386,7 +386,7 @@ export default class BoardUtils {
   }
 
   static getCarryingCapacity(personElem: Element): number {
-    let holdingCart = personElem.heldElements.filter(el => el.subType == ElementSubType.Cart).length > 0;
+    let holdingCart = personElem.heldElements.filter(el => el.subType == ElementSubTypes.Cart).length > 0;
     if (!holdingCart) {
       return PERSON_MAX_CARRY_WEIGHT;
     }
@@ -400,10 +400,10 @@ export default class BoardUtils {
     let result = [];
 
     for (var cell of adjacentCells) {
-      if (cell.elements.filter(e => e.type == ElementType.Person).length > 4) {
+      if (cell.elements.filter(e => e.type == ElementTypes.Person).length > 4) {
         continue
       }
-      if (cell.elements.filter(e => e.type == ElementType.Person && e.team == personElem.team).length > 2) {
+      if (cell.elements.filter(e => e.type == ElementTypes.Person && e.team == personElem.team).length > 2) {
         continue
       }
       result.push(cell);
@@ -420,7 +420,7 @@ export default class BoardUtils {
   static getEnemyPersons(personElem: Element, parentCell: Cell): Element[] {
     let result: Element[] = [];
     parentCell.elements.forEach(elem => {
-      if (elem.subType == ElementSubType.Villager && elem.team != personElem.team) {
+      if (elem.subType == ElementSubTypes.Villager && elem.team != personElem.team) {
         result.push(elem);
       }
     })
@@ -433,7 +433,7 @@ export default class BoardUtils {
 
   static resourcesExistForPerson(resourcesRequired: any[], personElem: Element, cells: Cell[]): boolean {
     let parentCell = BoardUtils.getElementParentCell(personElem, cells);
-    let mergedItemElements = BoardUtils.mergeItemElements(parentCell.elements.filter(e => e.type == ElementType.Item));
+    let mergedItemElements = BoardUtils.mergeItemElements(parentCell.elements.filter(e => e.type == ElementTypes.Item));
 
     for (var resourceRequired of resourcesRequired) {
       let relevantItemElement = mergedItemElements.filter(e => e.subType == resourceRequired.subType)[0];
@@ -463,23 +463,23 @@ export default class BoardUtils {
     return true
   }
 
-  static elementsToBuildExistOnTile(elementSubType: ElementSubType, personElem: Element, cells: Cell[]): boolean { 
+  static elementsToBuildExistOnTile(elementSubType: ElementSubTypes, personElem: Element, cells: Cell[]): boolean { 
     let requiredElements = getBuildingCost(elementSubType);
     return BoardUtils.resourcesExistForPerson(requiredElements, personElem, cells)
   }
 
-  static buildingTypeForCellType(cellType: CellType): ElementSubType|null {
-    if (cellType == CellType.Field) {
-      return ElementSubType.Farm
+  static buildingTypeForCellTypes(cellType: CellTypes): ElementSubTypes|null {
+    if (cellType == CellTypes.Field) {
+      return ElementSubTypes.Farm
     }
-    if (cellType == CellType.Forest) {
-      return ElementSubType.SawMill
+    if (cellType == CellTypes.Forest) {
+      return ElementSubTypes.SawMill
     }
-    if (cellType == CellType.Mountain) {
-      return ElementSubType.Quarry
+    if (cellType == CellTypes.Mountain) {
+      return ElementSubTypes.Quarry
     }
-    if (cellType == CellType.ClayField) {
-      return ElementSubType.BrickFactory
+    if (cellType == CellTypes.ClayField) {
+      return ElementSubTypes.BrickFactory
     }
 
     return null
@@ -488,28 +488,28 @@ export default class BoardUtils {
   static getAvailableThingsToBuild(cell: Cell): any[] {
     let result = [];
 
-    let buildingExists = cell.elements.filter(el => el.type == ElementType.Building).length != 0;
-    let forgeExists = cell.elements.filter(el => el.subType == ElementSubType.Forge).length != 0;
+    let buildingExists = cell.elements.filter(el => el.type == ElementTypes.Building).length != 0;
+    let forgeExists = cell.elements.filter(el => el.subType == ElementSubTypes.Forge).length != 0;
 
     if (!buildingExists) {
-      if (cell.type != CellType.Desert) {
-        result.push([ElementType.Building, BoardUtils.buildingTypeForCellType(cell.type)]);
+      if (cell.type != CellTypes.Desert) {
+        result.push([ElementTypes.Building, BoardUtils.buildingTypeForCellTypes(cell.type)]);
       }
-      result.push([ElementType.Building, ElementSubType.Village]);
-      result.push([ElementType.Building, ElementSubType.Forge]);
+      result.push([ElementTypes.Building, ElementSubTypes.Village]);
+      result.push([ElementTypes.Building, ElementSubTypes.Forge]);
     }
 
-    result.push([ElementType.Item, ElementSubType.Bow]);
+    result.push([ElementTypes.Item, ElementSubTypes.Bow]);
 
-    result.push([ElementType.Item, ElementSubType.Cart]);
-    result.push([ElementType.Item, ElementSubType.LeatherArmor]);
-    result.push([ElementType.Item, ElementSubType.Spear]);
+    result.push([ElementTypes.Item, ElementSubTypes.Cart]);
+    result.push([ElementTypes.Item, ElementSubTypes.LeatherArmor]);
+    result.push([ElementTypes.Item, ElementSubTypes.Spear]);
 
     if (forgeExists) {
-      result.push([ElementType.Item, ElementSubType.Sword]);
-      result.push([ElementType.Item, ElementSubType.Shield]);
-      result.push([ElementType.Item, ElementSubType.Mace]);
-      result.push([ElementType.Item, ElementSubType.IronArmor]);
+      result.push([ElementTypes.Item, ElementSubTypes.Sword]);
+      result.push([ElementTypes.Item, ElementSubTypes.Shield]);
+      result.push([ElementTypes.Item, ElementSubTypes.Mace]);
+      result.push([ElementTypes.Item, ElementSubTypes.IronArmor]);
     }
 
     return result
@@ -520,7 +520,7 @@ export default class BoardUtils {
 
     for (var ingredient of buildingCost) {
       let ingredientCount = ingredient.count ? ingredient.count : 1;
-      result += `${nameForElementSubType(ingredient.subType)}: ${ingredientCount}, `;
+      result += `${nameForElementSubTypes(ingredient.subType)}: ${ingredientCount}, `;
     }
 
     return result.slice(0, -2) + ")"; // remove last two chars: ', '
@@ -544,9 +544,9 @@ export default class BoardUtils {
     let personElem = newCell.elements.filter(el => el.id == _personElem.id)[0];
  
     // Deplete from tile
-    let oldNonItemElements = newCell.elements.filter(el => el.type != ElementType.Item);
+    let oldNonItemElements = newCell.elements.filter(el => el.type != ElementTypes.Item);
 
-    let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementType.Item));
+    let mergedItemElements = BoardUtils.mergeItemElements(newCell.elements.filter(e => e.type == ElementTypes.Item));
 
     let requirementsAfterTile = [];
 
@@ -608,12 +608,12 @@ export default class BoardUtils {
   static mergeItemElements(itemElements: Element[]): Element[] {
     let result = [];
 
-    let previousSubTypes: ElementSubType[] = [];
+    let previousSubTypes: ElementSubTypes[] = [];
     let cloned = [...itemElements];
 
     for (var ie of cloned) {
       if (previousSubTypes.includes(ie.subType)) { continue }
-      if (ie.subType == ElementSubType.Horse) {
+      if (ie.subType == ElementSubTypes.Horse) {
         let copied = {...ie};
         result.push(copied);
         continue
@@ -637,12 +637,12 @@ export default class BoardUtils {
     return result
   }
 
-  static getTeamPersonCapacity(teamColor: TeamColor, cells: Cell[]): number {
+  static getTeamPersonCapacity(teamColor: TeamColors, cells: Cell[]): number {
     let capacity = 0;
 
     for (var cell of cells) {
-      let capitalExists = cell.elements.filter(e => e.subType == ElementSubType.Capital && e.team == teamColor).length > 0;
-      let villageExists = cell.elements.filter(e => e.subType == ElementSubType.Village && e.team == teamColor).length > 0;
+      let capitalExists = cell.elements.filter(e => e.subType == ElementSubTypes.Capital && e.team == teamColor).length > 0;
+      let villageExists = cell.elements.filter(e => e.subType == ElementSubTypes.Village && e.team == teamColor).length > 0;
 
       if (capitalExists) {
         capacity += 3;
@@ -654,11 +654,11 @@ export default class BoardUtils {
     return capacity
   }
 
-  static getCurrentTeamPersons(teamColor: TeamColor, cells: Cell[]): number {
+  static getCurrentTeamPersons(teamColor: TeamColors, cells: Cell[]): number {
     let persons = 0;
 
     for (var cell of cells) {
-      persons += cell.elements.filter(el => el.type == ElementType.Person && el.team == teamColor).length;
+      persons += cell.elements.filter(el => el.type == ElementTypes.Person && el.team == teamColor).length;
     }
 
     return persons
@@ -671,19 +671,19 @@ export default class BoardUtils {
     }
 
     const elementParent = BoardUtils.getElementParentCell(personElem, cells);
-    let capitalExists = elementParent.elements.filter(e => e.subType == ElementSubType.Capital).length > 0;
-    let villageExists = elementParent.elements.filter(e => e.subType == ElementSubType.Village).length > 0;
+    let capitalExists = elementParent.elements.filter(e => e.subType == ElementSubTypes.Capital).length > 0;
+    let villageExists = elementParent.elements.filter(e => e.subType == ElementSubTypes.Village).length > 0;
 
     if (!capitalExists && !villageExists) {
       return false
     }
 
-    let ownTeamPersonsOnTile = elementParent.elements.filter(el => el.type == ElementType.Person && el.team == personElem.team);
+    let ownTeamPersonsOnTile = elementParent.elements.filter(el => el.type == ElementTypes.Person && el.team == personElem.team);
     if (ownTeamPersonsOnTile.length > 2) {
       return false
     }
 
-    let villagerCost = getBuildingCost(ElementSubType.Villager);
+    let villagerCost = getBuildingCost(ElementSubTypes.Villager);
     if (!BoardUtils.resourcesExistForPerson(villagerCost, personElem, cells)) {
       return false
     }
@@ -697,7 +697,7 @@ export default class BoardUtils {
   static personCanHeal(personElem: Element, cells: Cell[]): boolean {
     if (personElem.health >= PERSON_BASE_HEALTH) return false;
 
-    let resourcesForHealing = [{subType: ElementSubType.Food, count: 1}];
+    let resourcesForHealing = [{subType: ElementSubTypes.Food, count: 1}];
     let resourcesExist = BoardUtils.resourcesExistForPerson(resourcesForHealing, personElem, cells);
     if (!resourcesExist) return false;
 
@@ -706,7 +706,7 @@ export default class BoardUtils {
     return true
   }
 
-  static personCanHoldItem(personElem: Element, elementSubType: ElementSubType): boolean {
+  static personCanHoldItem(personElem: Element, elementSubType: ElementSubTypes): boolean {
 
     if (ITEMS_YOU_CAN_HOLD_ONE_OF.includes(elementSubType)) {
       if (personElem.heldElements.filter((el: Element) => el.subType == elementSubType).length > 0) {
@@ -714,7 +714,7 @@ export default class BoardUtils {
       }
     }
 
-    let armors = [ElementSubType.IronArmor, ElementSubType.LeatherArmor];
+    let armors = [ElementSubTypes.IronArmor, ElementSubTypes.LeatherArmor];
     let currentArmors = personElem.heldElements.filter((el: Element) => armors.includes(el.subType));
     if (currentArmors.length > 0 && armors.includes(elementSubType)) {
       return false
@@ -733,15 +733,15 @@ export default class BoardUtils {
       return false
     };
 
-    let subTypesToCheck: ElementSubType[] = [
-      ElementSubType.Cart,
-      ElementSubType.Sword,
-      ElementSubType.Bow,
-      ElementSubType.Shield,
-      ElementSubType.Cow,
-      ElementSubType.Horse,
-      ElementSubType.Mace,
-      ElementSubType.Spear,
+    let subTypesToCheck: ElementSubTypes[] = [
+      ElementSubTypes.Cart,
+      ElementSubTypes.Sword,
+      ElementSubTypes.Bow,
+      ElementSubTypes.Shield,
+      ElementSubTypes.Cow,
+      ElementSubTypes.Horse,
+      ElementSubTypes.Mace,
+      ElementSubTypes.Spear,
     ]
 
     let currentCapacity = 0;
@@ -765,7 +765,7 @@ export default class BoardUtils {
 
   static getItemsPersonCanTake(personElem: Element, cells: Cell[]): Element[] {
     const parentElem = BoardUtils.getElementParentCell(personElem, cells);
-    let items = parentElem.elements.filter(el => el.type == ElementType.Item);
+    let items = parentElem.elements.filter(el => el.type == ElementTypes.Item);
 
     let result = [];
 
@@ -780,16 +780,16 @@ export default class BoardUtils {
 
   static personCanTrade(personElem: Element, cells: Cell[]): boolean {
     const parentElem = BoardUtils.getElementParentCell(personElem, cells);
-    let traderExists = parentElem.elements.filter(el => el.subType == ElementSubType.Trader).length > 0;
+    let traderExists = parentElem.elements.filter(el => el.subType == ElementSubTypes.Trader).length > 0;
 
     if (!traderExists) {
       return false
     }
 
-    if (parentElem.elements.filter(el => el.type == ElementType.Item).length > 0) {
+    if (parentElem.elements.filter(el => el.type == ElementTypes.Item).length > 0) {
       return true
     }
-    if (personElem.heldElements.filter(el => el.type == ElementType.Item).length > 0) {
+    if (personElem.heldElements.filter(el => el.type == ElementTypes.Item).length > 0) {
       return true
     }
     return false
@@ -812,19 +812,19 @@ export default class BoardUtils {
     let offerings: object[] = [];
 
     for (var ces of MATERIAL_ELEMENT_SUBTYPES) {
-      offerings.push({type: ElementType.Item, subType: ces, count: 1, disabled: !itemsToTradeExistForMaterial})
+      offerings.push({type: ElementTypes.Item, subType: ces, count: 1, disabled: !itemsToTradeExistForMaterial})
     }
 
-    let itemsToTradeExistForHorse = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubType.Horse), cells);
-    offerings.push({ type: ElementType.Item, subType: ElementSubType.Horse, count: 1, disabled: !itemsToTradeExistForHorse });
+    let itemsToTradeExistForHorse = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubTypes.Horse), cells);
+    offerings.push({ type: ElementTypes.Item, subType: ElementSubTypes.Horse, count: 1, disabled: !itemsToTradeExistForHorse });
 
-    let itemsToTradeExistForCow = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubType.Cow), cells);
-    offerings.push({ type: ElementType.Item, subType: ElementSubType.Cow, count: 1, disabled: !itemsToTradeExistForCow });
+    let itemsToTradeExistForCow = BoardUtils.itemsForTradeExistOnTile(elem, getTradeCostForSubType(ElementSubTypes.Cow), cells);
+    offerings.push({ type: ElementTypes.Item, subType: ElementSubTypes.Cow, count: 1, disabled: !itemsToTradeExistForCow });
 
     return offerings
   }
 
-  static getItemTypesPersonCanGive(personElem: Element|null, cells: Cell[], requiredCount: number): ElementSubType[] {
+  static getItemTypesPersonCanGive(personElem: Element|null, cells: Cell[], requiredCount: number): ElementSubTypes[] {
     if (!personElem) {
       throw new Error("No personElem supplied to 'getItemsPersonCanGive'");
     }
@@ -865,7 +865,7 @@ export default class BoardUtils {
   }
 
   static personCanShoot(personElem: Element, cells: Cell[]): boolean {
-    let hasBow = personElem.heldElements.filter(el => el.subType == ElementSubType.Bow).length > 0;
+    let hasBow = personElem.heldElements.filter(el => el.subType == ElementSubTypes.Bow).length > 0;
     if (!hasBow) {
       return false
     }
@@ -889,10 +889,10 @@ export default class BoardUtils {
 
   static personCanDestroy(personElem: Element, cells: Cell[]): boolean {
     let parentElem = BoardUtils.getElementParentCell(personElem, cells);
-    let buildingElements = parentElem.elements.filter(el => el.type == ElementType.Building);
+    let buildingElements = parentElem.elements.filter(el => el.type == ElementTypes.Building);
     if (buildingElements.length < 1) { return false };
     let building = buildingElements[0];
-    if (building.subType == ElementSubType.Capital && building.team == personElem.team) { return false };
+    if (building.subType == ElementSubTypes.Capital && building.team == personElem.team) { return false };
     return true
   }
 }

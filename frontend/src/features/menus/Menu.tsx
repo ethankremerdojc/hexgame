@@ -6,11 +6,11 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementType,
-  CellType,
-  ElementSubType,
-  ElementAction,
-  TeamColor
+  ElementTypes,
+  CellTypes,
+  ElementSubTypes,
+  ElementActions,
+  TeamColors
 } from "@/features/game/gameTypes"
 
 // import {
@@ -44,11 +44,17 @@ import {
 
 import { 
   getBuildingCost,
-  nameForElementSubType,
   colorForTeam,
   getSpecificItemBuildingCost,
   getTradeCostForSubType
 } from "../board/vars"
+
+
+import { 
+  nameForElementSubType,
+  objectToElement,
+  nameForTeamColor,
+} from "@/features/game/gameUtils"
 
 import BoardUtils from "../board/boardUtils"
 import BoardActions from "../board/boardActions"

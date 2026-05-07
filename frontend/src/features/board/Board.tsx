@@ -5,7 +5,7 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementType, ElementSubType, ElementAction, CellType,
+  ElementTypes, ElementSubTypes, ElementActions, CellTypes,
 } from "@/features/game/gameTypes"
 
 import type {
