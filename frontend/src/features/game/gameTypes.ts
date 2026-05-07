@@ -1,82 +1,80 @@
-export const TeamColor: object = {
-  White: "White",
-  Purple: "Purple",
-  Red: "Red",
-  Yellow: "Yellow",
-  Blue: "Blue",
-  Green: "Green",
-  Black: "Black",
-  Brown: "Brown"
+export const TeamColors: object = {
+  "White": 0,
+  "Purple": 1,
+  "Red": 2,
+  "Yellow": 3,
+  "Blue": 4,
+  "Green": 5,
+  "Black": 6,
+  "Brown": 7
 }
 
-// Cells
-
-export const CellType: object = {
-  Field: "Field",
-  Desert: "Desert",
-  Forest: "Forest",
-  Mountain: "Mountain",
-  ClayField: "ClayField"
+export const CellTypes: object = {
+  "Field": 0,
+  "Desert": 1,
+  "Forest": 2,
+  "Mountain": 3,
+  "ClayField": 4
 }
 
 export type Cell = {
   x: number,
   y: number,
-  type: CellType,
+  type: number,
   elements: Element[]
 }
 
 // Elements
 
-export const ElementType = {
-  Building: "Building",
-  Person: "Person",
-  Item: "Item"
+export const ElementTypes = {
+  "Building": 0,
+  "Person": 1,
+  "Item": 2
 }
 
-export const ElementSubType = {
+export const ElementSubTypes = {
   // buildings 
-  Capital: "Capital",
-  Village: "Village",
+  "Capital": 0,
+  "Village": 1,
 
-  Farm: "Farm",
-  SawMill: "SawMill",
-  Quarry: "Quarry",
-  BrickFactory: "BrickFactory",
+  "Farm": 2,
+  "SawMill": 3,
+  "Quarry": 4,
+  "BrickFactory": 5,
 
   // persons
-  Villager: "Villager",
-  Trader: "Trader",
+  "Villager": 6,
+  "Trader": 7,
 
   // items
-  Food: "Food",
-  Wood: "Wood",
-  Ore: "Ore",
-  Clay: "Clay",
-  Gold: "Gold",
+  "Food": 8,
+  "Wood": 9,
+  "Ore": 10,
+  "Clay": 11,
+  "Gold": 12,
 
-  Sword: "Sword",
-  Bow: "Bow",
-  Shield: "Shield",
-  Cart: "Cart",
-  Horse: "Horse",
+  "Sword": 13,
+  "Bow": 14,
+  "Shield": 15,
+  "Cart": 16,
+  "Horse": 17,
 
-  Cow: "Cow",
-  Leather: "Leather",
-  LeatherArmor: "LeatherArmor",
+  "Cow": 18,
+  "Leather": 19,
+  "LeatherArmor": 20,
 
-  Spear: "Spear",
-  Mace: "Mace",
-  IronArmor: "IronArmor",
+  "Spear": 21,
+  "Mace": 22,
+  "IronArmor": 23,
 
-  Forge: "Forge"
+  "Forge": 24
 }
 
 export type Element = {
-  type: ElementType,
-  subType: ElementSubType,
+  type: number,
+  subType: number,
 
-  team: TeamColor|null,
+  team: number|null,
   position: HexPosition|null,
   id: string,
   count: number,
@@ -91,18 +89,18 @@ export type Element = {
   isScavenging: boolean|null,
 }
 
-export const ElementAction = {
-  Move: "Move",
-  Take: "Take",
-  Drop: "Drop",
-  Fight: "Fight",
-  Build: "Build",
-  Destroy: "Destroy",
-  Work: "Work",
-  Heal: "Heal",
-  Reproduce: "Reproduce",
-  Trade: "Trade",
-  Shoot: "Shoot",
-  Rename: "Rename",
-  Scavenge: "Scavenge"
+export const ElementActions = {
+  "Move": 0,
+  "Take": 1,
+  "Drop": 2,
+  "Fight": 3,
+  "Build": 4,
+  "Destroy": 5,
+  "Work": 6,
+  "Heal": 7,
+  "Reproduce": 8,
+  "Trade": 9,
+  "Shoot": 10,
+  "Rename": 11,
+  "Scavenge": 12
 }

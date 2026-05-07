@@ -7,7 +7,7 @@ import type {
 } from "@/features/board/boardTypes"
 
 import {
-  CellType, ElementType, ElementSubType,
+  CellTypes, ElementType, ElementSubType,
   // USABLE_ITEMS
 } from "@/features/game/gameTypes"
 
@@ -361,15 +361,15 @@ export default class BoardRenderer {
     }
   }
 
-  getCellPattern(cellType: CellType): HTMLCanvasElement {
+  getCellPattern(cellType: number): HTMLCanvasElement {
 
     if (window.__cellPatterns === undefined) {
       let keys = [
-        CellType.Field,
-        CellType.Forest,
-        CellType.Mountain,
-        CellType.Desert,
-        CellType.ClayField
+        CellTypes.Field,
+        CellTypes.Forest,
+        CellTypes.Mountain,
+        CellTypes.Desert,
+        CellTypes.ClayField
       ]
 
       let result: any = {};
@@ -380,19 +380,19 @@ export default class BoardRenderer {
 
         //TODO if we store each based on radius, it won't add much
         switch (Number(key)) {
-          case CellType.Field:
+          case CellTypes.Field:
             canvasEl = getGrassCanvas(this.opts.radius);
             break;
-          case CellType.Forest:
+          case CellTypes.Forest:
             canvasEl = getForestCanvas(this.opts.radius);
             break;
-          case CellType.Mountain:
+          case CellTypes.Mountain:
             canvasEl = getMountainCanvas(this.opts.radius);
             break;
-          case CellType.Desert:
+          case CellTypes.Desert:
             canvasEl = getDesertCanvas(this.opts.radius);
             break;
-          case CellType.ClayField:
+          case CellTypes.ClayField:
             canvasEl = getClayfieldCanvas(this.opts.radius);
             break
           default:
@@ -419,7 +419,7 @@ export default class BoardRenderer {
     this.ctx.translate(origin.x, origin.y);
     this.polyPath3(points);
     this.ctx.restore();
-
+    
     this.fillCell(cell.type);
 
     this.ctx.save();
@@ -437,7 +437,7 @@ export default class BoardRenderer {
   }
 
   fillCell(
-    cellType: CellType,
+    cellType: number,
   ) {
 
     let canvasEl: HTMLCanvasElement= this.getCellPattern(cellType);
