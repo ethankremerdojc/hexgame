@@ -126,7 +126,8 @@ function HowToPlay() {
             There can not already be another structure there.
           </li>
           <li>
-            Destroy: Destroy a structure at the tile you are on.
+            Destroy: Destroy a structure at the tile you are on.<br />
+            You can not destroy a building if there is an enemy on the same tile as your villager.
           </li>
           <li>
             Work: Cause your villager to work until the next turn, earning items.<br />

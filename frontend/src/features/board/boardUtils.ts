@@ -886,6 +886,11 @@ export default class BoardUtils {
 
   static personCanDestroy(personElem: Element, cells: Cell[]): boolean {
     let parentElem = BoardUtils.getElementParentCell(personElem, cells);
+
+    if (BoardUtils.enemyExistsOnCell(personElem, parentElem)) {
+      return false
+    }
+
     let buildingElements = parentElem.elements.filter(el => el.type == ElementType.Building);
     if (buildingElements.length < 1) { return false };
     let building = buildingElements[0];
