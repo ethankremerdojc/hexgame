@@ -1,12 +1,16 @@
+import { 
+  colorForTeam,
+} from "@/features/board/boardVars"
+
 import {
   CELL_INFO_BY_TYPE, 
   PERSON_BASE_HEALTH,
   STARTING_FOOD
-} from "./vars"
+} from "@/features/game/gameVars"
 
 import {
-  randomItem, getEnumValueByIndex
-} from "./utils.js";
+  randomItem
+} from "@/utils";
 
 import type { 
   Element, Cell

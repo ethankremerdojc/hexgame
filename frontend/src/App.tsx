@@ -11,7 +11,6 @@ import {
   setSelectedCell,
   getSelectedElement, setSelectedElement,
   setShowMoveInfo,
-  setBackupCells,
 } from "@/features/board/boardSlice"
 
 import {
@@ -31,19 +30,12 @@ import {
   getGameOver, setGameOver,
   setPlayerCount,
   setGameId,
+  setBackupCells,
 } from "@/features/game/gameSlice"
 
 import {
-  prepareCellsForStateSave,
-} from "@/features/game/gameUtils"
-
-// import {
-// nameForTeamColor
-// } from "@/features/board/vars"
-
-import {
   getUsernamesFromGameObj
-} from "@/features/board/utils"
+} from "@/utils"
 
 import {
   getBackendContext

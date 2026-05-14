@@ -11,7 +11,6 @@ import type {
 } from "@/features/board/boardTypes"
 
 export interface BoardState {
-  backupCells: Cell[],
   selectedCell: Cell|null,
   selectedElement: Element|null,
   offset: Coordinate,
@@ -20,7 +19,6 @@ export interface BoardState {
 }
 
 const initialState: BoardState = {
-  backupCells: [],
   selectedCell: null,
   selectedElement: null,
   offset: {x: 0, y: 0},
@@ -32,9 +30,6 @@ const boardSlice = createSlice({
   name: "board",
   initialState,
   reducers: {
-    setBackupCells(state, action: PayloadAction<Cell[]>) {
-      state.backupCells = action.payload;
-    },
     setSelectedCell(state, action: PayloadAction<Cell|null>) {
       state.selectedCell = action.payload;
     },
@@ -63,10 +58,8 @@ export const getSelectedElement = (state: RootState): Element|null => state.boar
 export const getBoardOffset = (state: RootState): Coordinate => state.board.offset;
 export const getBoardZoom = (state: RootState): number => state.board.zoom;
 export const getShowMoveInfo = (state: RootState): boolean => state.board.showMoveInfo;
-export const getBackupCells = (state: RootState): boolean => state.board.backupCells;
 
 export const { 
-  setBackupCells,
   setSelectedCell,
   setSelectedElement,
   setBoardOffset,

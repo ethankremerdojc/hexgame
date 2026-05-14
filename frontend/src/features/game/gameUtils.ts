@@ -9,10 +9,15 @@ import {
   THINGS_THAT_CAN_BE_BUILT,
   COW_PRODUCING_TILES,
   WORKER_ITEM_GENERATION_AMOUNT,
-  BUILDING_ITEM_GENERATION_AMOUNT
+  BUILDING_ITEM_GENERATION_AMOUNT,
+  NO_FOOD_PENALTY
 }  from "@/features/game/gameVars"
 
+import { NAMES_LIST } from "@/features/game/randomNames"
+
 import BoardUtils from "@/features/board/boardUtils"
+
+import { randomItem } from "@/utils"
 
 export function getRandomName(): string {
   return randomItem(NAMES_LIST)

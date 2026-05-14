@@ -23,6 +23,7 @@ import BoardUtils from "@/features/board/boardUtils"
 
 export interface GameState {
   cells: Cell[],
+  backupCells: Cell[],
   playerCount: number,
   playerTurn: TeamColors,
   gameId: number,
@@ -34,6 +35,7 @@ export interface GameState {
 
 const initialState: GameState = {
   cells: [],
+  backupCells: [],
   playerCount: 0,
   playerTurn: TeamColors.White,
   gameId: -1,
@@ -51,6 +53,9 @@ const gameSlice = createSlice({
       let cells = action.payload;
       let newCells = prepareCellsForStateSave(cells);
       state.cells = newCells;
+    },
+    setBackupCells(state, action: PayloadAction<Cell[]>) {
+      state.backupCells = action.payload;
     },
     setPlayerCount(state, action: PayloadAction<number>) {
       state.playerCount = action.payload;
@@ -91,7 +96,6 @@ const gameSlice = createSlice({
 
       const winnerExists = checkForWinner(cells, currentPlayerTurn);
       if (winnerExists) {
-        console.log("winner exists")
         state.cells = cells;
         state.gameOver = true;
         postUpdateToBackend(
@@ -102,8 +106,9 @@ const gameSlice = createSlice({
           state.loggedInUsername
         );
       } else {
-        state.cells = setupNewTurn(cells, state.playerTurn, state.turnNumber);
-        state.backupCells = state.cells;
+        let newCells = setupNewTurn(cells, state.playerTurn, state.turnNumber);
+        state.cells = newCells;
+        state.backupCells = newCells;
 
         if (state.playerTurn == 0) {
           state.turnNumber += 1;
@@ -116,6 +121,7 @@ const gameSlice = createSlice({
 });
 
 export const getCells = (state: RootState): Cell[] => state.game.cells;
+export const getBackupCells = (state: RootState): boolean => state.game.backupCells;
 export const getPlayerCount = (state: RootState): number => state.game.playerCount;
 export const getPlayerTurn = (state: RootState): TeamColors => state.game.playerTurn;
 export const getGameId = (state: RootState): number => state.game.gameId;
@@ -127,6 +133,7 @@ export const getGameOver = (state: RootState): boolean => state.game.gameOver;
 
 export const { 
   setCells,
+  setBackupCells,
   setPlayerCount,
   setPlayerTurn,
   setGameId,

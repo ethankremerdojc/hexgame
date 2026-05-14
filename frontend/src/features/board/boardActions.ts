@@ -1,7 +1,3 @@
-// import {
-//   getElementId
-// } from "./boardSlice"
-
 import type {
   Cell, Element
 } from "@/features/game/gameTypes"
@@ -418,7 +414,6 @@ export default class BoardActions {
     }
 
     if (elementParent.type == CellTypes.Desert) {
-      console.log("adding scavenge")
       result.push(ElementActions.Scavenge)
     }
 

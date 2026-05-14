@@ -16,9 +16,9 @@ import {
 
 import BoardUtils from "./boardUtils.ts"
 
-import {
-  colorForTeam
-} from "./vars";
+import { 
+  colorForTeam,
+} from "@/features/board/boardVars"
 
 import { 
   getGrassCanvas,
@@ -27,7 +27,8 @@ import {
   getDesertCanvas,
   getClayfieldCanvas
 } from "./canvasPatterns.ts";
-import { drawSvgToCanvas } from "./utils.js";
+
+import { drawSvgToCanvas } from "@/utils";
 
 //buildings
 import capitalSvgRaw from "./svg/capital.svg?raw";

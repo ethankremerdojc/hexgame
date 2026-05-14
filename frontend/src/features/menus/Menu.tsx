@@ -17,7 +17,6 @@ import {
   setSelectedCell,
   getSelectedElement, setSelectedElement,
   setShowMoveInfo,
-  getBackupCells,
   clearAll
 } from "@/features/board/boardSlice"
 
@@ -29,6 +28,7 @@ import {
 
 import {
   getCells, setCells,
+  getBackupCells, setBackupCells,
   getRoundNumber,
   getUsernames,
   getPlayerTurn,
@@ -38,11 +38,9 @@ import {
 } from "@/features/game/gameSlice"
 
 import { 
-  getBuildingCost,
   colorForTeam,
-  getSpecificItemBuildingCost,
-  getTradeCostForSubType
-} from "../board/vars"
+
+} from "@/features/board/boardVars"
 
 
 import { 
@@ -50,6 +48,9 @@ import {
   objectToElement,
   nameForTeamColor,
   prepareCellsForStateSave,
+  getSpecificItemBuildingCost,
+  getTradeCostForSubType,
+  getBuildingCost,
 } from "@/features/game/gameUtils"
 
 import {
@@ -743,6 +744,7 @@ export function ElementActionsMenu() {
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
 
   const backupCells = useAppSelector(getBackupCells);
+  const cells = useAppSelector(getCells);
 
   const endTurnHandler = () => {
     dispatch(endTurn());

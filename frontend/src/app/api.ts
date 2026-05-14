@@ -3,7 +3,7 @@ import { TeamColors } from "@/features/game/gameTypes"
 
 import {
   getCSRFToken
-} from "@/features/board/utils"
+} from "@/utils"
 
 export async function postUpdateToBackend(
   cells: Cell[],

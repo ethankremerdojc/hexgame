@@ -28,16 +28,12 @@ import {
 import {
   getPlayerTurn,
   getCells, setCells,
+  getGameId
 } from "@/features/game/gameSlice"
 
 import {
   postUpdateToBackend
 } from "@/app/api.js"
-
-//TODO Figure out why lol
-import {
-  getGameId
-} from "../../App"
 
 import './EditorMenu.css'
 
@@ -47,6 +43,7 @@ import type { ButtonSelectOption }  from "@/components/ButtonSelect/ButtonSelect
 export default function EditorMenu() {
   const dispatch = useAppDispatch();
   const cells = useAppSelector(getCells);
+  const gameId = useAppSelector(getGameId);
   const selectedCell = useAppSelector(getSelectedCell);
   const playerTurn = useAppSelector(getPlayerTurn);
   
@@ -99,7 +96,7 @@ export default function EditorMenu() {
       return
     }
     let t = ElementTypes.Item;
-    if (subType == ElementSubType.Trader) {
+    if (subType == ElementSubTypes.Trader) {
       t = ElementTypes.Person;
     }
     let element = objectToElement({type: t, subType: subType});
@@ -126,7 +123,7 @@ export default function EditorMenu() {
     let newCells = structuredClone(cells);
     for (var cell of newCells) {
       if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
-        cell.elements = cell.elements.filter((el: Element) => [ElementSubType.Capital, ElementSubType.Villager].includes(el.subType));
+        cell.elements = cell.elements.filter((el: Element) => [ElementSubTypes.Capital, ElementSubTypes.Villager].includes(el.subType));
       }
     }
     dispatch(setCells(newCells));
@@ -149,7 +146,7 @@ export default function EditorMenu() {
 
     for (var cell of cells) {
       let relevantCapitalExists = cell.elements.filter(
-        (el: Element) => el.subType == ElementSubType.Capital && el.team == playerTeam).length > 0;
+        (el: Element) => el.subType == ElementSubTypes.Capital && el.team == playerTeam).length > 0;
 
       if (relevantCapitalExists) {
         oldCapitalCell = structuredClone(cell);
@@ -177,7 +174,7 @@ export default function EditorMenu() {
     let count = 0;
     for (var cell of cells) {
       for (var el of cell.elements) {
-        if (el.subType == ElementSubType.Capital) {
+        if (el.subType == ElementSubTypes.Capital) {
           count ++;
         }
       }
@@ -202,7 +199,7 @@ export default function EditorMenu() {
 
   function getCellTypeSelectorOptions(): ButtonSelectOption[] {
     let result = [];
-    for (var cellType of Object.entries(CellType)) {
+    for (var cellType of Object.entries(CellTypes)) {
       if (typeof(cellType[1]) == "string") {
         continue
       }
@@ -214,24 +211,24 @@ export default function EditorMenu() {
   function getElementSubTypeSelectorOptions(): ButtonSelectOption[] {
 
     let allowedSubTypes = [
-      ElementSubType.Trader,
+      ElementSubTypes.Trader,
 
-      ElementSubType.Food,
-      ElementSubType.Wood,
-      ElementSubType.Ore,
-      ElementSubType.Clay,
-      ElementSubType.Gold,
-      ElementSubType.Sword,
-      ElementSubType.Mace,
-      ElementSubType.Spear,
-      ElementSubType.IronArmor,
-      ElementSubType.Bow,
-      ElementSubType.Shield,
-      ElementSubType.Cart,
-      ElementSubType.Horse,
-      ElementSubType.Cow,
-      ElementSubType.Leather,
-      ElementSubType.LeatherArmor
+      ElementSubTypes.Food,
+      ElementSubTypes.Wood,
+      ElementSubTypes.Ore,
+      ElementSubTypes.Clay,
+      ElementSubTypes.Gold,
+      ElementSubTypes.Sword,
+      ElementSubTypes.Mace,
+      ElementSubTypes.Spear,
+      ElementSubTypes.IronArmor,
+      ElementSubTypes.Bow,
+      ElementSubTypes.Shield,
+      ElementSubTypes.Cart,
+      ElementSubTypes.Horse,
+      ElementSubTypes.Cow,
+      ElementSubTypes.Leather,
+      ElementSubTypes.LeatherArmor
     ];
 
     let result = [];
@@ -290,7 +287,7 @@ export default function EditorMenu() {
           {
             window.__editing_live_game &&
             <button className="inverted" style={{color: "red"}} onClick={() => {
-              postUpdateToBackend(cells, playerTurn, getGameId(), true).then(r => {
+              postUpdateToBackend(cells, playerTurn, gameId, true).then(r => {
                 console.log(r);
                 alert("succesffuly updated game")
               })
