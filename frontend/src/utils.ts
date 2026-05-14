@@ -24,15 +24,15 @@ export function getCSRFToken(): string {
 
 // Below two have both the names and numbers if you do values, otherwise reversed
 // White, Purple, Red, 0, 1, 2
-export function getEnumValueByIndex(enumeration: any, index: number): any {
-  const keys = Object.keys(enumeration);
-  return keys[index];
-}
+// export function getEnumValueByIndex(enumeration: any, index: number): any {
+//   const keys = Object.keys(enumeration);
+//   return keys[index];
+// }
 
-export function getRandomEnumValue(enumeration: any): number {
-  const keys = Object.keys(enumeration);
-  return randomInt(0, Math.floor(keys.length / 2));
-}
+// export function getRandomEnumValue(enumeration: any): number {
+//   const keys = Object.keys(enumeration);
+//   return randomInt(0, Math.floor(keys.length / 2));
+// }
 
 function applyElementTransform(el: any, path:any) {
   const transformList = el.transform?.baseVal;

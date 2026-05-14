@@ -1,4 +1,4 @@
-import { drawSvgToCanvas } from "./utils.ts";
+import { drawSvgToCanvas } from "@/utils";
 import grassTileSvg from "./svg/grassTile.svg?raw";
 import forestTileSvg from "./svg/forestTile.svg?raw";
 import rockTileSvg from "./svg/rockTile.svg?raw";

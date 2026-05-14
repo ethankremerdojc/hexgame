@@ -1,35 +1,38 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
-import type { Element, Cell } from "../board/boardTypes"
+import type { 
+  Element, Cell
+} from "@/features/game/gameTypes"
 
 import {
-  CellType,
-  ElementType,
-  ElementSubType,
-  TeamColor,
-  objectToElement
-} from "../board/boardTypes"
+  ElementTypes,
+  CellTypes,
+  ElementSubTypes,
+} from "@/features/game/gameTypes"
+
+
+import { 
+  nameForElementSubType,
+  objectToElement,
+  nameForTeamColor,
+} from "@/features/game/gameUtils"
 
 import {
   getSelectedCell,
   setSelectedCell,
+} from "@/features/board/boardSlice"
+
+
+import {
   getPlayerTurn,
   getCells, setCells,
-} from "../board/boardSlice.ts";
+  getGameId
+} from "@/features/game/gameSlice"
 
 import {
   postUpdateToBackend
 } from "@/app/api.js"
-
-import {
-  getGameId
-} from "../../App"
-
-import {
-  nameForTeamColor,
-  nameForElementSubType
-} from "../board/vars"
 
 import './EditorMenu.css'
 
@@ -39,16 +42,17 @@ import type { ButtonSelectOption }  from "@/components/ButtonSelect/ButtonSelect
 export default function EditorMenu() {
   const dispatch = useAppDispatch();
   const cells = useAppSelector(getCells);
+  const gameId = useAppSelector(getGameId);
   const selectedCell = useAppSelector(getSelectedCell);
   const playerTurn = useAppSelector(getPlayerTurn);
   
   const [copiedCellContents, setCopiedCellContents]: [any, any] = useState([]);
 
   const [selectedCellType, setSelectedCellType] = useState("");
-  const [selectedElementType, setSelectedElementType] = useState("");
+  const [selectedElementTypes, setSelectedElementTypes] = useState("");
   const [selectedTeamColor, setSelectedTeamColor] = useState("");
 
-  function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
+  function setCellType(x: number, y: number, type: number, oldCells: Cell[]): Cell[] {
     let newCells = structuredClone(oldCells);
     for (var cell of newCells) {
       if (cell.x == x && cell.y == y) {
@@ -86,13 +90,13 @@ export default function EditorMenu() {
     dispatch(setCells(newCells));
   }
 
-  function addElementAndSave(subType: ElementSubType) {
+  function addElementAndSave(subType: number) {
     if (selectedCell === null) {
       return
     }
-    let t = ElementType.Item;
-    if (subType == ElementSubType.Trader) {
-      t = ElementType.Person;
+    let t = ElementTypes.Item;
+    if (subType == ElementSubTypes.Trader) {
+      t = ElementTypes.Person;
     }
     let element = objectToElement({type: t, subType: subType});
     let newCells = addElement(selectedCell.x, selectedCell.y, element, cells);
@@ -118,13 +122,13 @@ export default function EditorMenu() {
     let newCells = structuredClone(cells);
     for (var cell of newCells) {
       if (cell.x == selectedCell.x && cell.y == selectedCell.y) {
-        cell.elements = cell.elements.filter((el: Element) => [ElementSubType.Capital, ElementSubType.Villager].includes(el.subType));
+        cell.elements = cell.elements.filter((el: Element) => [ElementSubTypes.Capital, ElementSubTypes.Villager].includes(el.subType));
       }
     }
     dispatch(setCells(newCells));
   }
 
-  function moveCapital(playerTeam: TeamColor) {
+  function moveCapital(playerTeam: number) {
     // swap contents of whatever selected cell and current player team capital is
     // unless the selected cell already has stuff on it
     
@@ -141,7 +145,7 @@ export default function EditorMenu() {
 
     for (var cell of cells) {
       let relevantCapitalExists = cell.elements.filter(
-        (el: Element) => el.subType == ElementSubType.Capital && el.team == playerTeam).length > 0;
+        (el: Element) => el.subType == ElementSubTypes.Capital && el.team == playerTeam).length > 0;
 
       if (relevantCapitalExists) {
         oldCapitalCell = structuredClone(cell);
@@ -169,7 +173,7 @@ export default function EditorMenu() {
     let count = 0;
     for (var cell of cells) {
       for (var el of cell.elements) {
-        if (el.subType == ElementSubType.Capital) {
+        if (el.subType == ElementSubTypes.Capital) {
           count ++;
         }
       }
@@ -194,7 +198,7 @@ export default function EditorMenu() {
 
   function getCellTypeSelectorOptions(): ButtonSelectOption[] {
     let result = [];
-    for (var cellType of Object.entries(CellType)) {
+    for (var cellType of Object.entries(CellTypes)) {
       if (typeof(cellType[1]) == "string") {
         continue
       }
@@ -206,24 +210,24 @@ export default function EditorMenu() {
   function getElementSubTypeSelectorOptions(): ButtonSelectOption[] {
 
     let allowedSubTypes = [
-      ElementSubType.Trader,
+      ElementSubTypes.Trader,
 
-      ElementSubType.Food,
-      ElementSubType.Wood,
-      ElementSubType.Ore,
-      ElementSubType.Clay,
-      ElementSubType.Gold,
-      ElementSubType.Sword,
-      ElementSubType.Mace,
-      ElementSubType.Spear,
-      ElementSubType.IronArmor,
-      ElementSubType.Bow,
-      ElementSubType.Shield,
-      ElementSubType.Cart,
-      ElementSubType.Horse,
-      ElementSubType.Cow,
-      ElementSubType.Leather,
-      ElementSubType.LeatherArmor
+      ElementSubTypes.Food,
+      ElementSubTypes.Wood,
+      ElementSubTypes.Ore,
+      ElementSubTypes.Clay,
+      ElementSubTypes.Gold,
+      ElementSubTypes.Sword,
+      ElementSubTypes.Mace,
+      ElementSubTypes.Spear,
+      ElementSubTypes.IronArmor,
+      ElementSubTypes.Bow,
+      ElementSubTypes.Shield,
+      ElementSubTypes.Cart,
+      ElementSubTypes.Horse,
+      ElementSubTypes.Cow,
+      ElementSubTypes.Leather,
+      ElementSubTypes.LeatherArmor
     ];
 
     let result = [];
@@ -254,10 +258,10 @@ export default function EditorMenu() {
             buttonText={"Add"}
             nullVal={{label: "- Element Type -", value: ""}}
             options={getElementSubTypeSelectorOptions()}
-            value={selectedElementType}
-            onChange={setSelectedElementType}
+            value={selectedElementTypes}
+            onChange={setSelectedElementTypes}
             onButtonClick={() => {
-              addElementAndSave(Number(selectedElementType));
+              addElementAndSave(Number(selectedElementTypes));
             }}
           />
 
@@ -282,7 +286,7 @@ export default function EditorMenu() {
           {
             window.__editing_live_game &&
             <button className="inverted" style={{color: "red"}} onClick={() => {
-              postUpdateToBackend(cells, playerTurn, getGameId(), true).then(r => {
+              postUpdateToBackend(cells, playerTurn, gameId, true).then(r => {
                 console.log(r);
                 alert("succesffuly updated game")
               })

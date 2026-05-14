@@ -1,13 +1,12 @@
-import type { Cell } from "@/features/board/boardTypes"
-import { TeamColor } from "@/features/board/boardTypes"
+import type { Cell } from "@/features/game/gameTypes"
 
 import {
   getCSRFToken
-} from "@/features/board/utils"
+} from "@/utils"
 
 export async function postUpdateToBackend(
   cells: Cell[],
-  playerTurn: TeamColor,
+  playerTurn: number,
   gameId: number,
   wasAdminUpdate: boolean=false,
   playerThatJustWon: string=""

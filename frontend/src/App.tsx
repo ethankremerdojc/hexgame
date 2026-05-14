@@ -8,30 +8,30 @@ import {
 } from "@/features/board/boardGenerator.ts";
 
 import {
-  getCells,
-  setCells, setBackupCells,
-  // getPlayerCount,
-  setPlayerCount,
-  setPlayerTurn,
-  setViewOnly, getViewOnly,
-  setGameId,
-  setUsernames,
-  getCurrentPlayerName,
-  getLoggedInUsername,
-  setLoggedInUsername,
-  setUserSubscribed,
-  setTurnNumber,
-  setGameOver, getGameOver,
-  setBoardOffset, setBoardZoom
+  setBoardZoom, setBoardOffset
 } from "@/features/board/boardSlice"
 
-// import {
-// nameForTeamColor
-// } from "@/features/board/vars"
+import {
+  setUserSubscribed,
+  getViewOnly, setViewOnly
+} from "@/features/menus/menuSlice"
+
+import {
+  getCells, setCells,
+  setRoundNumber,
+  setUsernames,
+  setPlayerTurn,
+  getCurrentPlayerName,
+  getLoggedInUsername, setLoggedInUsername,
+  getGameOver, setGameOver,
+  setPlayerCount,
+  setGameId,
+  setBackupCells,
+} from "@/features/game/gameSlice"
 
 import {
   getUsernamesFromGameObj
-} from "@/features/board/utils"
+} from "@/utils"
 
 import {
   getBackendContext
@@ -56,7 +56,7 @@ declare global {
 }
 
 export const TESTING = window.location.host.includes(":5173");
-const TEST_GAME_ID = 20;
+const TEST_GAME_ID = 35;
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = TESTING && false;
 
@@ -108,7 +108,7 @@ function App() {
     dispatch(setPlayerCount(game.players.length));
     dispatch(setPlayerTurn(game.current_player_turn));
     dispatch(setGameId(game.id));
-    dispatch(setTurnNumber(game.turn_number));
+    dispatch(setRoundNumber(game.turn_number));
     dispatch(setUserSubscribed(backendContext.subscribed));
     dispatch(setUsernames(getUsernamesFromGameObj(game)));
     dispatch(setGameOver(game.complete));

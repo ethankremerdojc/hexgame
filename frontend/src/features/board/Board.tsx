@@ -1,26 +1,37 @@
 import React, { useEffect, useRef, useState  } from "react";
 
-
 import type {
-  Coordinate, Cell, Element
-} from "./boardTypes"
+  Cell, Element
+} from "@/features/game/gameTypes"
 
 import {
-  ElementType
-} from "./boardTypes"
+  ElementTypes
+} from "@/features/game/gameTypes"
+
+import type {
+  Coordinate
+} from "@/features/board/boardTypes"
 
 import {
   getCells, setCells,
+  getCurrentPlayerName,
+  getLoggedInUsername,
+  getPlayerTurn,
+  getPlayerCount,
+} from "@/features/game/gameSlice"
+
+import {
   getSelectedCell, setSelectedCell,
   getSelectedElement, setSelectedElement,
   getBoardZoom, setBoardZoom,
   getBoardOffset, setBoardOffset,
   getShowMoveInfo, setShowMoveInfo,
-  getPlayerTurn, getPlayerCount,
+} from "@/features/board/boardSlice"
+
+import {
   setActionHandling,
   setActionItemsToSelectFrom,
-  getCurrentPlayerName, getLoggedInUsername
-} from "./boardSlice.ts";
+} from "@/features/menus/menuSlice"
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 
@@ -42,7 +53,6 @@ function getSelectedCellFromMousePos(
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
-      console.log("selected cell: ", cell)
       return cell
     }
   }
@@ -362,7 +372,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
         dispatch(setActionHandling(""));
         dispatch(setActionItemsToSelectFrom([]));
 
-        if (selectedElement && selectedElement.type == ElementType.Person && showMoveInfo) {
+        if (selectedElement && selectedElement.type == ElementTypes.Person && showMoveInfo) {
           // check if one of the adjacent tiles has been selected
 
           // let elemParentCell = BoardUtils.getElementParentCell(selectedElement, cells);
