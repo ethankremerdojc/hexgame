@@ -900,7 +900,7 @@ export default class BoardUtils {
       return false
     }
 
-    let buildingElements = parentElem.elements.filter(el => el.type == ElementType.Building);
+    let buildingElements = parentElem.elements.filter(el => el.type == ElementTypes.Building);
     if (buildingElements.length < 1) { return false };
     let building = buildingElements[0];
     if (building.subType == ElementSubTypes.Capital && building.team == personElem.team) { return false };

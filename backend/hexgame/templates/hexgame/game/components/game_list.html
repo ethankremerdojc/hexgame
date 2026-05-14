@@ -204,9 +204,7 @@
 
 <div class="games-list">
   <h1>{{ title }}</h1>
-  {% if is_own %}
-    <div class="mobile-archive-link"><a class="archive-link" href="/archive/">Archive</a></div>
-  {% endif %}
+  <div class="mobile-archive-link"><a class="archive-link" href="/archive/">Archive</a></div>
   <table class="games-list-table">
     <thead>
       <tr class="games-list-head-tr">
@@ -215,9 +213,7 @@
         <th>Player Turn</th>
         <th>Players</th>
         <th>Created By</th>
-        {% if is_own %}
-          <th><a class="archive-link" href="/archive/">Archive</a></th>
-        {% endif %}
+        <th><a class="archive-link" href="/archive/">Archive</a></th>
       </tr>
     </thead>
     <tbody>
@@ -259,7 +255,7 @@
             <!-- <b style="display: block;">{{ game.last_player_turn_user.username }}</b>{{ game.time_since_last_update_string }} ago -->
         </td>
           <td class="game-creator">{{ game.creator.username }}</td>
-          {% if is_own %}
+          {% if game.creator.username == user.username %}
             <td class="game-archive-button">
                 <form method="post" action="{% url 'toggle_archive_game' %}" class="archive-form">
                 {% csrf_token %}
@@ -267,6 +263,8 @@
                 <button type="submit" class="archive-button">{% if game.archived %}Unarchive{% else %}Archive{% endif %} Game</button>
                 </form>
             </td>
+          {% else %}
+            <td class="game-archive-button"></td>
           {% endif %}
         </tr>
 
