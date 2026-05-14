@@ -5,7 +5,7 @@ import type {
 } from "@/features/game/gameTypes"
 
 import {
-  ElementTypes, ElementSubTypes, ElementActions, CellTypes,
+  ElementTypes
 } from "@/features/game/gameTypes"
 
 import type {
@@ -53,7 +53,6 @@ function getSelectedCellFromMousePos(
 
   for (var cell of cells) {
     if (cell.x == x && cell.y == y) {
-      console.log("selected cell: ", cell)
       return cell
     }
   }

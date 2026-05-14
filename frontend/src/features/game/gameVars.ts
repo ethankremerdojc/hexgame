@@ -1,12 +1,8 @@
-import type {
-  Cell, Element
-} from "@/features/game/gameTypes"
-
 import {
-  ElementTypes, ElementSubTypes, ElementActions, CellTypes,
+  ElementSubTypes, CellTypes,
 } from "@/features/game/gameTypes"
 
-export const MATERIAL_ELEMENT_SUBTYPES: ElementSubTypes[] = [
+export const MATERIAL_ELEMENT_SUBTYPES: number[] = [
     ElementSubTypes.Wood,
     ElementSubTypes.Food,
     ElementSubTypes.Ore,
@@ -14,7 +10,7 @@ export const MATERIAL_ELEMENT_SUBTYPES: ElementSubTypes[] = [
     ElementSubTypes.Leather
 ];
 
-export const USABLE_ITEMS: ElementSubTypes[] = [
+export const USABLE_ITEMS: number[] = [
   ElementSubTypes.Sword,
   ElementSubTypes.Bow,
   ElementSubTypes.Shield,
@@ -26,16 +22,16 @@ export const USABLE_ITEMS: ElementSubTypes[] = [
   ElementSubTypes.LeatherArmor
 ]
 
-export const ITEMS_YOU_CAN_HOLD_ONE_OF: ElementSubTypes[] = [...USABLE_ITEMS, ElementSubTypes.Cow]
+export const ITEMS_YOU_CAN_HOLD_ONE_OF: number[] = [...USABLE_ITEMS, ElementSubTypes.Cow]
 
-export const WEAPON_SUBTYPES: ElementSubTypes[] = [
+export const WEAPON_SUBTYPES: number[] = [
   ElementSubTypes.Sword,
   ElementSubTypes.Spear,
   ElementSubTypes.Mace,
   ElementSubTypes.Bow,
 ]
 
-export const ARMOR_SUBTYPES: ElementSubTypes[] = [
+export const ARMOR_SUBTYPES: number[] = [
   ElementSubTypes.Shield,
   ElementSubTypes.LeatherArmor,
   ElementSubTypes.IronArmor
@@ -58,7 +54,7 @@ export const SCAVENGE_CHANCES = {
   RARE: 0.05
 }
 
-export const COW_PRODUCING_TILES: CellTypes[] = [
+export const COW_PRODUCING_TILES: number[] = [
   CellTypes.Field,
   CellTypes.Forest
 ]
@@ -104,13 +100,13 @@ export const THINGS_THAT_CAN_BE_BUILT = [
   ElementSubTypes.LeatherArmor
 ]
 
-export const COMMON_SCAVENGABLE_ITEMS: ElementSubTypes[] = [
+export const COMMON_SCAVENGABLE_ITEMS: number[] = [
   ElementSubTypes.Spear,
   ElementSubTypes.Bow,
   ElementSubTypes.LeatherArmor
 ];
 
-export const RARE_SCAVENGABLE_ITEMS: ElementSubTypes[] = [
+export const RARE_SCAVENGABLE_ITEMS: number[] = [
   ElementSubTypes.Mace,
   ElementSubTypes.Sword,
   ElementSubTypes.IronArmor,

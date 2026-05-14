@@ -7,10 +7,6 @@ import type {
 
 import {
   ElementTypes,
-  CellTypes,
-  ElementSubTypes,
-  ElementActions,
-  TeamColors
 } from "@/features/game/gameTypes"
 
 import {
@@ -28,7 +24,7 @@ import {
 
 import {
   getCells, setCells,
-  getBackupCells, setBackupCells,
+  getBackupCells,
   getRoundNumber,
   getUsernames,
   getPlayerTurn,
@@ -46,7 +42,6 @@ import {
 import { 
   nameForElementSubType,
   objectToElement,
-  nameForTeamColor,
   prepareCellsForStateSave,
   getSpecificItemBuildingCost,
   getTradeCostForSubType,
@@ -206,7 +201,7 @@ function ElementActionOptions() {
 
   // ==========================================
 
-  let availableActions: ElementAction[] = [];
+  let availableActions: number[] = [];
   if (selectedElement && selectedElement.type == ElementTypes.Person) {
     availableActions = BoardActions.getAvailableActions(selectedElement, cells);
   };
@@ -293,7 +288,7 @@ function ElementActionOptions() {
     clearActionData(newCells);
   }
 
-  const buildElem = (type: ElementTypes, subType: ElementSubType) => {
+  const buildElem = (type: number, subType: number) => {
     dispatch(setShowMoveInfo(false));
     const newCells = BoardActions.build(selectedElement, type, subType, cells);
     dispatch(setCells(newCells));
@@ -301,7 +296,7 @@ function ElementActionOptions() {
     clearActionData(newCells);
   }
 
-  const getBuildingDisabled = (buildingType: ElementSubType) => {
+  const getBuildingDisabled = (buildingType: number) => {
     return !BoardUtils.elementsToBuildExistOnTile(buildingType, selectedElement, cells);
   }
 
@@ -320,7 +315,7 @@ function ElementActionOptions() {
     setTradeOfferingChosen(null);
   }
 
-  const handleTrade = (giveType: ElementSubType, receiveType: ElementSubType, giveAmount: number) => {
+  const handleTrade = (giveType: number, receiveType: number, giveAmount: number) => {
     let depletingResource: Element = objectToElement({type: ElementTypes.Item, subType: giveType, count: giveAmount});
     let receivingResource: Element = objectToElement({type: ElementTypes.Item, subType: receiveType, count: 1});
     let newCells = BoardActions.trade(selectedElement, depletingResource, receivingResource, cells);
@@ -744,7 +739,6 @@ export function ElementActionsMenu() {
   const [helpMenuOpen, setHelpMenuOpen] = useState(false);
 
   const backupCells = useAppSelector(getBackupCells);
-  const cells = useAppSelector(getCells);
 
   const endTurnHandler = () => {
     dispatch(endTurn());

@@ -119,7 +119,7 @@ import forgeSvg from "./svg/forge.svg";
 
 import noSvgRaw from "./svg/actions/noIcon.svg?raw";
 
-export function getSvgForSubType(subType: ElementSubTypes, raw: boolean) {
+export function getSvgForSubType(subType: number, raw: boolean) {
   switch (subType) {
 
     // buildings

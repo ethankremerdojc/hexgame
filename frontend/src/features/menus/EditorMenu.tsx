@@ -9,7 +9,6 @@ import {
   ElementTypes,
   CellTypes,
   ElementSubTypes,
-  TeamColors
 } from "@/features/game/gameTypes"
 
 
@@ -53,7 +52,7 @@ export default function EditorMenu() {
   const [selectedElementTypes, setSelectedElementTypes] = useState("");
   const [selectedTeamColor, setSelectedTeamColor] = useState("");
 
-  function setCellType(x: number, y: number, type: CellType, oldCells: Cell[]): Cell[] {
+  function setCellType(x: number, y: number, type: number, oldCells: Cell[]): Cell[] {
     let newCells = structuredClone(oldCells);
     for (var cell of newCells) {
       if (cell.x == x && cell.y == y) {
@@ -91,7 +90,7 @@ export default function EditorMenu() {
     dispatch(setCells(newCells));
   }
 
-  function addElementAndSave(subType: ElementSubType) {
+  function addElementAndSave(subType: number) {
     if (selectedCell === null) {
       return
     }
@@ -129,7 +128,7 @@ export default function EditorMenu() {
     dispatch(setCells(newCells));
   }
 
-  function moveCapital(playerTeam: TeamColor) {
+  function moveCapital(playerTeam: number) {
     // swap contents of whatever selected cell and current player team capital is
     // unless the selected cell already has stuff on it
     

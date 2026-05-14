@@ -1,4 +1,4 @@
-export function colorForTeam(teamVal: TeamColors|null): string {
+export function colorForTeam(teamVal: number|null): string {
   if (teamVal === null) { return "" }
 
   return [

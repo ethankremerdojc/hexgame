@@ -1,20 +1,20 @@
-export const TeamColors: object = {
-  "White": 0,
-  "Purple": 1,
-  "Red": 2,
-  "Yellow": 3,
-  "Blue": 4,
-  "Green": 5,
-  "Black": 6,
-  "Brown": 7
+export const TeamColors = {
+  White: 0,
+  Purple: 1,
+  Red: 2,
+  Yellow: 3,
+  Blue: 4,
+  Green: 5,
+  Black: 6,
+  Brown: 7
 }
 
-export const CellTypes: object = {
-  "Field": 0,
-  "Desert": 1,
-  "Forest": 2,
-  "Mountain": 3,
-  "ClayField": 4
+export const CellTypes = {
+  Field: 0,
+  Desert: 1,
+  Forest: 2,
+  Mountain: 3,
+  ClayField: 4
 }
 
 export type Cell = {
@@ -75,7 +75,7 @@ export type Element = {
   subType: number,
 
   team: number|null,
-  position: HexPosition|null,
+  position: number|null,
   id: string,
   count: number,
   name: string|null,

@@ -1,7 +1,3 @@
-import { 
-  colorForTeam,
-} from "@/features/board/boardVars"
-
 import {
   CELL_INFO_BY_TYPE, 
   PERSON_BASE_HEALTH,
@@ -13,7 +9,7 @@ import {
 } from "@/utils";
 
 import type { 
-  Element, Cell
+  Cell
 } from "@/features/game/gameTypes"
 
 import {
@@ -109,7 +105,7 @@ export class BoardGenerator {
     return newCell
   }
 
-  generateNewCellTypes(oldType: CellTypes, mutationRate: number=0.5): any {
+  generateNewCellTypes(oldType: number, mutationRate: number=0.5): any {
     let doMutation = Math.random() < mutationRate;
     if (!doMutation) { return oldType }
     return this.getRandomCellTypesByRates();
@@ -146,7 +142,7 @@ export class BoardGenerator {
     let newBoard = [...board];
 
     for (let i=0; i<playerCount; i++) {
-      newBoard = this.addRandomCapitalToBoard(newBoard, getEnumValueByIndex(TeamColors, i));
+      newBoard = this.addRandomCapitalToBoard(newBoard, Object.values(TeamColors)[i]);
     }
 
     for (let i=0; i<traderCount; i++) {
@@ -156,7 +152,7 @@ export class BoardGenerator {
     return newBoard;
   }
 
-  addRandomCapitalToBoard(board: Cell[], color: TeamColors): Cell[] {
+  addRandomCapitalToBoard(board: Cell[], color: number): Cell[] {
     let newBoard = structuredClone(board);
 
     let emptyNonDesertCells = newBoard.filter(cell => cell.elements.length == 0).filter(cell => cell.type != CellTypes.Desert);

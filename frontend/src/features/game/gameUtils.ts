@@ -1,3 +1,8 @@
+import type {
+  Cell, 
+  Element,
+}  from "@/features/game/gameTypes"
+
 import {
   TeamColors,
   ElementTypes,
@@ -190,7 +195,7 @@ export function nameForTeamColor(teamColor: number) {
   return Object.keys(TeamColors)[teamColor]
 }
 
-export function itemTypeForCellType(cellType: CellTypes): ElementSubTypes {
+export function itemTypeForCellType(cellType: number): number {
   if (cellType == CellTypes.Field) {
     return ElementSubTypes.Food
   }
@@ -206,7 +211,7 @@ export function itemTypeForCellType(cellType: CellTypes): ElementSubTypes {
   throw new Error(`unhandled cell type`)
 }
 
-export function getBuildingCost(elementToBuildType: ElementSubTypes) {
+export function getBuildingCost(elementToBuildType: number) {
   if (!THINGS_THAT_CAN_BE_BUILT.includes(elementToBuildType)) {
     throw new Error(`Unhandled subtype: ${elementToBuildType}`)
   }
@@ -388,7 +393,7 @@ export function getBuildingCost(elementToBuildType: ElementSubTypes) {
   return ingredients
 }
 
-export function getSpecificItemBuildingCost(elementToBuildType: ElementSubTypes, ingredient: ElementSubTypes) {
+export function getSpecificItemBuildingCost(elementToBuildType: number, ingredient: number) {
   let buildingCost = getBuildingCost(elementToBuildType);
 
   for (var item of buildingCost) {
@@ -400,7 +405,7 @@ export function getSpecificItemBuildingCost(elementToBuildType: ElementSubTypes,
   throw new Error("Ingredient requested not part of building cost.");
 }
 
-export const getDamageAmount = (weapon:ElementSubTypes|null) => {
+export const getDamageAmount = (weapon:number|null) => {
   if (weapon === null) return 3;
   if (weapon === ElementSubTypes.Sword) return 7;
   if (weapon === ElementSubTypes.Spear) return 5;
@@ -410,20 +415,20 @@ export const getDamageAmount = (weapon:ElementSubTypes|null) => {
   throw new Error("Unhandled weapon type");
 }
 
-export const getArmorAmount = (item:ElementSubTypes) => {
+export const getArmorAmount = (item:number) => {
   if (item==ElementSubTypes.Shield) return 3;
   if (item==ElementSubTypes.LeatherArmor) return 2;
   if (item==ElementSubTypes.IronArmor) return 3;
   return 0
 }
 
-export function getTradeCostForSubType(subType: ElementSubTypes) {
+export function getTradeCostForSubType(subType: number) {
   if (subType == ElementSubTypes.Horse) { return 7 };
   if (subType == ElementSubTypes.Cow) { return 6 };
   return 2
 }
 
-export function getHandsRequiredToHold(elementSubType: ElementSubTypes) {
+export function getHandsRequiredToHold(elementSubType: number) {
   switch (elementSubType) {
     case ElementSubTypes.Cart:
       return 2
@@ -443,7 +448,7 @@ export function getHandsRequiredToHold(elementSubType: ElementSubTypes) {
   }
 }
 
-export function checkForWinner(cells: Cell[], playerTurn: TeamColor): boolean {
+export function checkForWinner(cells: Cell[], playerTurn: number): boolean {
   // verify that there is only 1 capital and it is the one of the current team
   let capitals = [];
 

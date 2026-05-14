@@ -176,7 +176,7 @@ export default class BoardActions {
     return newCells
   }
 
-  static build(personElem: Element, elementType: ElementTypes, elementSubType: ElementSubTypes, cells: Cell[]): Cell[] {
+  static build(personElem: Element, elementType: number, elementSubType: number, cells: Cell[]): Cell[] {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
 
@@ -236,10 +236,10 @@ export default class BoardActions {
     let armorEls;
 
     if (ignoreShield) {
-      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubTypes) => s != ElementSubTypes.Shield);
+      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.Shield);
       armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
     } else if (ignoreLeatherArmor) {
-      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: ElementSubTypes) => s != ElementSubTypes.LeatherArmor);
+      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.LeatherArmor);
       armorEls = defender.heldElements.filter((el: Element) => nonLeatherArmors.includes(el.subType));     
     } else {
       armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
@@ -359,7 +359,7 @@ export default class BoardActions {
     return newCells
   }
 
-  static getAvailableActions(personElem: Element, cells: Cell[]): ElementActions[] {
+  static getAvailableActions(personElem: Element, cells: Cell[]): number[] {
 
     if (personElem.type !== ElementTypes.Person) {
       throw new Error("Non-person elements do not have actions.")

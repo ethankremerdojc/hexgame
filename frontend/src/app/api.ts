@@ -1,5 +1,4 @@
 import type { Cell } from "@/features/game/gameTypes"
-import { TeamColors } from "@/features/game/gameTypes"
 
 import {
   getCSRFToken
@@ -7,7 +6,7 @@ import {
 
 export async function postUpdateToBackend(
   cells: Cell[],
-  playerTurn: TeamColors,
+  playerTurn: number,
   gameId: number,
   wasAdminUpdate: boolean=false,
   playerThatJustWon: string=""

@@ -48,7 +48,7 @@ const boardSlice = createSlice({
     clearAll(state) {
       state.selectedCell = null;
       state.selectedElement = null;
-      state.showMoveInfo = null;
+      state.showMoveInfo = false;
     }
   }
 })

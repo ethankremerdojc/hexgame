@@ -1,9 +1,13 @@
 import type {
-  Cell, Element, Coordinate, TeamColors
+  Cell, Element
 } from "@/features/game/gameTypes"
 
+import type {
+  Coordinate
+} from "@/features/board/boardTypes"
+
 import {
-  HexPosition, 
+  HexPosition
 } from "@/features/board/boardTypes"
 
 import {
@@ -56,7 +60,7 @@ export default class BoardUtils {
 
   static getScavengedItem(personElem: Element, roundNumber: number): Element {
     let randomNum = BoardUtils.getPseudoRandomFromPersonAndRoundNumber(personElem.id, roundNumber);
-    let options: ElementSubTypes[];
+    let options: number[];
 
     if (randomNum < SCAVENGE_CHANCES.MATERIAL) {
       options = MATERIAL_ELEMENT_SUBTYPES;
@@ -464,12 +468,12 @@ export default class BoardUtils {
     return true
   }
 
-  static elementsToBuildExistOnTile(elementSubType: ElementSubTypes, personElem: Element, cells: Cell[]): boolean { 
+  static elementsToBuildExistOnTile(elementSubType: number, personElem: Element, cells: Cell[]): boolean { 
     let requiredElements = getBuildingCost(elementSubType);
     return BoardUtils.resourcesExistForPerson(requiredElements, personElem, cells)
   }
 
-  static buildingTypeForCellTypes(cellType: CellTypes): ElementSubTypes|null {
+  static buildingTypeForCellTypes(cellType: number): number|null {
     if (cellType == CellTypes.Field) {
       return ElementSubTypes.Farm
     }
@@ -521,7 +525,7 @@ export default class BoardUtils {
 
     for (var ingredient of buildingCost) {
       let ingredientCount = ingredient.count ? ingredient.count : 1;
-      result += `${nameForElementSubTypes(ingredient.subType)}: ${ingredientCount}, `;
+      result += `${nameForElementSubType(ingredient.subType)}: ${ingredientCount}, `;
     }
 
     return result.slice(0, -2) + ")"; // remove last two chars: ', '
@@ -609,7 +613,7 @@ export default class BoardUtils {
   static mergeItemElements(itemElements: Element[]): Element[] {
     let result = [];
 
-    let previousSubTypes: ElementSubTypes[] = [];
+    let previousSubTypes: number[] = [];
     let cloned = [...itemElements];
 
     for (var ie of cloned) {
@@ -638,7 +642,8 @@ export default class BoardUtils {
     return result
   }
 
-  static getTeamPersonCapacity(teamColor: TeamColors, cells: Cell[]): number {
+  static getTeamPersonCapacity(teamColor: number|null, cells: Cell[]): number {
+
     let capacity = 0;
 
     for (var cell of cells) {
@@ -655,7 +660,7 @@ export default class BoardUtils {
     return capacity
   }
 
-  static getCurrentTeamPersons(teamColor: TeamColors, cells: Cell[]): number {
+  static getCurrentTeamPersons(teamColor: number, cells: Cell[]): number {
     let persons = 0;
 
     for (var cell of cells) {
@@ -667,7 +672,7 @@ export default class BoardUtils {
 
   static personCanReproduce(personElem: Element, cells: Cell[]): boolean {
 
-    if (!personElem.team) {
+    if (personElem.team === null) {
       throw new Error(`person has no team.`)
     }
 
@@ -707,7 +712,7 @@ export default class BoardUtils {
     return true
   }
 
-  static personCanHoldItem(personElem: Element, elementSubType: ElementSubTypes): boolean {
+  static personCanHoldItem(personElem: Element, elementSubType: number): boolean {
 
     if (ITEMS_YOU_CAN_HOLD_ONE_OF.includes(elementSubType)) {
       if (personElem.heldElements.filter((el: Element) => el.subType == elementSubType).length > 0) {
@@ -734,7 +739,7 @@ export default class BoardUtils {
       return false
     };
 
-    let subTypesToCheck: ElementSubTypes[] = [
+    let subTypesToCheck: number[] = [
       ElementSubTypes.Cart,
       ElementSubTypes.Sword,
       ElementSubTypes.Bow,
@@ -825,7 +830,7 @@ export default class BoardUtils {
     return offerings
   }
 
-  static getItemTypesPersonCanGive(personElem: Element|null, cells: Cell[], requiredCount: number): ElementSubTypes[] {
+  static getItemTypesPersonCanGive(personElem: Element|null, cells: Cell[], requiredCount: number): number[] {
     if (!personElem) {
       throw new Error("No personElem supplied to 'getItemsPersonCanGive'");
     }

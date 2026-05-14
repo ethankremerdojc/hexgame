@@ -8,23 +8,19 @@ import {
 } from "@/features/board/boardGenerator.ts";
 
 import {
-  setSelectedCell,
-  getSelectedElement, setSelectedElement,
-  setShowMoveInfo,
+  setBoardZoom, setBoardOffset
 } from "@/features/board/boardSlice"
 
 import {
-  setActionHandling, getActionHandling,
-  setActionItemsToSelectFrom, getActionItemsToSelectFrom,
-  setUserSubscribed, getUserSubscribed,
-  getViewOnly
+  setUserSubscribed,
+  getViewOnly, setViewOnly
 } from "@/features/menus/menuSlice"
 
 import {
   getCells, setCells,
-  getRoundNumber, setRoundNumber,
-  getUsernames, setUsernames,
-  getPlayerTurn, setPlayerTurn,
+  setRoundNumber,
+  setUsernames,
+  setPlayerTurn,
   getCurrentPlayerName,
   getLoggedInUsername, setLoggedInUsername,
   getGameOver, setGameOver,
@@ -60,7 +56,7 @@ declare global {
 }
 
 export const TESTING = window.location.host.includes(":5173");
-const TEST_GAME_ID = 20;
+const TEST_GAME_ID = 35;
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = TESTING && false;
 

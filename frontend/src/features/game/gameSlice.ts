@@ -2,6 +2,10 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '@/app/store'
 import { createSlice } from "@reduxjs/toolkit"
 
+import type {
+  Cell, 
+}  from "@/features/game/gameTypes"
+
 import {
   postUpdateToBackend 
 } from "@/app/api"
@@ -19,13 +23,11 @@ import {
   setupNewTurn,
 } from "@/features/game/gameUtils"
 
-import BoardUtils from "@/features/board/boardUtils"
-
 export interface GameState {
   cells: Cell[],
   backupCells: Cell[],
   playerCount: number,
-  playerTurn: TeamColors,
+  playerTurn: number,
   gameId: number,
   usernames: string[],
   loggedInUsername: string,
@@ -60,7 +62,7 @@ const gameSlice = createSlice({
     setPlayerCount(state, action: PayloadAction<number>) {
       state.playerCount = action.payload;
     },
-    setPlayerTurn(state, action: PayloadAction<TeamColors>) {
+    setPlayerTurn(state, action: PayloadAction<number>) {
       state.playerTurn = action.payload;
     },
     setGameId(state, action: PayloadAction<number>) {
@@ -106,12 +108,12 @@ const gameSlice = createSlice({
           state.loggedInUsername
         );
       } else {
-        let newCells = setupNewTurn(cells, state.playerTurn, state.turnNumber);
+        let newCells = setupNewTurn(cells, state.playerTurn, state.roundNumber);
         state.cells = newCells;
         state.backupCells = newCells;
 
         if (state.playerTurn == 0) {
-          state.turnNumber += 1;
+          state.roundNumber += 1;
         }
 
         postUpdateToBackend(state.cells, state.playerTurn, state.gameId);
@@ -121,9 +123,9 @@ const gameSlice = createSlice({
 });
 
 export const getCells = (state: RootState): Cell[] => state.game.cells;
-export const getBackupCells = (state: RootState): boolean => state.game.backupCells;
+export const getBackupCells = (state: RootState): Cell[] => state.game.backupCells;
 export const getPlayerCount = (state: RootState): number => state.game.playerCount;
-export const getPlayerTurn = (state: RootState): TeamColors => state.game.playerTurn;
+export const getPlayerTurn = (state: RootState): number => state.game.playerTurn;
 export const getGameId = (state: RootState): number => state.game.gameId;
 export const getUsernames = (state: RootState): string[] => state.game.usernames;
 export const getLoggedInUsername = (state: RootState): string => state.game.loggedInUsername;
