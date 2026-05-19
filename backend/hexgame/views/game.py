@@ -51,6 +51,45 @@ def create_game_view(request):
     return render(request, "hexgame/game/create_game.html", {"form": form})
 
 @login_required
+def forfeit_or_cancel_view(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    player = get_object_or_404(Player, game=game, user=request.user)
+
+    if not game.turns_have_been_taken:
+        game.delete()
+        return redirect("home")
+
+    player.forfeited = True
+    player.save()
+
+    # if it is this users turn, we need to increment turn.
+    
+    player_ids = list(game.players.values_list('id', flat=True))
+    p_index = player_ids.index(player.id)
+
+    if p_index == game.current_player_turn:
+        print("user that forfeited did so on their own turn. incrementing turn num")
+        new_index = p_index + 1
+
+        if new_index == game.players.count():
+            first_non_forfeited_player = game.get_non_forfeited_players().first()
+            new_index == player_ids.index(player.id)
+            game.turn_number += 1
+
+        game.current_player_turn = new_index
+        game.save()
+
+    non_forfeited_players = game.get_non_forfeited_players()
+
+    if non_forfeited_players.count() == 1:
+        print("Only one non forfeited player left, that player wins")
+        game.complete = True
+        game.winner = non_forfeited_players.first().user
+        game.save()
+
+    return redirect("home")
+
+@login_required
 def game_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     editor_mode = request.GET.get("editorMode")
@@ -58,9 +97,16 @@ def game_view(request, game_id):
     if not game.spectatable:
         get_object_or_404(Player, game=game, user=request.user)
 
+    player = None
+
+    try:
+        player = Player.objects.get(game=game, user=request.user)
+    except:
+        pass
+
     if request.method == "POST":
-        form = GameInfoForm(request.POST)
-        if form.is_valid():
+        game_info_form = GameInfoForm(request.POST)
+        if game_info_form.is_valid():
             title = form.cleaned_data["title"]
             spectatable = form.cleaned_data["spectatable"]
 
@@ -70,12 +116,14 @@ def game_view(request, game_id):
             game.save()
 
     else:
-        form = GameInfoForm(instance=game)
+        game_info_form = GameInfoForm(instance=game)
 
     return render(request, "hexgame/game/game.html", {
         "game": game,
         "editor_mode": editor_mode,
-        "form": form
+        "game_info_form": game_info_form,
+        "player_has_made_at_least_one_move": game.player_has_made_at_least_one_move(request.user),
+        "player_has_forfeited": player.forfeited if player else False,
     })
 
 @login_required

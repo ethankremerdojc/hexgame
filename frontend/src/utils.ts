@@ -206,3 +206,16 @@ export function getUsernamesFromGameObj(game: any): string[] {
 
   return result
 }
+
+export function getForfeitedUsernamesFromGameObj(game: any): string[] {
+  let players = game.players;
+  let result: string[] = [];
+
+  for (var player of players) {
+    if (player.forfeited) {
+      result.push(player.user.username);
+    }
+  }
+
+  return result
+}

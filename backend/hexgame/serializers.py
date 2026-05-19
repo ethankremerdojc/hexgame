@@ -17,19 +17,9 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "game"
+            "game",
+            "forfeited"
         ]
-
-# class GameEventSerializer(serializers.ModelSerializer):
-#     player = PlayerSerializer(read_only=True)
-#
-#     class Meta:
-#         model = GameEvent
-#         fields = [
-#             "id",
-#             "timestamp",
-#             "player"
-#         ]
 
 class GameSerializer(serializers.ModelSerializer):
     players = serializers.SerializerMethodField()

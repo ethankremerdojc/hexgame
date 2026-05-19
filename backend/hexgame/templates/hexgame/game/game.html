@@ -10,6 +10,11 @@
 {% endblock title %}
 
 {% block content %}
+  <script>
+
+    
+  </script>
+
   <style>
     /* Footer and header same height right now */
     .content {
@@ -24,7 +29,7 @@
     .game-container {
       width: 100%;
       display: flex;
-      gap: var(--font-size-small);
+      gap: var(--font-size-xxsmall);
       height: 100%;
     }
 
@@ -52,6 +57,10 @@
       position: absolute;
       top: 0;
       right: 0;
+    }
+
+    .cancel-forfeit-button {
+      color: red !important;
     }
 
     @media screen and (max-width: 1200px) {
@@ -91,63 +100,106 @@
         }
       {% endif %}
     }
+
+    .game-info form {
+      display: grid;
+      height: calc(100% - 2 * var(--font-size-xxsmall));
+      padding: var(--font-size-xxsmall) 0;
+      grid-template-columns: 1fr calc(4 * var(--font-size-large));
+      gap: var(--font-size-xxsmall);
+
+      p {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--font-size-xxsmall);
+        margin-bottom: 0;
+        grid-column: 1;
+      }
+
+      button {
+        grid-column: 2;
+        padding: var(--border-width);
+      }
+
+      input, p, button {
+        font-size: var(--font-size-xsmall);
+      }
+
+      input[type="checkbox"] {
+        width: var(--font-size-xsmall);
+        height: var(--font-size-xsmall);
+      }
+
+      input[type="checkbox"]:checked:after {
+        content: "Yes";
+        margin-left: var(--font-size-xsmall);
+      }
+      input[type="checkbox"]:not(:checked):after {
+        content: "No";
+        margin-left: var(--font-size-xsmall);
+      }
+    }
+
+    .game-info form button:first-of-type {
+      grid-row: 1;
+    }
+
+
+    .content-inner {
+      padding-top: 0;
+      height: calc(100% - var(--font-size-xsmall));
+    }
+
   </style>
 
-  {% if user == game.creator %}
-    <style>
-      .game-info {
-        height: calc(2*var(--header-height));
-        display: flex;
-        align-items: center;
+  <section class="game-info"> 
+    <form method="post" id="updateGameInfoForm">
+      {% csrf_token %}
 
-        form {
-          display: flex;
-          align-items: center;
-          gap: var(--font-size-medium);
-
-          p {
-            display: flex;
-            flex-direction: column;
+      {% if user == game.creator %}
+        <style>
+          .game-info {
+            height: calc(2*var(--header-height));
           }
 
-          input, p, button {
-            font-size: var(--font-size-xsmall);
+          .game-container {
+            height: calc(100% - calc(2*var(--header-height))) !important;
+          }
+        </style>
+        {{ game_info_form.as_p }}
+        <button type="submit">Update Info</button>
+      {% else %}
+        <style>
+          .game-info {
+            height: calc(var(--header-height));
           }
 
-          input[type="checkbox"] {
-            width: var(--font-size-xsmall);
-            height: var(--font-size-xsmall);
+          .game-container {
+            height: calc(100% - var(--header-height)) !important;
           }
+        </style>
 
-          input[type="checkbox"]:checked:after {
-            content: "Yes";
-            margin-left: var(--font-size-xsmall);
-          }
-          input[type="checkbox"]:not(:checked):after {
-            content: "No";
-            margin-left: var(--font-size-xsmall);
-          }
-        }
-      }
-      .game-container {
-        height: calc(100% - calc(2*var(--header-height))) !important;
-      }
+      {% endif %}
+        
+      {% if not player_has_forfeited %}
+        <button type="button" class="cancel-forfeit-button inverted" id="handleCancelOrForfeitButton">
+          {% if player_has_made_at_least_one_move %}
+            Forfeit Game
+          {% else %}
+            Cancel Game
+          {% endif %}
+        </button>
+      {% else %}
+        You Forfeited.
+      {% endif %}
 
-      .content-inner {
-        padding-top: 0;
-        height: calc(100% - var(--font-size-xsmall));
-      }
+      {% if game.complete %}
+        <h1>Winner: {{ game.winner }}</h1>
+      {% endif %}
+    </form>  
 
-    </style>
-
-    <section class="game-info"> 
-      <form method="post" id="updateGameInfoForm">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit">Update Info</button>
-      </form>
-    </section>
-  {% endif %}
+  </section>
 
   <section class="game-container">
     <div class="game-iframe-container">
@@ -280,6 +332,17 @@
       const chatMessages = document.getElementById("chat-messages");
       chatInput.addEventListener("click", () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
+      })
+
+      // Forfeit/Cancel Game
+
+      const stopGameButton = document.getElementById("handleCancelOrForfeitButton");
+
+      stopGameButton.addEventListener("click", () => {
+        let stopText = stopGameButton.innerHTML.trim();
+        if (confirm(`Really ${stopText}?`)) {
+          window.location = "{% url 'forfeit_or_cancel' game.id %}"
+        }
       })
     </script>
   </section>

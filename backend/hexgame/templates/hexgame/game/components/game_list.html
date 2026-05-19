@@ -224,6 +224,7 @@
               <button {% if game.current_player_turn_user != user %}class="secondary"{% else %}class="go-button"{% endif %}>
 
                   <span style="width: fit-content; color: white; font-weight: bold; display: block;">
+                {% if game.complete %}Winner:  {{ game.winner.username }} | {% endif %}
                     {% if game.title %}
                       {{ game.id }}: {{ game.title }}
                     {% else %}

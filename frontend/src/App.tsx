@@ -20,6 +20,7 @@ import {
   getCells, setCells,
   setRoundNumber,
   setUsernames,
+  setForfeitedUsernames,
   setPlayerTurn,
   getCurrentPlayerName,
   getLoggedInUsername, setLoggedInUsername,
@@ -30,7 +31,8 @@ import {
 } from "@/features/game/gameSlice"
 
 import {
-  getUsernamesFromGameObj
+  getUsernamesFromGameObj,
+  getForfeitedUsernamesFromGameObj,
 } from "@/utils"
 
 import {
@@ -56,7 +58,7 @@ declare global {
 }
 
 export const TESTING = window.location.host.includes(":5173");
-const TEST_GAME_ID = 35;
+const TEST_GAME_ID = 36;
 export const USE_FAKE_IFRAME_CONTEXT = TESTING && false;
 export const USE_TESTING_EDITOR_MODE = TESTING && false;
 
@@ -111,6 +113,8 @@ function App() {
     dispatch(setRoundNumber(game.turn_number));
     dispatch(setUserSubscribed(backendContext.subscribed));
     dispatch(setUsernames(getUsernamesFromGameObj(game)));
+    dispatch(setForfeitedUsernames(getForfeitedUsernamesFromGameObj(game)));
+
     dispatch(setGameOver(game.complete));
     if (game.complete) {
       dispatch(setViewOnly(true));

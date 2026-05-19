@@ -67,11 +67,12 @@ def update_game(request):
         game.winner = User.objects.get(username=player_that_just_won)
     else:
         if not was_admin_update:
-            new_player_turn = request.POST.get("playerTurn")
+            old_player_turn = game.current_player_turn
+            new_player_turn = int(request.POST.get("playerTurn"))
 
-            game.current_player_turn = int(new_player_turn)
+            game.current_player_turn = new_player_turn
 
-            if game.current_player_turn == 0:
+            if old_player_turn < new_player_turn:
                 game.turn_number += 1
 
     game.save()

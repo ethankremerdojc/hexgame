@@ -48,7 +48,6 @@ class Game(models.Model):
     def __str__(self):
         return f"Game {self.id} | Creator: {self.creator} | players: {', '.join(self.player_usernames)}"
 
-
     @property
     def player_usernames(self):
         return [u.username for u in self.user_players]
@@ -60,6 +59,17 @@ class Game(models.Model):
     @property
     def players(self):
         return Player.objects.filter(game=self).order_by('id')
+
+    @property
+    def turns_have_been_taken(self):
+        return PlayerEvent.objects.filter(player__game=self).exists()
+
+    def player_has_made_at_least_one_move(self, user):
+        player = self.players.get(user=user)
+        return PlayerEvent.objects.filter(player=player).exists()
+
+    def get_non_forfeited_players(self):
+        return self.players.filter(forfeited=False)
 
     @property
     def chat_messages(self):
@@ -146,10 +156,13 @@ class Game(models.Model):
 
         return f'<span class="emoji-span-furious">{time_str} 😤</span>'
 
-
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
+    forfeited = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"GID: {self.game.id} | {self.user.username}"
 
 class PlayerEvent(models.Model):
     player = models.ForeignKey('Player', on_delete=models.CASCADE)

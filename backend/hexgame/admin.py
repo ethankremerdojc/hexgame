@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Game, PushSubscription
+from .models import Game, Player, PushSubscription
 # Register your models here.
 
 admin.site.register(Game)
+admin.site.register(Player)
 admin.site.register(PushSubscription)
