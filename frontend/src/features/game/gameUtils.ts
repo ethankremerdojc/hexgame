@@ -390,7 +390,7 @@ export function getBuildingCost(elementToBuildType: number) {
     case ElementSubTypes.Villager:
       ingredients.push({
         subType: ElementSubTypes.Food,
-        count: 10
+        count: 8
       })
       break;
 

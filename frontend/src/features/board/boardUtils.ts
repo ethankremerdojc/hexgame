@@ -651,7 +651,7 @@ export default class BoardUtils {
       let villageExists = cell.elements.filter(e => e.subType == ElementSubTypes.Village && e.team == teamColor).length > 0;
 
       if (capitalExists) {
-        capacity += 3;
+        capacity += 4;
       } else if (villageExists) {
         capacity += 2;
       }
