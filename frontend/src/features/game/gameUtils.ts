@@ -15,7 +15,8 @@ import {
   COW_PRODUCING_TILES,
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
-  NO_FOOD_PENALTY
+  NO_FOOD_PENALTY,
+  PERSON_BASE_HEALTH
 }  from "@/features/game/gameVars"
 
 import { NAMES_LIST } from "@/features/game/randomNames"
@@ -42,6 +43,13 @@ export function updateElemAttributes(elem: Element): Element {
   }
 
   if (newElem.type == ElementTypes.Person) {
+
+    //TODO
+    //! Remove this code at some point.
+    if (newElem.health > PERSON_BASE_HEALTH) {
+      newElem.health = PERSON_BASE_HEALTH;
+    }
+
     if (!newElem.name) {
       newElem.name = getRandomName();
     }
@@ -354,7 +362,7 @@ export function getBuildingCost(elementToBuildType: number) {
       })
       ingredients.push({
         subType: ElementSubTypes.Wood,
-        count: 2
+        count: 3
       })
       break;
 
@@ -407,18 +415,19 @@ export function getSpecificItemBuildingCost(elementToBuildType: number, ingredie
 
 export const getDamageAmount = (weapon:number|null) => {
   if (weapon === null) return 3;
-  if (weapon === ElementSubTypes.Sword) return 7;
-  if (weapon === ElementSubTypes.Spear) return 5;
-  if (weapon === ElementSubTypes.Mace) return 8;
-  if (weapon === ElementSubTypes.Bow) return 5;
+  if (weapon === ElementSubTypes.Sword) return 6;
+  if (weapon === ElementSubTypes.Spear) return 4;
+  if (weapon === ElementSubTypes.Mace) return 7;
+  if (weapon === ElementSubTypes.Bow) return 4;
 
   throw new Error("Unhandled weapon type");
 }
 
 export const getArmorAmount = (item:number) => {
-  if (item==ElementSubTypes.Shield) return 3;
+  if (item==ElementSubTypes.Shield) return 2;
   if (item==ElementSubTypes.LeatherArmor) return 2;
-  if (item==ElementSubTypes.IronArmor) return 3;
+  if (item==ElementSubTypes.IronArmor) return 2;
+  if (item==ElementSubTypes.Spear) return 1;
   return 0
 }
 
@@ -557,6 +566,13 @@ export function setupNewTurn(newCells: Cell[], playerTurn: number, roundNumber: 
       for (var horse of horses) {
         horse.hasActionAvailable = true;
       }
+
+      //? For double strike logic
+      let swords = p.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword);
+      for (var sword of swords) {
+        sword.hasActionAvailable = true;
+      }
+
     }
 
     let horses = cell.elements.filter(el => el.subType == ElementSubTypes.Horse);

@@ -34,19 +34,26 @@ export const WEAPON_SUBTYPES: number[] = [
 export const ARMOR_SUBTYPES: number[] = [
   ElementSubTypes.Shield,
   ElementSubTypes.LeatherArmor,
-  ElementSubTypes.IronArmor
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Spear,
 ]
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;
 export const BUILDING_ITEM_GENERATION_AMOUNT = 4;
+
 export const PERSON_MAX_CARRY_WEIGHT = 6;
-export const CART_CARRY_WEIGHT_INCREASE = 7; // because cart still weighs 1
-export const PERSON_BASE_DAMAGE = 4;
-export const PERSON_BASE_HEALTH = 10;
+export const CART_CARRY_WEIGHT_INCREASE = 9;
+
+export const PERSON_BASE_DAMAGE = 2;
+export const PERSON_BASE_HEALTH = 7;
+
+export const CAPITAL_DEFENCE_BUFF = 1;
+export const MACE_ARMOR_DEPLETION_AMOUNT = 2;
+
 export const STARTING_FOOD = 15;
 export const STARTING_GOLD = 10;
 
-export const NO_FOOD_PENALTY = 3;
+export const NO_FOOD_PENALTY = 2;
 
 export const SCAVENGE_CHANCES = {
   MATERIAL: 0.8,

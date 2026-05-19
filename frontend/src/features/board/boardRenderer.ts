@@ -621,6 +621,21 @@ export default class BoardRenderer {
         elemPos.x + objectSize*1.1, elemPos.y,
         toolSize, objectSize,
       );
+
+
+      let swordsWithNoAction = element.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword && el.hasActionAvailable == false);
+      if (swordsWithNoAction.length > 0 && element.hasActionAvailable) {
+        // draw a glowing rectangle around sword signifying double strike
+        this.ctx.save();
+        this.ctx.strokeStyle = "#5864e9";
+        let lineWidth = objectSize/12;
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.strokeRect(
+          elemPos.x + objectSize*1.1, elemPos.y, 
+          toolSize, objectSize
+        );
+        this.ctx.restore();
+      }
     }
 
     if (holdingShield) {

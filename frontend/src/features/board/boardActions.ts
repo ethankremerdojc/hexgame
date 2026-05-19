@@ -10,6 +10,8 @@ import {
   PERSON_BASE_HEALTH,
   WEAPON_SUBTYPES, 
   ARMOR_SUBTYPES,
+  CAPITAL_DEFENCE_BUFF,
+  MACE_ARMOR_DEPLETION_AMOUNT 
 } from "@/features/game/gameVars"
 
 import { 
@@ -210,11 +212,11 @@ export default class BoardActions {
     return newCells
   }
 
-  static doDamage(agressor: Element, defender: Element): Element|null { // returns the state of the defender
+  static doDamage(agressor: Element, defender: Element, cells: Cell[]): Element|null { // returns the state of the defender
     let weaponEls = agressor.heldElements.filter((el: Element) => WEAPON_SUBTYPES.includes(el.subType));
 
     let ignoreShield = false;
-    let ignoreLeatherArmor = false;
+    let usingMace = false;
 
     let damageAmount = 0;
 
@@ -228,7 +230,7 @@ export default class BoardActions {
         ignoreShield = true;
       }
       if (weaponType == ElementSubTypes.Mace) {
-        ignoreLeatherArmor = true;
+        usingMace = true;
       }
     }
 
@@ -238,9 +240,6 @@ export default class BoardActions {
     if (ignoreShield) {
       let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.Shield);
       armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
-    } else if (ignoreLeatherArmor) {
-      let nonLeatherArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.LeatherArmor);
-      armorEls = defender.heldElements.filter((el: Element) => nonLeatherArmors.includes(el.subType));     
     } else {
       armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
     }
@@ -248,6 +247,12 @@ export default class BoardActions {
     for (var armorEl of armorEls) {
       armorAmount += getArmorAmount(armorEl.subType);
     }
+
+    let elemParentCell = BoardUtils.getElementParentCell(defender, cells);
+    let onCapital = elemParentCell.elements.filter((el: Element) => el.subType == ElementSubTypes.Capital && el.team == defender.team).length > 0;
+
+    if (onCapital) { armorAmount += CAPITAL_DEFENCE_BUFF; }
+    if (usingMace) { armorAmount = Math.max(0, armorAmount - MACE_ARMOR_DEPLETION_AMOUNT); }
 
     if (armorAmount >= damageAmount) return defender;
 
@@ -267,23 +272,56 @@ export default class BoardActions {
     let newCells = structuredClone(cells);
 
     let elemParentCell = BoardUtils.getElementParentCell(_personElem, newCells);
+
     let personElem = elemParentCell.elements.filter(el => el.id == _personElem.id)[0];
-    personElem.hasActionAvailable = false;
     let targetElem = elemParentCell.elements.filter(el => el.id == _targetElem.id)[0];
 
-    let hurtPersonElem = BoardActions.doDamage(targetElem, personElem);
+    let usedSwordAction = false;
 
 
-    if (!hurtPersonElem) {
-      elemParentCell.elements = [...elemParentCell.elements, ...personElem.heldElements];
-      elemParentCell.elements = elemParentCell.elements.filter(e => e.id != personElem.id);
+    //? If we are using the double strike logic with the sword, the second swing doesn't do damage to agressor
+    let swordsWithNoAction = personElem.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword && el.hasActionAvailable == false);
+    if (swordsWithNoAction.length == 0) {
+
+      let hurtPersonElem = BoardActions.doDamage(targetElem, personElem, cells);
+      if (!hurtPersonElem) {
+        elemParentCell.elements = [...elemParentCell.elements, ...personElem.heldElements];
+        elemParentCell.elements = elemParentCell.elements.filter(e => e.id != personElem.id);
+      }
     }
 
-    let hurtTargetElem = BoardActions.doDamage(personElem, targetElem);
-
+    let hurtTargetElem = BoardActions.doDamage(personElem, targetElem, cells);
     if (!hurtTargetElem) {
       elemParentCell.elements = [...elemParentCell.elements, ...targetElem.heldElements];
       elemParentCell.elements = elemParentCell.elements.filter(e => e.id != targetElem.id);
+    } else {
+      //! SWORD DOUBLE STRIKE LOGIC
+
+      let swordsWithAction = personElem.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword && el.hasActionAvailable == true);
+
+      if (swordsWithAction.length > 0) {
+        let sword = swordsWithAction[0];
+        sword.hasActionAvailable = false;
+        usedSwordAction = true;
+      }
+
+      //! SPEAR DISMOUNT LOGIC
+      if (personElem.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Spear)) {
+        let targetHorses = hurtTargetElem.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Horse);
+
+        if (targetHorses.length > 0) {
+
+          let horse = targetHorses[0];
+          horse.hasActionAvailable = true;
+
+          hurtTargetElem.heldElements = hurtTargetElem.heldElements.filter((el: Element) => el.id != horse.id);
+          elemParentCell.elements = [...elemParentCell.elements, horse];
+        }
+      }
+    }
+
+    if (!usedSwordAction) {
+      personElem.hasActionAvailable = false;
     }
 
     return newCells;
@@ -350,7 +388,7 @@ export default class BoardActions {
     newPersonShooting.hasActionAvailable = false;
 
     let newPersonToShoot = parentCell.elements.filter((el: Element) => el.id == personToShoot.id)[0];
-    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot);
+    let hurtPerson = BoardActions.doDamage(newPersonShooting, newPersonToShoot, newCells);
 
     if (!hurtPerson) {
       parentCell.elements = [...parentCell.elements, ...newPersonToShoot.heldElements];
@@ -370,6 +408,13 @@ export default class BoardActions {
     }
 
     const elementParent = BoardUtils.getElementParentCell(personElem, cells);
+
+    // if there is a sword with an action used, then the only option is fight.
+    
+    let swordsWithNoAction = personElem.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword && el.hasActionAvailable == false);
+    if (swordsWithNoAction.length > 0) {
+      return [ElementActions.Fight]
+    }
 
     let result = [ElementActions.Move];
 

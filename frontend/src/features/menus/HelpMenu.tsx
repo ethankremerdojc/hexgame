@@ -14,7 +14,8 @@ import {
   NO_FOOD_PENALTY,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
-  SCAVENGE_CHANCES
+  SCAVENGE_CHANCES,
+  MACE_ARMOR_DEPLETION_AMOUNT
 } from "@/features/game/gameVars"
 
 import { 
@@ -100,6 +101,7 @@ function HowToPlay() {
         <p>For example, your villager can take 2 food, drop 1 wood, then move, making it use it's action.</p>
         <p>Each villager has '2 hands' which determines which 'special items' that villager can hold.</p>
         <p>Here are all of the possible actions and their limitations/requirements.</p>
+        <p>Your villagers will get a +1 defence buff on your own capital.</p>
         
         <ul>
           <li>
@@ -117,13 +119,26 @@ function HowToPlay() {
             Fight: Deal damage to an enemy villager, then the enemy will also deal damage to your villager at the same time.<br />
             <ul>
               <li>Base Damage: {getDamageAmount(null)}</li>
-              <li>Bow: Deals {getDamageAmount(ElementSubTypes.Bow)} damage. (Ignores Shield).<br /></li>
-              <li>Spear: Deals {getDamageAmount(ElementSubTypes.Spear)} damage.<br /></li>
-              <li>Leather Armor: Reduces damage by {getArmorAmount(ElementSubTypes.LeatherArmor)}.<br /></li>
+              <li>
+                Bow: Deals {getDamageAmount(ElementSubTypes.Bow)} damage. (Ignores Shield).
+              </li>
+              <li>
+                Spear: Deals {getDamageAmount(ElementSubTypes.Spear)} damage.<br />
+                Will dismount a horserider if your villager is the one attacking.
+              </li>
 
               <li><b><u style={{color: "white"}}>Below require a 'forge'</u></b></li>
-              <li>Sword: Deals {getDamageAmount(ElementSubTypes.Sword)} damage.<br /></li>
-              <li>Mace: Deals {getDamageAmount(ElementSubTypes.Mace)} damage. (Ignores Leather armor)<br /></li>
+
+              <li>
+                Sword: Deals {getDamageAmount(ElementSubTypes.Sword)} damage.<br />
+                Has 'Double Strike', allowing a villager to attack a second time with the sword, not requiring another action, and not dealing damage to your villager the second time.
+              </li>
+              <li>
+                Mace: Deals {getDamageAmount(ElementSubTypes.Mace)} damage.<br />
+                Ignores up to {MACE_ARMOR_DEPLETION_AMOUNT} of the other villager's armor items/capital defence.
+              </li>
+              <li>Leather Armor: Reduces damage by {getArmorAmount(ElementSubTypes.LeatherArmor)}.<br /></li>
+
               <li>Iron Armor: Reduces damage by {getArmorAmount(ElementSubTypes.IronArmor)}.<br /></li>
               <li>Shield: Reduces damage by {getArmorAmount(ElementSubTypes.Shield)}.<br /></li>
             </ul>
@@ -190,7 +205,7 @@ function HowToPlay() {
 }
 
 export default function HelpMenu() {
-  const [showIngredients, setShowIngredients] = useState(false);
+  const [showIngredients, setShowIngredients] = useState(true);
 
   return (
     <div className="help-menu"><div className="help-menu-inner">
