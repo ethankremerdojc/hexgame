@@ -293,6 +293,28 @@ export function getSvgForSubType(subType: number, raw: boolean) {
 
 const TAU = 2 * Math.PI;
 
+import sevenHealthRaw from "./svg/playerUI/health/heartIcon-7h.svg?raw"
+import sixHealthRaw from "./svg/playerUI/health/heartIcon-6h.svg?raw"
+import fiveHealthRaw from "./svg/playerUI/health/heartIcon-5h.svg?raw"
+import fourHealthRaw from "./svg/playerUI/health/heartIcon-4h.svg?raw"
+import threeHealthRaw from "./svg/playerUI/health/heartIcon-3h.svg?raw"
+import twoHealthRaw from "./svg/playerUI/health/heartIcon-2h.svg?raw"
+import oneHealthRaw from "./svg/playerUI/health/heartIcon-1h.svg?raw"
+
+import defenceIconRaw from "./svg/playerUI/defenceIcon.svg?raw"
+import attackIconRaw from "./svg/playerUI/attackIcon.svg?raw"
+
+function getHealthIcon(health: number) {
+  return [
+    oneHealthRaw,
+    twoHealthRaw,
+    threeHealthRaw,
+    fourHealthRaw,
+    fiveHealthRaw,
+    sixHealthRaw,
+    sevenHealthRaw
+  ][health - 1]
+}
 
 export default class BoardRenderer {
   ctx: CanvasRenderingContext2D;
@@ -510,32 +532,17 @@ export default class BoardRenderer {
     }
   }
 
-  drawPersonElement(
+  drawPersonHeldMaterials(
     element: Element,
     elemPos: Coordinate,
-    elemSvg: any,
-    elemColor: string,
-    isSelected: boolean
   ) {
-
     let { objectSize, toolSize, itemSize } = this.elemSizes;
-    drawSvgToCanvas(elemSvg, this.ctx,
-      elemPos.x, elemPos.y,
-      objectSize, objectSize,
-      elemColor
-    );
 
-    if (element.subType != ElementSubTypes.Villager) {
-      return
-    }
-
+    let materials = element.heldElements.filter((el: Element) => !USABLE_ITEMS.includes(el.subType));
     let miniItemSize = itemSize / 1.5;
 
-    // held elements
-    let nonUsableElements = element.heldElements.filter((el: Element) => !USABLE_ITEMS.includes(el.subType));
-
-    for (let i=0; i<nonUsableElements.length; i++) {
-      let heldElement = nonUsableElements[i];
+    for (let i=0; i < materials.length; i++) {
+      let heldElement = materials[i];
 
       let heldElemSvg = this.getSvgForElement(heldElement);
 
@@ -550,17 +557,23 @@ export default class BoardRenderer {
 
       this.ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
     }
+  }
 
-    let holdingSword = element.heldElements.filter(el => el.subType == ElementSubTypes.Sword).length > 0;
-    let holdingBow = element.heldElements.filter(el => el.subType == ElementSubTypes.Bow).length > 0;
-    let holdingMace = element.heldElements.filter(el => el.subType == ElementSubTypes.Mace).length > 0;
-    let holdingSpear = element.heldElements.filter(el => el.subType == ElementSubTypes.Spear).length > 0;
-    let holdingShield = element.heldElements.filter(el => el.subType == ElementSubTypes.Shield).length > 0;
-    let holdingCart = element.heldElements.filter(el => el.subType == ElementSubTypes.Cart).length > 0;
-    let wearingLeatherArmor = element.heldElements.filter(el => el.subType == ElementSubTypes.LeatherArmor).length > 0;
-    let wearingIronArmor = element.heldElements.filter(el => el.subType == ElementSubTypes.IronArmor).length > 0;
-    let ridingHorse = element.heldElements.filter(el => el.subType == ElementSubTypes.Horse).length > 0;
+  drawPersonUI(
+    element: Element,
+    elemPos: Coordinate,
+    elemColor: string,
+    isSelected: boolean
+  ) {
+    let { objectSize, toolSize, itemSize } = this.elemSizes;
+    let miniItemSize = itemSize / 1.5;
 
+    if (!element.hasActionAvailable) {
+      drawSvgToCanvas(noSvgRaw, this.ctx,
+        elemPos.x + objectSize*0.25, elemPos.y+objectSize*0.4,
+        objectSize*0.5, objectSize*0.5,
+      );
+    }
     if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, this.ctx,
         elemPos.x + objectSize*1.5, elemPos.y,
@@ -574,29 +587,110 @@ export default class BoardRenderer {
       );
     }
 
-    if (wearingLeatherArmor) {
-      drawSvgToCanvas(leatherArmorSvgRaw, this.ctx,
-        elemPos.x - objectSize*0.12, elemPos.y+objectSize*0.65,
-        objectSize*1.24, objectSize*0.35,
-      );
+    //! Health
+    drawSvgToCanvas(
+      getHealthIcon(element.health), this.ctx,
+      elemPos.x - miniItemSize*1.8, elemPos.y - miniItemSize*0.25,
+      miniItemSize, miniItemSize
+    )
+
+    //? Selected Yellow Box
+    if (isSelected) {
+      this.drawHighlightBox(elemPos, objectSize, "yellow");
     }
 
-    if (wearingIronArmor) {
-      drawSvgToCanvas(ironArmorSvgRaw, this.ctx,
-        elemPos.x - objectSize*0.12, elemPos.y+objectSize*0.65,
-        objectSize*1.24, objectSize*0.35,
-      );
+    //? Name
+    this.ctx.fillStyle = "white";
+    this.ctx.font = `${miniItemSize*1.2}px serif`;
+    let elStr = element.name ? element.name : "";
+    this.ctx.fillText(elStr, elemPos.x, elemPos.y - objectSize*0.2);
+  }
+
+  drawPersonElement(
+    element: Element,
+    elemPos: Coordinate,
+    elemSvg: any,
+    elemColor: string,
+    isSelected: boolean
+  ) {
+    let { objectSize } = this.elemSizes;
+
+    drawSvgToCanvas(elemSvg, this.ctx,
+      elemPos.x, elemPos.y,
+      objectSize, objectSize,
+      elemColor
+    );
+
+    // Traders are persons
+    if (element.subType != ElementSubTypes.Villager) return;
+
+    this.drawPersonHeldMaterials(element, elemPos);
+    this.drawPlayerObjects(element, elemPos);
+    this.drawPersonUI(element, elemPos, elemColor, isSelected);
+  }
+
+  getPlayerObjectPositionAndSizes(
+    elemPos: Coordinate,
+    subType: number
+  ): object {
+
+    let { objectSize, toolSize, itemSize } = this.elemSizes;
+
+    let width, height, x, y;
+
+    switch (subType) {
+      case ElementSubTypes.Sword:
+      case ElementSubTypes.Mace:
+      case ElementSubTypes.Spear:
+      case ElementSubTypes.Bow:
+        width = toolSize;
+        height = objectSize;
+        x = elemPos.x + objectSize*1.1;
+        y = elemPos.y;
+        break;
+      case ElementSubTypes.Shield:
+        width = toolSize;
+        height = objectSize * 0.8;
+        x = elemPos.x - objectSize*0.25;
+        y = elemPos.y + objectSize*0.25;
+        break;
+      case ElementSubTypes.Cart:
+        width = objectSize*0.8;
+        height = objectSize*0.8;
+        x = elemPos.x-objectSize*0.4;
+        y = elemPos.y+objectSize*0.5;
+        break;
+      case ElementSubTypes.LeatherArmor:
+      case ElementSubTypes.IronArmor:
+        width = objectSize*1.24;
+        height = objectSize*0.35;
+        x = elemPos.x - objectSize*0.12;
+        y = elemPos.y + objectSize*0.65;
+        break;
+      case ElementSubTypes.Horse:
+        width = objectSize*1.5;
+        height = objectSize;
+        x = elemPos.x - objectSize*0.15;
+        y = elemPos.y + objectSize*0.65;
+        break;
     }
 
-    if (ridingHorse) {
-      drawSvgToCanvas(horseSvgRaw, this.ctx,
-        elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
-        objectSize*1.5, objectSize,
-      );
+    return {
+      width: width,
+      height: height,
+      x: x,
+      y: y
+    }
+  }
 
-      let horse = element.heldElements.filter(el => el.subType == ElementSubTypes.Horse)[0];
+  drawObjectUI(
+    elemPos: Coordinate,
+    object: Element,
+  ) {
+    let { objectSize, toolSize, itemSize } = this.elemSizes;
 
-      if (horse.hasActionAvailable === false) {
+    if (object.subType == ElementSubTypes.Horse) {
+      if (object.hasActionAvailable === false) {
         drawSvgToCanvas(noSvgRaw, this.ctx,
           elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
           objectSize*1.5, objectSize,
@@ -604,28 +698,8 @@ export default class BoardRenderer {
       }
     }
 
-    if (holdingSword || holdingSpear || holdingMace || holdingBow) {
-      let svg: null|string = null;
-
-      if (holdingSword) {
-        svg = swordSvgRaw;
-      } else if (holdingMace) {
-        svg = maceSvgRaw;
-      } else if (holdingSpear) {
-        svg = spearSvgRaw;
-      } else {
-        svg = bowSvgRaw;
-      }
-
-      drawSvgToCanvas(svg, this.ctx,
-        elemPos.x + objectSize*1.1, elemPos.y,
-        toolSize, objectSize,
-      );
-
-
-      let swordsWithNoAction = element.heldElements.filter((el: Element) => el.subType == ElementSubTypes.Sword && el.hasActionAvailable == false);
-      if (swordsWithNoAction.length > 0 && element.hasActionAvailable) {
-        // draw a glowing rectangle around sword signifying double strike
+    if (object.subType == ElementSubTypes.Sword) {
+      if (object.hasActionAvailable === false) {
         this.ctx.save();
         this.ctx.strokeStyle = "#5864e9";
         let lineWidth = objectSize/12;
@@ -637,49 +711,32 @@ export default class BoardRenderer {
         this.ctx.restore();
       }
     }
+  }
 
-    if (holdingShield) {
-      drawSvgToCanvas(shieldSvgRaw, this.ctx,
-        elemPos.x-objectSize*0.25, elemPos.y+objectSize*0.25,
-        toolSize, objectSize*0.8,
-      );
-    };
-    if (holdingCart) {
-      drawSvgToCanvas(cartSvgRaw, this.ctx,
-        elemPos.x-objectSize*0.4, elemPos.y+objectSize*0.5,
-        objectSize*0.8, objectSize*0.6,
-      );
+  drawPlayerObject(
+    object: Element,
+    elemPos: Coordinate,
+  ) {
+    let {width, height, x, y} = this.getPlayerObjectPositionAndSizes(elemPos, object.subType);
+
+    let svg = getSvgForSubType(object.subType, true);
+    drawSvgToCanvas(
+      svg, this.ctx,
+      x, y, width, height
+    )
+
+    this.drawObjectUI(elemPos, object);
+  }
+
+  drawPlayerObjects(
+    element: Element,
+    elemPos: Coordinate,
+  ) {
+    let usableItems = element.heldElements.filter((el: Element) => USABLE_ITEMS.includes(el.subType));
+
+    for (var item of usableItems) {
+      this.drawPlayerObject(item, elemPos);
     }
-
-    //todo determine better 'has actions'
-    if (!element.hasActionAvailable) {
-      drawSvgToCanvas(noSvgRaw, this.ctx,
-        elemPos.x + objectSize*0.25, elemPos.y+objectSize*0.4,
-        objectSize*0.5, objectSize*0.5,
-      );
-    }
-
-    // Health
-
-    this.ctx.fillStyle = "red";
-    this.ctx.font = `${miniItemSize*1.8}px serif`;
-    let healthStr: string = element.health.toString();
-    this.ctx.fillText(healthStr, elemPos.x - miniItemSize*1.8, elemPos.y - miniItemSize*0.25);
-
-    if (isSelected) {
-      this.drawHighlightBox(elemPos, objectSize, "yellow");
-    }
-
-    // Name
-
-    this.ctx.fillStyle = "white";
-    this.ctx.font = `${miniItemSize*1.2}px serif`;
-    let elStr = element.name ? element.name : "";
-    this.ctx.fillText(
-      elStr, 
-      elemPos.x,
-      elemPos.y - objectSize*0.2
-    );
   }
 
   drawHighlightBox(

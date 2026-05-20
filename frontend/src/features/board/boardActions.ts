@@ -112,7 +112,6 @@ export default class BoardActions {
     // if count is max
 
     let elementToDrop = newPersonElem.heldElements.filter((e: Element) => e.id == droppedItemId)[0];
-    console.log("elem to drop", structuredClone(elementToDrop));
 
     // create new element on the tile, will be combined automatically in the slice
     let copiedDroppedElement = structuredClone(elementToDrop);
@@ -322,6 +321,10 @@ export default class BoardActions {
 
     if (!usedSwordAction) {
       personElem.hasActionAvailable = false;
+
+      if (swordsWithNoAction.length > 0) {
+        swordsWithNoAction[0].hasActionAvailable = true;
+      }
     }
 
     return newCells;

@@ -141,7 +141,7 @@ function svgToPath2Ds(svgText: string, teamColor:string|void) {
   var svg = doc.querySelector("svg");
 
   if (!svg) {
-    throw new Error("Invalid SVG: no <svg> root found");
+    throw new Error(`Invalid SVG: no <svg> root found, ${svgText}`);
   }
 
   const items = getChildItems(svg, teamColor);
