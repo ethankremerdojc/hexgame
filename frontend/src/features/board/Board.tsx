@@ -180,7 +180,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
     const canvas = canvasRef.current; if (!canvas) return;
     const scaleFactor = e.deltaY < 0 ? 0.1 : -0.1;
 
-    let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 7);
+    let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 8);
     newZoom = Math.round(newZoom * 10) / 10;
 
     if (zoom == newZoom) { return }
@@ -275,7 +275,7 @@ export function Board({canvasWidth, canvasHeight}: {canvasWidth: number, canvasH
 
       const scaleFactor = distance > lastPinchDistance.current ? 0.1 : -0.1;
 
-      let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 5);
+      let newZoom = Math.min(Math.max(zoom + scaleFactor, 0.7), 8);
       newZoom = Math.round(newZoom * 10) / 10;
 
       if (zoom === newZoom) {
