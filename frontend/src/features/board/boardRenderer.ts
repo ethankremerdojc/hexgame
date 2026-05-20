@@ -11,7 +11,8 @@ import {
 } from "@/features/game/gameTypes"
 
 import {
-  USABLE_ITEMS
+  USABLE_ITEMS,
+  ELEMENTS_YOU_SEE_IN_PERSON_UI
 } from "@/features/game/gameVars"
 
 import BoardUtils from "./boardUtils.ts"
@@ -118,6 +119,7 @@ import forgeSvgRaw from "./svg/forge.svg?raw";
 import forgeSvg from "./svg/forge.svg";
 
 import noSvgRaw from "./svg/actions/noIcon.svg?raw";
+import yesSvgRaw from "./svg/actions/yesIcon.svg?raw";
 
 export function getSvgForSubType(subType: number, raw: boolean) {
   switch (subType) {
@@ -379,8 +381,11 @@ export default class BoardRenderer {
       }
 
       let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, this.opts.radius, this.opts.offsetX, this.opts.offsetY);
-
       this.drawHex(pixelOrigin, hexPoints, cell, cellHighlighted);
+    }
+
+    for (var cell of this.cells) {
+      let pixelOrigin = BoardUtils.gridToPixelOrigin(cell.x, cell.y, this.opts.radius, this.opts.offsetX, this.opts.offsetY);
       this.drawElements(pixelOrigin, cell);
     }
   }
@@ -532,48 +537,110 @@ export default class BoardRenderer {
     }
   }
 
-  drawPersonHeldMaterials(
-    element: Element,
-    elemPos: Coordinate,
-  ) {
-    let { objectSize, toolSize, itemSize } = this.elemSizes;
-
-    let materials = element.heldElements.filter((el: Element) => !USABLE_ITEMS.includes(el.subType));
-    let miniItemSize = itemSize / 1.5;
-
-    for (let i=0; i < materials.length; i++) {
-      let heldElement = materials[i];
-
-      let heldElemSvg = this.getSvgForElement(heldElement);
-
-      drawSvgToCanvas(heldElemSvg, this.ctx,
-        elemPos.x - miniItemSize*1.25, elemPos.y + miniItemSize*i*1.2+miniItemSize*0.5,
-        miniItemSize, miniItemSize,
-      );
-
-      this.ctx.fillStyle = "white";
-      this.ctx.font = `${miniItemSize}px serif`;
-      let countStr = heldElement.count ? heldElement.count.toString() : "";
-
-      this.ctx.fillText(countStr, elemPos.x - 2*miniItemSize, elemPos.y + miniItemSize*1.3 + miniItemSize*i*1.2)
-    }
-  }
-
   drawPersonUI(
     element: Element,
     elemPos: Coordinate,
-    elemColor: string,
     isSelected: boolean
   ) {
-    let { objectSize, toolSize, itemSize } = this.elemSizes;
-    let miniItemSize = itemSize / 1.5;
+    let { objectSize, toolSize } = this.elemSizes;
 
-    if (!element.hasActionAvailable) {
-      drawSvgToCanvas(noSvgRaw, this.ctx,
-        elemPos.x + objectSize*0.25, elemPos.y+objectSize*0.4,
-        objectSize*0.5, objectSize*0.5,
-      );
+    this.ctx.save();
+
+    let itemElementTypeCount = element.heldElements.filter((e: Element) => ELEMENTS_YOU_SEE_IN_PERSON_UI.includes(e.subType)).length;
+
+    let itemRows;
+    if (itemElementTypeCount == 0) {
+      itemRows = 0
+    } else if (itemElementTypeCount < 4) { // Extra row for padding
+      itemRows = 2;
+    } else {
+      itemRows = 3;
     }
+
+    let uiCols = 6;
+    let uiRows = 2 + itemRows;
+
+    let tileWidth = objectSize * 0.2;
+
+    let topLeftX = elemPos.x - (objectSize * 0.3);
+    let topLeftY = elemPos.y - (tileWidth * (uiRows + 2)) - objectSize * 0.2;
+
+
+    // background rect
+    this.ctx.fillStyle = "#252525";
+    this.ctx.fillRect(
+      topLeftX, topLeftY,
+      tileWidth * (uiCols + 2), tileWidth * (uiRows + 2)
+    )
+    this.ctx.strokeStyle = "#e1e1e1";
+    this.ctx.lineWidth = objectSize * 0.03;
+    this.ctx.strokeRect(
+      topLeftX, topLeftY,
+      tileWidth * (uiCols + 2), tileWidth * (uiRows + 2)
+    )
+
+    //? Setup font color and style for ui
+    this.ctx.fillStyle = "white";
+    this.ctx.font = `${tileWidth}px sans-serif`;
+
+    let paddedTopLeftX = topLeftX + (tileWidth / 2);
+    let paddedTopLeftY = topLeftY + (tileWidth / 2);
+
+    //! Name
+    let elStr = element.name ? element.name : "";
+    this.ctx.fillText(elStr, paddedTopLeftX, paddedTopLeftY + (tileWidth*0.8));
+
+    //! Health
+    drawSvgToCanvas(
+      getHealthIcon(element.health), this.ctx,
+      paddedTopLeftX + (uiCols * tileWidth), paddedTopLeftY,
+      tileWidth, tileWidth
+    )
+    let healthString = element.health ? element.health.toString() : "";
+    this.ctx.fillText(
+      healthString, paddedTopLeftX + (uiCols * tileWidth) - (tileWidth * 0.8), paddedTopLeftY + (tileWidth*0.8),
+    );
+
+    //! Damage
+    let totalDamageAmount = BoardUtils.getPersonDamageAmount(element);
+    drawSvgToCanvas(
+      attackIconRaw, this.ctx,
+      paddedTopLeftX + (tileWidth * 0.7), paddedTopLeftY + tileWidth * 1.5,
+      tileWidth * 0.5, tileWidth
+    )
+    this.ctx.fillText(
+      totalDamageAmount.toString(),
+      paddedTopLeftX, paddedTopLeftY + tileWidth * 2.4,
+    );
+
+    //! Armor
+    let totalArmorAmount = BoardUtils.getPersonTotalArmorAmount(element, this.cells, false);
+    drawSvgToCanvas(
+      defenceIconRaw, this.ctx,
+      paddedTopLeftX + (tileWidth * 2.8), paddedTopLeftY + tileWidth * 1.5,
+      tileWidth * 0.5, tileWidth
+    )
+    this.ctx.fillText(
+      totalArmorAmount.toString(), 
+      paddedTopLeftX + (tileWidth * 2), paddedTopLeftY + tileWidth * 2.4,
+    );
+
+    let actionAvailableSvg;
+
+    if (element.hasActionAvailable) {
+      actionAvailableSvg = yesSvgRaw;
+    } else {
+      actionAvailableSvg = noSvgRaw;
+    }
+
+    drawSvgToCanvas(actionAvailableSvg, this.ctx,
+      paddedTopLeftX + (uiCols * tileWidth), paddedTopLeftY + tileWidth * 1.5,
+      tileWidth, tileWidth,
+    );
+
+
+    this.drawPersonHeldMaterials(element, {x: paddedTopLeftX, y: paddedTopLeftY + tileWidth * 3.5}, tileWidth);
+
     if (element.isWorking) {
       drawSvgToCanvas(forkSvgRaw, this.ctx,
         elemPos.x + objectSize*1.5, elemPos.y,
@@ -586,24 +653,51 @@ export default class BoardRenderer {
         toolSize, objectSize,
       );
     }
-
-    //! Health
-    drawSvgToCanvas(
-      getHealthIcon(element.health), this.ctx,
-      elemPos.x - miniItemSize*1.8, elemPos.y - miniItemSize*0.25,
-      miniItemSize, miniItemSize
-    )
+    
 
     //? Selected Yellow Box
     if (isSelected) {
       this.drawHighlightBox(elemPos, objectSize, "yellow");
     }
 
-    //? Name
-    this.ctx.fillStyle = "white";
-    this.ctx.font = `${miniItemSize*1.2}px serif`;
-    let elStr = element.name ? element.name : "";
-    this.ctx.fillText(elStr, elemPos.x, elemPos.y - objectSize*0.2);
+    this.ctx.restore();
+  }
+
+  drawPersonHeldMaterials(
+    element: Element,
+    topLeft: Coordinate,
+    tileWidth: number
+  ) {
+    let materials = element.heldElements.filter((el: Element) => !USABLE_ITEMS.includes(el.subType));
+
+    let currentY = topLeft.y;
+
+    for (let i=0; i < materials.length; i++) {
+      let heldElement = materials[i];
+      let heldElemSvg = this.getSvgForElement(heldElement);
+
+      let matX;
+
+      if (i == 0 || i == 3) {
+        matX = topLeft.x;
+      } else if (i == 1 || i == 4) {
+        matX = topLeft.x + tileWidth * 2.55;
+      } else {
+        matX = topLeft.x + tileWidth * 5.1;
+      }
+
+      let countStr = heldElement.count ? heldElement.count.toString() : "";
+      this.ctx.fillText(countStr, matX, currentY + (tileWidth * 0.85));
+
+      drawSvgToCanvas(heldElemSvg, this.ctx,
+        matX + tileWidth * 0.8, currentY,
+        tileWidth, tileWidth,
+      );
+
+      if (i == 2) {
+        currentY += tileWidth * 1.25;
+      }
+    }
   }
 
   drawPersonElement(
@@ -624,17 +718,16 @@ export default class BoardRenderer {
     // Traders are persons
     if (element.subType != ElementSubTypes.Villager) return;
 
-    this.drawPersonHeldMaterials(element, elemPos);
     this.drawPlayerObjects(element, elemPos);
-    this.drawPersonUI(element, elemPos, elemColor, isSelected);
+    this.drawPersonUI(element, elemPos, isSelected);
   }
 
   getPlayerObjectPositionAndSizes(
     elemPos: Coordinate,
     subType: number
-  ): object {
+  ): any {
 
-    let { objectSize, toolSize, itemSize } = this.elemSizes;
+    let { objectSize, toolSize } = this.elemSizes;
 
     let width, height, x, y;
 
@@ -687,7 +780,7 @@ export default class BoardRenderer {
     elemPos: Coordinate,
     object: Element,
   ) {
-    let { objectSize, toolSize, itemSize } = this.elemSizes;
+    let { objectSize, toolSize } = this.elemSizes;
 
     if (object.subType == ElementSubTypes.Horse) {
       if (object.hasActionAvailable === false) {

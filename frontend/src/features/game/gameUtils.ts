@@ -414,9 +414,9 @@ export function getSpecificItemBuildingCost(elementToBuildType: number, ingredie
 }
 
 export const getDamageAmount = (weapon:number|null) => {
-  if (weapon === null) return 3;
-  if (weapon === ElementSubTypes.Sword) return 6;
-  if (weapon === ElementSubTypes.Spear) return 4;
+  if (weapon === null) return 2;
+  if (weapon === ElementSubTypes.Sword) return 5;
+  if (weapon === ElementSubTypes.Spear) return 5;
   if (weapon === ElementSubTypes.Mace) return 7;
   if (weapon === ElementSubTypes.Bow) return 4;
 
@@ -466,8 +466,6 @@ export function checkForWinner(cells: Cell[], playerTurn: number): boolean {
     if (cellCapitals.length < 1) { continue }
     capitals.push(cellCapitals[0]);
   }
-
-  console.log("num capitals: ", capitals.length);
 
   if (capitals.length > 1) { return false };
 

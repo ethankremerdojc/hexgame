@@ -9,14 +9,14 @@ import {
 import {
   PERSON_BASE_HEALTH,
   WEAPON_SUBTYPES, 
-  ARMOR_SUBTYPES,
-  CAPITAL_DEFENCE_BUFF,
+  // ARMOR_SUBTYPES,
+  // CAPITAL_DEFENCE_BUFF,
   MACE_ARMOR_DEPLETION_AMOUNT 
 } from "@/features/game/gameVars"
 
 import { 
   getDamageAmount,
-  getArmorAmount,
+  // getArmorAmount,
   getBuildingCost,
   objectToElement,
   getElementId
@@ -233,24 +233,7 @@ export default class BoardActions {
       }
     }
 
-    let armorAmount = 0;
-    let armorEls;
-
-    if (ignoreShield) {
-      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.Shield);
-      armorEls = defender.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
-    } else {
-      armorEls = defender.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
-    }
-
-    for (var armorEl of armorEls) {
-      armorAmount += getArmorAmount(armorEl.subType);
-    }
-
-    let elemParentCell = BoardUtils.getElementParentCell(defender, cells);
-    let onCapital = elemParentCell.elements.filter((el: Element) => el.subType == ElementSubTypes.Capital && el.team == defender.team).length > 0;
-
-    if (onCapital) { armorAmount += CAPITAL_DEFENCE_BUFF; }
+    let armorAmount = BoardUtils.getPersonTotalArmorAmount(defender, cells, ignoreShield);
     if (usingMace) { armorAmount = Math.max(0, armorAmount - MACE_ARMOR_DEPLETION_AMOUNT); }
 
     if (armorAmount >= damageAmount) return defender;
@@ -259,7 +242,6 @@ export default class BoardActions {
 
     if (defender.health < 1) { return null }
     return defender
-
   }
 
   static makePersonsFight(_personElem: Element, _targetElem: Element, cells: Cell[]): Cell[] {
@@ -343,6 +325,11 @@ export default class BoardActions {
     let newCells = structuredClone(cells);
     let elemParentCell = BoardUtils.getElementParentCell(personElem, newCells);
     let newPerson = elemParentCell.elements.filter(e => e.id == personElem.id)[0];
+
+    if (newName.length > 10) {
+      newName = newName.slice(0, 10);
+    }
+
     newPerson.name = newName;
     return newCells;
   }

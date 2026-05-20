@@ -25,7 +25,9 @@ import {
   WEAPON_SUBTYPES,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
-  SCAVENGE_CHANCES
+  SCAVENGE_CHANCES,
+  ARMOR_SUBTYPES,
+  CAPITAL_DEFENCE_BUFF
 } from "@/features/game/gameVars"
 
 import {
@@ -33,7 +35,9 @@ import {
   nameForElementSubType,
   getTradeCostForSubType,
   getHandsRequiredToHold,
-  objectToElement
+  objectToElement,
+  getArmorAmount,
+  getDamageAmount
 } from "@/features/game/gameUtils"
 
 export default class BoardUtils {
@@ -82,13 +86,15 @@ export default class BoardUtils {
     let objectSize = buildingSize * 0.65;
     let toolSize = objectSize / 3;
     let itemSize = objectSize / 2.5;
+    let miniItemSize = itemSize / 1.5;
 
     return {
       halfRadius: halfRadius,
       buildingSize: buildingSize,
       objectSize: objectSize,
       toolSize: toolSize,
-      itemSize: itemSize
+      itemSize: itemSize,
+      miniItemSize: miniItemSize
     }
   }
 
@@ -905,5 +911,32 @@ export default class BoardUtils {
     let building = buildingElements[0];
     if (building.subType == ElementSubTypes.Capital && building.team == personElem.team) { return false };
     return true
+  }
+
+  static getPersonTotalArmorAmount(personElem: Element, cells: Cell[], ignoreShield: boolean): number {
+    let armorAmount = 0;
+    let armorEls;
+
+    if (ignoreShield) {
+      let nonShieldArmors: any = ARMOR_SUBTYPES.filter((s: number) => s != ElementSubTypes.Shield);
+      armorEls = personElem.heldElements.filter((el: Element) => nonShieldArmors.includes(el.subType));
+    } else {
+      armorEls = personElem.heldElements.filter((el: Element) => ARMOR_SUBTYPES.includes(el.subType));
+    }
+
+    for (var armorEl of armorEls) {
+      armorAmount += getArmorAmount(armorEl.subType);
+    }
+
+    let elemParentCell = BoardUtils.getElementParentCell(personElem, cells);
+    let onCapital = elemParentCell.elements.filter((el: Element) => el.subType == ElementSubTypes.Capital && el.team == personElem.team).length > 0;
+    if (onCapital) { armorAmount += CAPITAL_DEFENCE_BUFF; }
+    return armorAmount
+  }
+
+  static getPersonDamageAmount(personElem: Element) {
+    let weaponEls = personElem.heldElements.filter((el: Element) => WEAPON_SUBTYPES.includes(el.subType));
+    if (weaponEls.length == 0) return getDamageAmount(null);
+    return getDamageAmount(weaponEls[0].subType);
   }
 }

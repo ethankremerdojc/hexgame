@@ -10,6 +10,10 @@ export const MATERIAL_ELEMENT_SUBTYPES: number[] = [
     ElementSubTypes.Leather
 ];
 
+export const ELEMENTS_YOU_SEE_IN_PERSON_UI: number[] = [
+  ...MATERIAL_ELEMENT_SUBTYPES, ElementSubTypes.Cow
+]
+
 export const USABLE_ITEMS: number[] = [
   ElementSubTypes.Sword,
   ElementSubTypes.Bow,
