@@ -84,7 +84,7 @@ export default class BoardUtils {
   static getElemSizes(radius: number): any {
     let halfRadius = radius/2;
     let buildingSize = radius*0.4;
-    let objectSize = buildingSize * 0.65;
+    let objectSize = buildingSize * 0.55;
     let toolSize = objectSize / 3;
     let itemSize = objectSize / 2.5;
     let miniItemSize = itemSize / 1.5;

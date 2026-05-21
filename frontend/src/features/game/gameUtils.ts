@@ -85,21 +85,25 @@ export function updateElemAttributes(elem: Element): Element {
 
 function updateCellElementPositions(elements: Element[]): Element[] {
 
-  let personElements = [], buildingElements = [], itemElements = [];
+  let villagerElements = [], buildingElements = [], itemElements = [], traderElements = [];
 
   for (var elem of elements) {
-    if (elem.type == ElementTypes.Person) {
-      personElements.push(elem);
-    }
     if (elem.type == ElementTypes.Building) {
       buildingElements.push(elem);
     }
     if (elem.type == ElementTypes.Item) {
       itemElements.push(elem);
     }
+    if (elem.subType == ElementSubTypes.Villager) {
+      villagerElements.push(elem);
+    }
+    if (elem.subType == ElementSubTypes.Trader) {
+      traderElements.push(elem);
+    }
   }
 
   let newElements = [];
+
 
   if (buildingElements.length > 0) {
     let building = {...buildingElements[0]};
@@ -107,13 +111,18 @@ function updateCellElementPositions(elements: Element[]): Element[] {
     newElements.push(building);
   }
 
-  for (let i=0; i < personElements.length; i++) {
-    let newElem = {...personElements[i]};
-    if (buildingElements.length == 0) {
-      newElem.position = i;
-    } else {
-      newElem.position = i + 1;
-    }
+  console.log("updating positions")
+
+  // TODO Dissalow multiple traders per tile
+  if (traderElements.length > 0) {
+    let trader = {...traderElements[0]};
+    trader.position = 0;
+    newElements.push(trader);
+  }
+
+  for (let i=0; i < villagerElements.length; i++) {
+    let newElem = {...villagerElements[i]};
+    newElem.position = i + 1;
     newElements.push(newElem);
   }
 
