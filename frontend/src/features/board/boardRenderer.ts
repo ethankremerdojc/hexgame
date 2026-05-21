@@ -64,7 +64,7 @@ import traderSvg from "./svg/trader.svg";
 
 
 // held items
-import forkSvgRaw from "./svg/pitchfork.svg?raw";
+import workIconRaw from "./svg/actions/workIcon.svg?raw";
 
 import swordSvgRaw from "./svg/sword.svg?raw";
 import swordSvg from "./svg/sword.svg";
@@ -111,8 +111,6 @@ import maceSvg from "./svg/mace.svg";
 
 import spearSvgRaw from "./svg/spear.svg?raw";
 import spearSvg from "./svg/spear.svg";
-
-import shovelSvgRaw from "./svg/shovel.svg?raw";
 
 import ironArmorSvgRaw from "./svg/iron-armor.svg?raw";
 import ironArmorSvg from "./svg/iron-armor.svg";
@@ -403,40 +401,47 @@ export default class BoardRenderer {
         CellTypes.ClayField
       ]
 
-      let result: any = {};
+      let cp: any = {};
 
-      for (var _key of keys) {
-        let key = Number(_key);
-        let canvasEl;
-
-        //TODO if we store each based on radius, it won't add much
-        switch (Number(key)) {
-          case CellTypes.Field:
-            canvasEl = getGrassCanvas(this.opts.radius);
-            break;
-          case CellTypes.Forest:
-            canvasEl = getForestCanvas(this.opts.radius);
-            break;
-          case CellTypes.Mountain:
-            canvasEl = getMountainCanvas(this.opts.radius);
-            break;
-          case CellTypes.Desert:
-            canvasEl = getDesertCanvas(this.opts.radius);
-            break;
-          case CellTypes.ClayField:
-            canvasEl = getClayfieldCanvas(this.opts.radius);
-            break
-          default:
-            break;
-        }
-
-        result[key] = canvasEl;
+      for (var key of keys) {
+        cp[key] = {};
       }
 
-      window.__cellPatterns = result;
+      window.__cellPatterns = cp;
     }
 
-    return window.__cellPatterns[cellType];
+    let truncRadius = Math.round(this.opts.radius * 1000000) / 1000000;
+
+    if (window.__cellPatterns[cellType][truncRadius] === undefined) {
+      let canvasEl;
+
+      switch (cellType) {
+        case CellTypes.Field:
+          canvasEl = getGrassCanvas(truncRadius);
+          break;
+        case CellTypes.Forest:
+          canvasEl = getForestCanvas(truncRadius);
+          break;
+        case CellTypes.Mountain:
+          canvasEl = getMountainCanvas(truncRadius);
+          break;
+        case CellTypes.Desert:
+          canvasEl = getDesertCanvas(truncRadius);
+          break;
+        case CellTypes.ClayField:
+          canvasEl = getClayfieldCanvas(truncRadius);
+          break
+        default:
+          throw new Error(`Unknown cell type: ${cellType}`)
+          break;
+      }
+
+      window.__cellPatterns[cellType][truncRadius] = canvasEl;
+    }
+
+    let result = window.__cellPatterns[cellType][truncRadius];
+
+    return result
   }
 
   drawHex(
@@ -478,14 +483,12 @@ export default class BoardRenderer {
       throw new Error("Unable to create canvas pattern obj.");
     }
 
-    if (typeof(pattern) != "string") {
-      pattern.setTransform(
-        new DOMMatrix().translate(
-          this.opts.offsetX,
-          this.opts.offsetY
-        )
-      );
-    }
+    pattern.setTransform(
+      new DOMMatrix().translate(
+        this.opts.offsetX,
+        this.opts.offsetY
+      )
+    );
 
     this.ctx.fillStyle = pattern;
     this.ctx.fill();
@@ -544,7 +547,7 @@ export default class BoardRenderer {
     elemPos: Coordinate,
     isSelected: boolean
   ) {
-    let { objectSize, toolSize } = this.elemSizes;
+    let { objectSize } = this.elemSizes;
 
     this.ctx.save();
 
@@ -607,7 +610,7 @@ export default class BoardRenderer {
     let totalDamageAmount = BoardUtils.getPersonDamageAmount(element);
     drawSvgToCanvas(
       attackIconRaw, this.ctx,
-      paddedTopLeftX + (tileWidth * 0.7), paddedTopLeftY + tileWidth * 1.5,
+      paddedTopLeftX + (tileWidth * 0.7), paddedTopLeftY + tileWidth * 1.6,
       tileWidth * 0.5, tileWidth
     )
     this.ctx.fillText(
@@ -643,19 +646,13 @@ export default class BoardRenderer {
 
     this.drawPersonHeldMaterials(element, {x: paddedTopLeftX, y: paddedTopLeftY + tileWidth * 3.5}, tileWidth);
 
-    if (element.isWorking) {
-      drawSvgToCanvas(forkSvgRaw, this.ctx,
-        elemPos.x + objectSize*1.5, elemPos.y,
-        toolSize, objectSize,
-      );
+    if (element.isWorking || element.isScavenging) {
+      drawSvgToCanvas(
+        workIconRaw, this.ctx,
+        paddedTopLeftX + (tileWidth * 4.6), paddedTopLeftY + tileWidth * 1.5,
+        tileWidth, tileWidth
+      )
     }
-    if (element.isScavenging) {
-      drawSvgToCanvas(shovelSvgRaw, this.ctx,
-        elemPos.x + objectSize*1.5, elemPos.y,
-        toolSize, objectSize,
-      );
-    }
-    
 
     //? Selected Yellow Box
     if (isSelected) {
@@ -697,12 +694,12 @@ export default class BoardRenderer {
       let offsetX = 0;
       let offsetY = 0;
 
-      if (THIN_RENDERED_ELEMENTS.includes(element.subType)) {
-        itemWidth = tileWidth * 0.5;
-        offsetX = tileWidth * 0.25;
-      } else if (SHORT_RENDERED_ELEMENTS.includes(element.subType)) {
-        itemHeight = tileWidth * 0.66;
-        offsetY = tileWidth * 0.22;
+      if (THIN_RENDERED_ELEMENTS.includes(heldElement.subType)) {
+        itemWidth = tileWidth * 0.4;
+        offsetX = tileWidth * 0.3;
+      } else if (SHORT_RENDERED_ELEMENTS.includes(heldElement.subType)) {
+        itemHeight = tileWidth * 0.64;
+        offsetY = tileWidth * 0.18;
       }
 
       drawSvgToCanvas(heldElemSvg, this.ctx,
@@ -801,8 +798,8 @@ export default class BoardRenderer {
     if (object.subType == ElementSubTypes.Horse) {
       if (object.hasActionAvailable === false) {
         drawSvgToCanvas(noSvgRaw, this.ctx,
-          elemPos.x - objectSize*0.15, elemPos.y+objectSize*0.65,
-          objectSize*1.5, objectSize,
+          elemPos.x + objectSize*0.25, elemPos.y+objectSize,
+          objectSize*0.5, objectSize*0.5,
         );
       }
     }
@@ -907,11 +904,11 @@ export default class BoardRenderer {
       let offsetY = 0;
 
       if (THIN_RENDERED_ELEMENTS.includes(element.subType)) {
-        itemWidth = itemSize * 0.5;
-        offsetX = itemSize * 0.25;
+        itemWidth = itemSize * 0.4;
+        offsetX = itemSize * 0.3;
       } else if (SHORT_RENDERED_ELEMENTS.includes(element.subType)) {
-        itemHeight = itemSize * 0.66;
-        offsetY = itemSize * 0.22;
+        itemHeight = itemSize * 0.64;
+        offsetY = itemSize * 0.18;
       }
 
       drawSvgToCanvas(elemSvg, 

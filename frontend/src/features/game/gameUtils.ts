@@ -139,6 +139,12 @@ export function prepareCellsForStateSave(cells: Cell[]): Cell[] {
 
   for (var cell of cells) {
     let newCell = {...cell};
+
+    //TODO REMOVE AT SOME POINT
+    if (typeof(newCell.type) == "string") {
+      newCell.type = Number(newCell.type);
+    }
+
     let newElements = updateCellElements(newCell);
     newCell.elements = newElements;
     newCells.push(newCell);
@@ -552,6 +558,7 @@ export function makePersonsWithActionOnTeamWork(playerTeam: number, cells: Cell[
         } else {
           person.isWorking = true;
         }
+        person.hasActionAvailable = false;
       }
     }
   }

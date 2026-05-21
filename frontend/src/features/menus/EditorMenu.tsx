@@ -56,7 +56,7 @@ export default function EditorMenu() {
     let newCells = structuredClone(oldCells);
     for (var cell of newCells) {
       if (cell.x == x && cell.y == y) {
-        cell.type = type;
+        cell.type = Number(type);
       }
     }
     return newCells;

@@ -7,6 +7,7 @@ import clayTileSvg from "./svg/clayTile.svg?raw";
 
 function getPatternCanvas(img: string, tileWidth: number, tileHeight: number): HTMLCanvasElement {
   const tile = document.createElement("canvas");
+
   tile.width = tileWidth;
   tile.height = tileHeight;
 
@@ -27,15 +28,16 @@ function getPatternCanvas(img: string, tileWidth: number, tileHeight: number): H
 
 
 export function getGrassCanvas(radius: number): HTMLCanvasElement {
-  return getPatternCanvas(grassTileSvg, Math.floor(radius/2), Math.floor(radius/2));
+  console.log("gc r", radius);
+  return getPatternCanvas(grassTileSvg, radius, radius);
 }
 
 export function getMountainCanvas(radius: number): HTMLCanvasElement {
-  return getPatternCanvas(rockTileSvg, Math.floor(radius/2), Math.floor(radius/2));
+  return getPatternCanvas(rockTileSvg, radius, radius);
 }
 
 export function getDesertCanvas(radius: number): HTMLCanvasElement {
-  return getPatternCanvas(desertTileSvg, Math.floor(radius/2), Math.floor(radius/2));
+  return getPatternCanvas(desertTileSvg, radius, radius);
 }
 
 export function getForestCanvas(radius: number): HTMLCanvasElement {
