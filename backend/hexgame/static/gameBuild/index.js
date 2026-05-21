@@ -4952,204 +4952,424 @@ Zsazsa
 Zulema
 Zuzana
 `.split(`
-`),sr={Center:0,Top:1,TopLeft:2,TopRight:3,BottomLeft:4,BottomRight:5},N=class e{static getPseudoRandomFromPersonAndRoundNumber(e,t){let n=`${e}:${t}`,r=1779033703;for(let e=0;e<n.length;e++)r=Math.imul(r^n.charCodeAt(e),3432918353),r=r<<13|r>>>19;return r=Math.imul(r^r>>>16,2246822507),r=Math.imul(r^r>>>13,3266489909),r^=r>>>16,(r>>>0)/4294967296}static getScavengedItem(t,n){let r=e.getPseudoRandomFromPersonAndRoundNumber(t.id,n),i;i=r<er.MATERIAL?Gn:r<er.COMMON+er.MATERIAL?ir:ar;let a=e.getPseudoRandomFromPersonAndRoundNumber(t.id+`item`,n),o=Math.floor(a*i.length);return hr({type:j.Item,subType:i[o]})}static getElemSizes(e){let t=e/2,n=e*.4,r=n*.55,i=r/3,a=r/2.5;return{halfRadius:t,buildingSize:n,objectSize:r,toolSize:i,itemSize:a,miniItemSize:a/1.5}}static getSizeForElement(t,n){let{buildingSize:r,objectSize:i,toolSize:a}=e.getElemSizes(n);if(t.type==j.Person)return i;if(t.type==j.Item)return a;if(t.type==j.Building)return r;throw Error(`Unknown element type: ${t.type}`)}static getElementPosition(t,n,r){let i=e.getSizeForElement(t,r)/2,a=r/2;if(t.type==j.Item)return{x:-1,y:n.y+r*.5};let o;switch(t.position){case sr.Top:o={x:n.x-i,y:n.y-r*.75};break;case sr.TopLeft:o={x:n.x-i-a*.8,y:n.y-r*.5};break;case sr.TopRight:o={x:n.x-i+a*.8,y:n.y-r*.5};break;case sr.BottomLeft:o={x:n.x-i-a*1.1,y:n.y-a*.25};break;case sr.BottomRight:o={x:n.x-i+a*1.1,y:n.y-a*.25};break;case sr.Center:o={x:n.x-i,y:n.y-i};break;default:throw t.position===void 0||t.position===null?Error(`No element.position found for element ${t}`):Error(`Unknown Hex position: ${t.position}`)}return o}static gridMeasurements(e){let t=e*2,n=Math.sin(Math.PI/6)*t,r=t-n/2,i=Math.cos(Math.PI/6)*t;return{diameter:t,edgeLength:n,gridSpaceX:r,gridSpaceY:i,gridOffsetY:i/2}}static pointInTriangle(e,t,n,r){function i(e,t,n){return(e.x-n.x)*(t.y-n.y)-(t.x-n.x)*(e.y-n.y)}let a=i(e,t,n),o=i(e,n,r),s=i(e,r,t);return!((a<0||o<0||s<0)&&(a>0||o>0||s>0))}static pointInRectangle(e,t,n){let r=t.y,i=n.y,a=t.x,o=n.x;return e.x>=a&&e.x<=o&&e.y>=r&&e.y<=i}static toPolarCoordinate(e,t,n,r){return{x:e+n*Math.cos(r),y:t+n*Math.sin(r)}}static getBoundingBoxCornerTriangles(t,n){let r=e.gridMeasurements(t).edgeLength/2,i=Math.sqrt(3)/2*t,a=i/2,o=(t-r)/2,s=n.x-r,c=s-o,l=n.x+r,u=l+o,d=n.y-i,f=n.y-a,p=n.y+i,m=n.y+a,h=(e,t,n,r,i,a,o)=>({points:[{x:Math.floor(e),y:Math.floor(t)},{x:Math.floor(n),y:Math.floor(r)},{x:Math.floor(i),y:Math.floor(a)}],name:o});return[h(c,p,c,m,s,p,`bottom-left`),h(u,p,u,m,l,p,`bottom-right`),h(c,d,c,f,s,d,`top-left`),h(u,d,u,f,l,d,`top-right`)]}static pixelToGrid(t,n,r,i,a){let o=e.gridMeasurements(r),s=Math.round((t-i)/o.gridSpaceX),c=Math.round((n-a-(s%2?o.gridOffsetY:0))/o.gridSpaceY),l=e.gridToPixelOrigin(s,c,r,i,a),u=e.getBoundingBoxCornerTriangles(r,l),d=null;for(var f of u)e.pointInTriangle({x:t,y:n},f.points[0],f.points[1],f.points[2])&&(d=f.name);if(d){let e=s;d.includes(`left`)?--s:s+=1,d.includes(`top`)?s%2&&--c:e%2&&(c+=1)}return{x:s,y:c}}static gridToPixelOrigin(t,n,r,i,a){function o(e,t){return{x:e,y:t}}let s=e.gridMeasurements(r);return o(Math.floor(t*s.gridSpaceX)+i,Math.floor(n*s.gridSpaceY+(t%2?s.gridOffsetY:0)+a))}static getAdjacentCells(e,t){if(!t)return[];let n=[{x:t.x,y:t.y+1},{x:t.x,y:t.y-1},{x:t.x-1,y:t.y},{x:t.x+1,y:t.y}];t.x%2?(n.push({x:t.x-1,y:t.y+1}),n.push({x:t.x+1,y:t.y+1})):(n.push({x:t.x-1,y:t.y-1}),n.push({x:t.x+1,y:t.y-1}));let r=[];for(var i of n)for(var a of e)i.x==a.x&&i.y==a.y&&r.push(a);return r}static getElementParentCell(e,t){for(var n of t)if(n.elements){for(var r of n.elements)if(r.id==e.id)return n}throw Error(`unable to find element parent.`)}static getBoardWidthAndHeight(e,t,n){let r=n*2,i=n*1.5,a=Math.sqrt(3)*n,o=a/2,s=Math.floor((e-r)/i),c=Math.floor((t-r-o)/a)+1;return{boardWidth:Math.max(0,s),boardHeight:Math.max(0,c)}}static getInitialRadius(e,t){let n=0;for(var r of t)r.x>n&&(n=r.x);return e/(1.5*n+2)}static getPersonCarryingWeight(e){let t=0;return e.heldElements.forEach(e=>{let n;n=e.weight?e.weight:1;let r=e.count?e.count:1;t+=n*r}),t}static getCarryingCapacity(e){return e.heldElements.filter(e=>e.subType==M.Cart).length>0?15:6}static getCellsPersonCanMoveTo(t,n){let r=e.getElementParentCell(t,n),i=e.getAdjacentCells(n,r),a=[];for(var o of i)o.elements.filter(e=>e.type==j.Person).length>4||o.elements.filter(e=>e.type==j.Person&&e.team==t.team).length>2||a.push(o);return a}static getPersonRemainingCarryWeight(t){return e.getCarryingCapacity(t)-e.getPersonCarryingWeight(t)}static getEnemyPersons(e,t){let n=[];return t.elements.forEach(t=>{t.subType==M.Villager&&t.team!=e.team&&n.push(t)}),n}static enemyExistsOnCell(t,n){return e.getEnemyPersons(t,n).length>0}static resourcesExistForPerson(t,n,r){let i=e.getElementParentCell(n,r),a=e.mergeItemElements(i.elements.filter(e=>e.type==j.Item));for(var o of t){let e=a.filter(e=>e.subType==o.subType)[0],t,r;t=e?e.count?e.count:1:0;let i=n.heldElements.filter(e=>e.subType==o.subType)[0];if(r=i?i.count?i.count:1:0,t+r<o.count)return!1}return!0}static elementsToBuildExistOnTile(t,n,r){let i=yr(t);return e.resourcesExistForPerson(i,n,r)}static buildingTypeForCellTypes(e){return e==A.Field?M.Farm:e==A.Forest?M.SawMill:e==A.Mountain?M.Quarry:e==A.ClayField?M.BrickFactory:null}static getAvailableThingsToBuild(t){let n=[],r=t.elements.filter(e=>e.type==j.Building).length!=0,i=t.elements.filter(e=>e.subType==M.Forge).length!=0;if(r||(t.type!=A.Desert&&n.push([j.Building,e.buildingTypeForCellTypes(t.type)]),n.push([j.Building,M.Village]),n.push([j.Building,M.Forge])),n.push([j.Item,M.Bow]),n.push([j.Item,M.Cart]),n.push([j.Item,M.LeatherArmor]),n.push([j.Item,M.Spear]),i)for(var a of $n)n.push([j.Item,a]);return n}static buildingCostToString(e){let t=`(`;for(var n of e){let e=n.count?n.count:1;t+=`${gr(n.subType)}: ${e}, `}return t.slice(0,-2)+`)`}static depleteResources(t,n,r){let i=structuredClone(r),a=e.getElementParentCell(n,i),o;for(var s of i)s.x==a.x&&s.y==a.y&&(o=s);if(!o)throw Error(`Unable to find cell in clone`);let c=o.elements.filter(e=>e.id==n.id)[0],l=o.elements.filter(e=>e.type!=j.Item),u=e.mergeItemElements(o.elements.filter(e=>e.type==j.Item)),d=[];for(var f of t){let e=u.filter(e=>e.subType==f.subType)[0];if(!e){d.push({...f});continue}let t=f.count?f.count:1,n=e.count?e.count:1;if(n>t)e.count=n-t;else if(n==t)u=u.filter(t=>t.id!=e.id);else{u=u.filter(t=>t.id!=e.id);let r={...f};r.count=t-n,d.push(r)}}o.elements=[...l,...u];for(var p of d){let e=c.heldElements.filter(e=>e.subType==p.subType)[0];if(!e)throw Error(`Expected an item on the person element for building that wasn't there.`);let t=p.count?p.count:1,n=e.count?e.count:1;if(t>n)throw Error(`Expected an item with higher count on the person element for building that wasn't there.`);t==n?c.heldElements=c.heldElements.filter(t=>t.id!=e.id):e.count=n-t}return i}static mergeItemElements(e){let t=[],n=[],r=[...e];for(var i of r){if(n.includes(i.subType))continue;if(i.subType==M.Horse){let e={...i};t.push(e);continue}n.push(i.subType);let e=r.filter(e=>e.subType==i.subType),o={...i};for(var a of e)a.id!=i.id&&(o.count=(o.count?o.count:1)+(a.count?a.count:1));t.push(o)}return t}static getTeamPersonCapacity(e,t){let n=0;for(var r of t){let t=r.elements.filter(t=>t.subType==M.Capital&&t.team==e).length>0,i=r.elements.filter(t=>t.subType==M.Village&&t.team==e).length>0;t?n+=4:i&&(n+=2)}return n}static getCurrentTeamPersons(e,t){let n=0;for(var r of t)n+=r.elements.filter(t=>t.type==j.Person&&t.team==e).length;return n}static personCanReproduce(t,n){if(t.team===null)throw Error(`person has no team.`);let r=e.getElementParentCell(t,n),i=r.elements.filter(e=>e.subType==M.Capital).length>0,a=r.elements.filter(e=>e.subType==M.Village).length>0;if(!i&&!a||r.elements.filter(e=>e.type==j.Person&&e.team==t.team).length>2)return!1;let o=yr(M.Villager);return e.resourcesExistForPerson(o,t,n)?e.getTeamPersonCapacity(t.team,n)>e.getCurrentTeamPersons(t.team,n):!1}static personCanHeal(t,n){if(t.health>=7)return!1;let r=[{subType:M.Food,count:1}];if(!e.resourcesExistForPerson(r,t,n))return!1;let i=e.getElementParentCell(t,n);return!e.enemyExistsOnCell(t,i)}static personCanHoldItem(t,n){if(Jn.includes(n)&&t.heldElements.filter(e=>e.subType==n).length>0)return!1;let r=[M.IronArmor,M.LeatherArmor];if(t.heldElements.filter(e=>r.includes(e.subType)).length>0&&r.includes(n))return!1;if(Yn.includes(n)){for(var i of t.heldElements)if(Yn.includes(i.subType))return!1}if(e.getPersonRemainingCarryWeight(t)<1)return!1;let a=[M.Cart,M.Sword,M.Bow,M.Shield,M.Cow,M.Horse,M.Mace,M.Spear],o=0;for(var s of a){let e=t.heldElements.filter(e=>e.subType==s).length;e>0&&(o+=wr(s)*e)}let c=wr(n);return o+c<=2}static personCanTakeAnyItem(t,n){return e.getItemsPersonCanTake(t,n).length>0}static getItemsPersonCanTake(t,n){let r=e.getElementParentCell(t,n).elements.filter(e=>e.type==j.Item),i=[];for(var a of r)e.personCanHoldItem(t,a.subType)&&i.push(a);return i}static personCanTrade(t,n){let r=e.getElementParentCell(t,n);return r.elements.filter(e=>e.subType==M.Trader).length>0?r.elements.filter(e=>e.type==j.Item).length>0||t.heldElements.filter(e=>e.type==j.Item).length>0:!1}static itemsForTradeExistOnTile(t,n,r){for(var i of Gn){let a={subType:i,count:n};if(e.resourcesExistForPerson([a],t,r))return!0}return!1}static getTradeOfferings(t,n){let r=e.itemsForTradeExistOnTile(t,2,n),i=[];for(var a of Gn)i.push({type:j.Item,subType:a,count:1,disabled:!r});let o=e.itemsForTradeExistOnTile(t,Cr(M.Horse),n);i.push({type:j.Item,subType:M.Horse,count:1,disabled:!o});let s=e.itemsForTradeExistOnTile(t,Cr(M.Cow),n);return i.push({type:j.Item,subType:M.Cow,count:1,disabled:!s}),i}static getItemTypesPersonCanGive(t,n,r){if(!t)throw Error(`No personElem supplied to 'getItemsPersonCanGive'`);let i=[];for(var a of Gn){let o={subType:a,count:r};e.resourcesExistForPerson([o],t,n)&&i.push(a)}return i}static elWithHighestCount(e){if(e==null)throw Error(`Can't get count without person`);let t=null;for(var n of e.heldElements){if(t===null){t=n;continue}t.count<n.count&&(t=n)}if(!t)throw Error(`couldnt find element`);return t}static personCanShoot(t,n){return t.heldElements.filter(e=>e.subType==M.Bow).length>0?e.getPersonsThatCanBeShot(t,n).length>0:!1}static getPersonsThatCanBeShot(t,n){let r=e.getElementParentCell(t,n),i=e.getAdjacentCells(n,r),a=[];for(var o of i)e.enemyExistsOnCell(t,o)&&(a=[...a,...e.getEnemyPersons(t,o)]);return a}static personCanDestroy(t,n){let r=e.getElementParentCell(t,n);if(e.enemyExistsOnCell(t,r))return!1;let i=r.elements.filter(e=>e.type==j.Building);if(i.length<1)return!1;let a=i[0];return!(a.subType==M.Capital&&a.team==t.team)}static getPersonTotalArmorAmount(t,n,r){let i=0,a;if(r){let e=Qn.filter(e=>e!=M.Shield);a=t.heldElements.filter(t=>e.includes(t.subType))}else a=t.heldElements.filter(e=>Qn.includes(e.subType));for(var o of a)i+=Sr(o.subType);return e.getElementParentCell(t,n).elements.filter(e=>e.subType==M.Capital&&e.team==t.team).length>0&&(i+=1),i}static getPersonDamageAmount(e){let t=e.heldElements.filter(e=>Yn.includes(e.subType));return t.length==0?xr(null):xr(t[0].subType)}};function cr(){return An(or)}var lr=e=>[...Array(e)].map(()=>Math.floor(Math.random()*16).toString(16)).join(``);function ur(){return lr(10)}function dr(e){let t={...e};if((e.type==j.Item||!e.id)&&(t.id=ur()),t.type==j.Person){if(t.health>7&&(t.health=7),t.name||=cr(),!t.heldElements)t.heldElements=[];else{let n=[];for(let r=0;r<t.heldElements.length;r++){let i={...t.heldElements[r]};i.count||=1,e.id||(i.id=ur()),n.push(i)}t.heldElements=N.mergeItemElements(n)}(t.hasActionAvailable===null||t.hasActionAvailable===void 0)&&(t.hasActionAvailable=!0)}return t}function fr(e){let t=[],n=[],r=[],i=[];for(var a of e)a.type==j.Building&&n.push(a),a.type==j.Item&&r.push(a),a.subType==M.Villager&&t.push(a),a.subType==M.Trader&&i.push(a);let o=[];if(n.length>0){let e={...n[0]};e.position=0,o.push(e)}if(console.log(`updating positions`),i.length>0){let e={...i[0]};e.position=0,o.push(e)}for(let e=0;e<t.length;e++){let n={...t[e]};n.position=e+1,o.push(n)}return[...o,...N.mergeItemElements(r)]}function pr(e){let t=[...e.elements];t=t.map(e=>hr(e)),t=fr(t);let n=[];for(var r of t)n.push(dr(r));return n}function mr(e){let t=[];for(var n of e){let e={...n};typeof e.type==`string`&&(e.type=Number(e.type)),e.elements=pr(e),t.push(e)}return t}function hr(e){let t={...e};if(t.type==null||t.subType==null)throw Error(`objectToElement requires obj to have at least type and subtype.`);return t.team===void 0&&(t.team=null),t.position===void 0&&(t.position=null),t.id===void 0&&(t.id=``),t.count===void 0&&(t.count=1),t.heldElements===void 0&&(t.heldElements=[]),t.subType==17&&(t.hasActionAvailable===void 0||t.hasActionAvailable===null)&&(t.hasActionAvailable=!0),t.isWorking===void 0&&(t.isWorking=null),t.isScavenging===void 0&&(t.isScavenging=null),t.hasActionAvailable===void 0&&(t.hasActionAvailable=null),t.health===void 0&&(t.health=0),t}function gr(e){let t=Object.keys(M)[e],n=``;for(let e=0;e<t.length;e++){let r=t[e];e!=0&&r===r.toUpperCase()&&r!==r.toLowerCase()&&(n+=` `),n+=r}return n}function _r(e){return Object.keys(Un)[e]}function vr(e){if(e==A.Field)return M.Food;if(e==A.Forest)return M.Wood;if(e==A.Mountain)return M.Ore;if(e==A.ClayField)return M.Clay;throw Error(`unhandled cell type`)}function yr(e){if(!rr.includes(e))throw Error(`Unhandled subtype: ${e}`);let t=[];switch(e){case M.Farm:t.push({subType:M.Wood,count:3}),t.push({subType:M.Clay,count:2});break;case M.Quarry:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2});break;case M.BrickFactory:t.push({subType:M.Wood,count:3}),t.push({subType:M.Clay,count:2});break;case M.SawMill:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2});break;case M.Village:t.push({subType:M.Wood,count:2}),t.push({subType:M.Clay,count:2});break;case M.Forge:t.push({subType:M.Wood,count:2}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2}),t.push({subType:M.Leather,count:2});break;case M.Sword:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:3});break;case M.Bow:t.push({subType:M.Wood,count:3}),t.push({subType:M.Leather,count:1});break;case M.Shield:t.push({subType:M.Ore,count:4}),t.push({subType:M.Leather,count:1});break;case M.LeatherArmor:t.push({subType:M.Leather,count:3});break;case M.Mace:t.push({subType:M.Ore,count:4}),t.push({subType:M.Wood,count:2});break;case M.Spear:t.push({subType:M.Ore,count:1}),t.push({subType:M.Wood,count:3});break;case M.IronArmor:t.push({subType:M.Ore,count:4}),t.push({subType:M.Leather,count:2});break;case M.Cart:t.push({subType:M.Wood,count:4}),t.push({subType:M.Ore,count:2});break;case M.Villager:t.push({subType:M.Food,count:8});break;default:break}return t}function br(e,t){for(var n of yr(e))if(n.subType==t)return n.count;throw Error(`Ingredient requested not part of building cost.`)}var xr=e=>e===null?2:e===M.Sword||e===M.Spear?5:e===M.Mace?7:e===M.Bow?4:0,Sr=e=>e==M.Shield?2:e==M.LeatherArmor?1:e==M.IronArmor?2:e==M.Spear?1:0;function Cr(e){return e==M.Horse?7:e==M.Cow?6:2}function wr(e){switch(e){case M.Cart:return 2;case M.Horse:case M.Cow:case M.Bow:case M.Shield:case M.Sword:case M.Mace:case M.Spear:return 1;default:return 0}}function Tr(e,t){let n=[];for(var r of e){let e=r.elements.filter(e=>e.subType==M.Capital);e.length<1||n.push(e[0])}if(n.length>1)return!1;if(n[0].team==t)return!0;throw Error(`Somehow the only capital is one of a different player.`)}function Er(e,t){for(var n of t.filter(t=>t.elements.filter(t=>t.type==j.Person&&t.team==e).length>0))for(var r of n.elements.filter(t=>t.type==j.Person&&t.team==e)){if(r.health===null)throw Error(`Person had no health attribute.`);let e=n.elements.filter(e=>e.subType==M.Food);if(e.length>0){let t=e[0];t.count==1?n.elements=n.elements.filter(e=>e.id!=t.id):--t.count;continue}let t=r.heldElements.filter(e=>e.subType==M.Food);if(t.length>0){let e=t[0];e.count==1?r.heldElements=r.heldElements.filter(t=>t.id!=e.id):--e.count}else r.health-=2,r.health<1&&(n.elements=[...n.elements,...r.heldElements],n.elements=n.elements.filter(e=>e.id!=r.id))}return t}function Dr(e,t){for(var n of t.filter(t=>t.elements.filter(t=>t.type==j.Person&&t.team==e).length>0))for(var r of n.elements.filter(t=>t.type==j.Person&&t.team==e))r.hasActionAvailable&&=(n.type==A.Desert?r.isScavenging=!0:r.isWorking=!0,!1);return t}function Or(e,t,n){for(var r of e.filter(e=>e.elements.filter(e=>e.type==j.Person&&e.team==t).length>0)){let e=r.elements.filter(e=>e.type==j.Person&&e.team==t),c=e.filter(e=>e.isWorking),l=e.filter(e=>e.isScavenging);for(var i of e){i.hasActionAvailable=!0,i.isWorking=!1,i.isScavenging=!1;for(var a of i.heldElements.filter(e=>e.subType==M.Horse))a.hasActionAvailable=!0;for(var o of i.heldElements.filter(e=>e.subType==M.Sword))o.hasActionAvailable=!0}for(var a of r.elements.filter(e=>e.subType==M.Horse))a.hasActionAvailable=!0;let u=r.elements.filter(e=>e.subType==M.Cow);if(u.length>0&&c.length>0&&tr.includes(Number(r.type))){let e=Math.min(u[0].count,3),t={type:j.Item,subType:M.Leather,count:e};r.elements.push(hr(t))}for(var s of l){let e=N.getScavengedItem(s,n);r.elements.push(e)}if(c.length<1)continue;let d=r.elements.filter(e=>e.type==j.Building&&e.subType!=M.Capital&&e.subType!=M.Village).length>0,f;f=d?4*c.length:2*c.length,r.elements.push(hr({type:j.Item,subType:vr(r.type),count:f}))}return e=mr(e),e}var kr=hn({name:`game`,initialState:{cells:[],backupCells:[],playerCount:0,playerTurn:Un.White,gameId:-1,usernames:[],forfeitedUsernames:[],loggedInUsername:``,roundNumber:0,gameOver:!1},reducers:{setCells(e,t){let n=t.payload;e.cells=mr(n)},setBackupCells(e,t){e.backupCells=t.payload},setPlayerCount(e,t){e.playerCount=t.payload},setPlayerTurn(e,t){e.playerTurn=t.payload},setGameId(e,t){e.gameId=t.payload},setUsernames(e,t){e.usernames=t.payload},setForfeitedUsernames(e,t){e.forfeitedUsernames=t.payload},setLoggedInUsername(e,t){e.loggedInUsername=t.payload},setRoundNumber(e,t){e.roundNumber=t.payload},setGameOver(e,t){e.gameOver=t.payload},endTurn(e){for(;;){let t=e.playerTurn;t==e.playerCount-1?e.playerTurn=0:e.playerTurn+=1;let n=Er(t,e.cells);if(n=Dr(t,e.cells),Tr(n,t)){e.cells=n,e.gameOver=!0,Bn(e.cells,e.playerTurn,e.gameId,!1,e.loggedInUsername);break}else{let t=Or(n,e.playerTurn,e.roundNumber);e.cells=t,e.backupCells=t,e.playerTurn==0&&(e.roundNumber+=1),Bn(e.cells,e.playerTurn,e.gameId)}let r=e.usernames[e.playerTurn];if(e.forfeitedUsernames.includes(r))console.log(r,`forfeited, skipping their turn.`);else break}}}}),Ar=e=>e.game.cells,jr=e=>e.game.backupCells,Mr=e=>e.game.playerCount,Nr=e=>e.game.playerTurn,Pr=e=>e.game.gameId,Fr=e=>e.game.usernames,Ir=e=>e.game.loggedInUsername,Lr=e=>e.game.usernames[e.game.playerTurn],Rr=e=>e.game.roundNumber,zr=e=>e.game.gameOver,{setCells:P,setBackupCells:Br,setPlayerCount:Vr,setPlayerTurn:Hr,setGameId:Ur,setUsernames:Wr,setForfeitedUsernames:Gr,setLoggedInUsername:Kr,setRoundNumber:qr,setGameOver:Jr,endTurn:Yr}=kr.actions,Xr=kr.reducer,Zr=hn({name:`board`,initialState:{selectedCell:null,selectedElement:null,offset:{x:0,y:0},zoom:1,showMoveInfo:!1},reducers:{setSelectedCell(e,t){e.selectedCell=t.payload},setSelectedElement(e,t){e.selectedElement=t.payload},setBoardOffset(e,t){e.offset=t.payload},setBoardZoom(e,t){e.zoom=t.payload},setShowMoveInfo(e,t){e.showMoveInfo=t.payload},clearAll(e){e.selectedCell=null,e.selectedElement=null,e.showMoveInfo=!1}}}),Qr=e=>e.board.selectedCell,$r=e=>e.board.selectedElement,ei=e=>e.board.offset,ti=e=>e.board.zoom,ni=e=>e.board.showMoveInfo,{setSelectedCell:ri,setSelectedElement:ii,setBoardOffset:ai,setBoardZoom:oi,setShowMoveInfo:si,clearAll:ci}=Zr.actions,li=Zr.reducer,ui=hn({name:`menu `,initialState:{actionHandling:``,actionItemsToSelectFrom:[],viewOnly:!1,userSubscribed:!1},reducers:{setActionHandling(e,t){e.actionHandling=t.payload},setActionItemsToSelectFrom(e,t){e.actionItemsToSelectFrom=t.payload},setViewOnly(e,t){e.viewOnly=t.payload},setUserSubscribed(e,t){e.userSubscribed=t.payload}}}),di=e=>e.menu.actionHandling,fi=e=>e.menu.actionItemsToSelectFrom,pi=e=>e.menu.viewOnly,mi=e=>e.menu.userSubscribed,{setActionHandling:hi,setActionItemsToSelectFrom:gi,setViewOnly:_i,setUserSubscribed:vi}=ui.actions,yi=ui.reducer,bi=sn({reducer:{game:Xr,board:li,menu:yi}}),xi=fe.withTypes(),F=O.withTypes();function Si(e){return e===null?``:[`white`,`purple`,`red`,`yellow`,`blue`,`green`,`black`,`brown`][e]}var Ci=`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_73_59)">
-<rect width="20" height="20" fill="#325231"/>
-<rect x="4" y="13" width="1" height="2" fill="#5C8552"/>
-<rect x="3" y="17" width="1" height="2" fill="#5C8552"/>
-<rect x="4" y="16" width="1" height="2" fill="#5C8552"/>
-<rect x="3" y="11" width="1" height="2" fill="#5C8552"/>
-<rect x="5" y="12" width="1" height="1" fill="#5C8552"/>
-<rect x="13" y="1" width="1" height="1" fill="#5C8552"/>
-<rect x="10" y="13" width="1" height="1" fill="#5C8552"/>
-<rect x="11" y="12" width="1" height="1" fill="#5C8552"/>
-<rect x="8" y="9" width="1" height="2" fill="#5C8552"/>
-<rect x="10" y="9" width="1" height="2" fill="#5C8552"/>
-<rect x="12" y="11" width="1" height="1" fill="#5C8552"/>
-<rect x="9" y="11" width="1" height="1" fill="#5C8552"/>
-<rect x="14" y="8" width="1" height="2" fill="#5C8552"/>
-<rect x="13" y="7" width="1" height="1" fill="#5C8552"/>
-<rect x="15" y="7" width="1" height="2" fill="#5C8552"/>
-<rect x="16" y="6" width="1" height="1" fill="#5C8552"/>
-<rect x="7" y="6" width="1" height="2" fill="#5C8552"/>
-<rect x="8" y="4" width="1" height="2" fill="#5C8552"/>
-<rect x="8" y="19" width="1" height="1" fill="#5C8552"/>
-<rect x="13" y="17" width="1" height="2" fill="#5C8552"/>
-<rect x="12" y="16" width="1" height="1" fill="#5C8552"/>
-<rect x="5" y="5" width="1" height="2" fill="#5C8552"/>
-<rect x="6" y="7" width="1" height="2" fill="#5C8552"/>
-<rect x="1" width="1" height="2" fill="#5C8552"/>
-<rect x="2" y="2" width="1" height="2" fill="#5C8552"/>
-<rect x="4" y="4" width="1" height="1" fill="#5C8552"/>
-<rect width="1" height="2" transform="matrix(-1 0 0 1 17 15)" fill="#5C8552"/>
-<rect width="1" height="2" transform="matrix(-1 0 0 1 16 13)" fill="#5C8552"/>
-<rect width="1" height="2" transform="matrix(-1 0 0 1 19 14)" fill="#5C8552"/>
-<rect width="1" height="2" transform="matrix(-1 0 0 1 18 16)" fill="#5C8552"/>
-<rect width="1" height="1" transform="matrix(-1 0 0 1 20 13)" fill="#5C8552"/>
-<rect x="18" y="2" width="1" height="2" fill="#5C8552"/>
-<rect x="19" y="1" width="1" height="1" fill="#5C8552"/>
-<rect x="19" y="1" width="1" height="1" fill="#5C8552"/>
-<rect x="12" y="2" width="1" height="3" fill="#5C8552"/>
-<rect x="11" y="1" width="1" height="1" fill="#5C8552"/>
-<rect x="10" width="1" height="1" fill="#5C8552"/>
-<rect y="12" width="1" height="2" fill="#5C8552"/>
-<rect y="19" width="1" height="1" fill="#5C8552"/>
-</g>
-<defs>
-<clipPath id="clip0_73_59">
-<rect width="20" height="20" fill="white"/>
-</clipPath>
-</defs>
+`),sr={Center:0,Top:1,TopLeft:2,TopRight:3,BottomLeft:4,BottomRight:5},N=class e{static getPseudoRandomFromPersonAndRoundNumber(e,t){let n=`${e}:${t}`,r=1779033703;for(let e=0;e<n.length;e++)r=Math.imul(r^n.charCodeAt(e),3432918353),r=r<<13|r>>>19;return r=Math.imul(r^r>>>16,2246822507),r=Math.imul(r^r>>>13,3266489909),r^=r>>>16,(r>>>0)/4294967296}static getScavengedItem(t,n){let r=e.getPseudoRandomFromPersonAndRoundNumber(t.id,n),i;i=r<er.MATERIAL?Gn:r<er.COMMON+er.MATERIAL?ir:ar;let a=e.getPseudoRandomFromPersonAndRoundNumber(t.id+`item`,n),o=Math.floor(a*i.length);return hr({type:j.Item,subType:i[o]})}static getElemSizes(e){let t=e/2,n=e*.4,r=n*.55,i=r/3,a=r/2.5;return{halfRadius:t,buildingSize:n,objectSize:r,toolSize:i,itemSize:a,miniItemSize:a/1.5}}static getSizeForElement(t,n){let{buildingSize:r,objectSize:i,toolSize:a}=e.getElemSizes(n);if(t.type==j.Person)return i;if(t.type==j.Item)return a;if(t.type==j.Building)return r;throw Error(`Unknown element type: ${t.type}`)}static getElementPosition(t,n,r){let i=e.getSizeForElement(t,r)/2,a=r/2;if(t.type==j.Item)return{x:-1,y:n.y+r*.5};let o;switch(t.position){case sr.Top:o={x:n.x-i,y:n.y-r*.75};break;case sr.TopLeft:o={x:n.x-i-a*.8,y:n.y-r*.5};break;case sr.TopRight:o={x:n.x-i+a*.8,y:n.y-r*.5};break;case sr.BottomLeft:o={x:n.x-i-a*1.1,y:n.y-a*.25};break;case sr.BottomRight:o={x:n.x-i+a*1.1,y:n.y-a*.25};break;case sr.Center:o={x:n.x-i,y:n.y-i};break;default:throw t.position===void 0||t.position===null?Error(`No element.position found for element ${t}`):Error(`Unknown Hex position: ${t.position}`)}return o}static gridMeasurements(e){let t=e*2,n=Math.sin(Math.PI/6)*t,r=t-n/2,i=Math.cos(Math.PI/6)*t;return{diameter:t,edgeLength:n,gridSpaceX:r,gridSpaceY:i,gridOffsetY:i/2}}static pointInTriangle(e,t,n,r){function i(e,t,n){return(e.x-n.x)*(t.y-n.y)-(t.x-n.x)*(e.y-n.y)}let a=i(e,t,n),o=i(e,n,r),s=i(e,r,t);return!((a<0||o<0||s<0)&&(a>0||o>0||s>0))}static pointInRectangle(e,t,n){let r=t.y,i=n.y,a=t.x,o=n.x;return e.x>=a&&e.x<=o&&e.y>=r&&e.y<=i}static toPolarCoordinate(e,t,n,r){return{x:e+n*Math.cos(r),y:t+n*Math.sin(r)}}static getBoundingBoxCornerTriangles(t,n){let r=e.gridMeasurements(t).edgeLength/2,i=Math.sqrt(3)/2*t,a=i/2,o=(t-r)/2,s=n.x-r,c=s-o,l=n.x+r,u=l+o,d=n.y-i,f=n.y-a,p=n.y+i,m=n.y+a,h=(e,t,n,r,i,a,o)=>({points:[{x:Math.floor(e),y:Math.floor(t)},{x:Math.floor(n),y:Math.floor(r)},{x:Math.floor(i),y:Math.floor(a)}],name:o});return[h(c,p,c,m,s,p,`bottom-left`),h(u,p,u,m,l,p,`bottom-right`),h(c,d,c,f,s,d,`top-left`),h(u,d,u,f,l,d,`top-right`)]}static pixelToGrid(t,n,r,i,a){let o=e.gridMeasurements(r),s=Math.round((t-i)/o.gridSpaceX),c=Math.round((n-a-(s%2?o.gridOffsetY:0))/o.gridSpaceY),l=e.gridToPixelOrigin(s,c,r,i,a),u=e.getBoundingBoxCornerTriangles(r,l),d=null;for(var f of u)e.pointInTriangle({x:t,y:n},f.points[0],f.points[1],f.points[2])&&(d=f.name);if(d){let e=s;d.includes(`left`)?--s:s+=1,d.includes(`top`)?s%2&&--c:e%2&&(c+=1)}return{x:s,y:c}}static gridToPixelOrigin(t,n,r,i,a){function o(e,t){return{x:e,y:t}}let s=e.gridMeasurements(r);return o(Math.floor(t*s.gridSpaceX)+i,Math.floor(n*s.gridSpaceY+(t%2?s.gridOffsetY:0)+a))}static getAdjacentCells(e,t){if(!t)return[];let n=[{x:t.x,y:t.y+1},{x:t.x,y:t.y-1},{x:t.x-1,y:t.y},{x:t.x+1,y:t.y}];t.x%2?(n.push({x:t.x-1,y:t.y+1}),n.push({x:t.x+1,y:t.y+1})):(n.push({x:t.x-1,y:t.y-1}),n.push({x:t.x+1,y:t.y-1}));let r=[];for(var i of n)for(var a of e)i.x==a.x&&i.y==a.y&&r.push(a);return r}static getElementParentCell(e,t){for(var n of t)if(n.elements){for(var r of n.elements)if(r.id==e.id)return n}throw Error(`unable to find element parent.`)}static getBoardWidthAndHeight(e,t,n){let r=n*2,i=n*1.5,a=Math.sqrt(3)*n,o=a/2,s=Math.floor((e-r)/i),c=Math.floor((t-r-o)/a)+1;return{boardWidth:Math.max(0,s),boardHeight:Math.max(0,c)}}static getInitialRadius(e,t){let n=0;for(var r of t)r.x>n&&(n=r.x);return e/(1.5*n+2)}static getPersonCarryingWeight(e){let t=0;return e.heldElements.forEach(e=>{let n;n=e.weight?e.weight:1;let r=e.count?e.count:1;t+=n*r}),t}static getCarryingCapacity(e){return e.heldElements.filter(e=>e.subType==M.Cart).length>0?15:6}static getCellsPersonCanMoveTo(t,n){let r=e.getElementParentCell(t,n),i=e.getAdjacentCells(n,r),a=[];for(var o of i)o.elements.filter(e=>e.type==j.Person).length>4||o.elements.filter(e=>e.type==j.Person&&e.team==t.team).length>2||a.push(o);return a}static getPersonRemainingCarryWeight(t){return e.getCarryingCapacity(t)-e.getPersonCarryingWeight(t)}static getEnemyPersons(e,t){let n=[];return t.elements.forEach(t=>{t.subType==M.Villager&&t.team!=e.team&&n.push(t)}),n}static enemyExistsOnCell(t,n){return e.getEnemyPersons(t,n).length>0}static resourcesExistForPerson(t,n,r){let i=e.getElementParentCell(n,r),a=e.mergeItemElements(i.elements.filter(e=>e.type==j.Item));for(var o of t){let e=a.filter(e=>e.subType==o.subType)[0],t,r;t=e?e.count?e.count:1:0;let i=n.heldElements.filter(e=>e.subType==o.subType)[0];if(r=i?i.count?i.count:1:0,t+r<o.count)return!1}return!0}static elementsToBuildExistOnTile(t,n,r){let i=yr(t);return e.resourcesExistForPerson(i,n,r)}static buildingTypeForCellTypes(e){return e==A.Field?M.Farm:e==A.Forest?M.SawMill:e==A.Mountain?M.Quarry:e==A.ClayField?M.BrickFactory:null}static getAvailableThingsToBuild(t){let n=[],r=t.elements.filter(e=>e.type==j.Building).length!=0,i=t.elements.filter(e=>e.subType==M.Forge).length!=0;if(r||(t.type!=A.Desert&&n.push([j.Building,e.buildingTypeForCellTypes(t.type)]),n.push([j.Building,M.Village]),n.push([j.Building,M.Forge])),n.push([j.Item,M.Bow]),n.push([j.Item,M.Cart]),n.push([j.Item,M.LeatherArmor]),n.push([j.Item,M.Spear]),i)for(var a of $n)n.push([j.Item,a]);return n}static buildingCostToString(e){let t=`(`;for(var n of e){let e=n.count?n.count:1;t+=`${gr(n.subType)}: ${e}, `}return t.slice(0,-2)+`)`}static depleteResources(t,n,r){let i=structuredClone(r),a=e.getElementParentCell(n,i),o;for(var s of i)s.x==a.x&&s.y==a.y&&(o=s);if(!o)throw Error(`Unable to find cell in clone`);let c=o.elements.filter(e=>e.id==n.id)[0],l=o.elements.filter(e=>e.type!=j.Item),u=e.mergeItemElements(o.elements.filter(e=>e.type==j.Item)),d=[];for(var f of t){let e=u.filter(e=>e.subType==f.subType)[0];if(!e){d.push({...f});continue}let t=f.count?f.count:1,n=e.count?e.count:1;if(n>t)e.count=n-t;else if(n==t)u=u.filter(t=>t.id!=e.id);else{u=u.filter(t=>t.id!=e.id);let r={...f};r.count=t-n,d.push(r)}}o.elements=[...l,...u];for(var p of d){let e=c.heldElements.filter(e=>e.subType==p.subType)[0];if(!e)throw Error(`Expected an item on the person element for building that wasn't there.`);let t=p.count?p.count:1,n=e.count?e.count:1;if(t>n)throw Error(`Expected an item with higher count on the person element for building that wasn't there.`);t==n?c.heldElements=c.heldElements.filter(t=>t.id!=e.id):e.count=n-t}return i}static mergeItemElements(e){let t=[],n=[],r=[...e];for(var i of r){if(n.includes(i.subType))continue;if(i.subType==M.Horse){let e={...i};t.push(e);continue}n.push(i.subType);let e=r.filter(e=>e.subType==i.subType),o={...i};for(var a of e)a.id!=i.id&&(o.count=(o.count?o.count:1)+(a.count?a.count:1));t.push(o)}return t}static getTeamPersonCapacity(e,t){let n=0;for(var r of t){let t=r.elements.filter(t=>t.subType==M.Capital&&t.team==e).length>0,i=r.elements.filter(t=>t.subType==M.Village&&t.team==e).length>0;t?n+=4:i&&(n+=2)}return n}static getCurrentTeamPersons(e,t){let n=0;for(var r of t)n+=r.elements.filter(t=>t.type==j.Person&&t.team==e).length;return n}static personCanReproduce(t,n){if(t.team===null)throw Error(`person has no team.`);let r=e.getElementParentCell(t,n),i=r.elements.filter(e=>e.subType==M.Capital).length>0,a=r.elements.filter(e=>e.subType==M.Village).length>0;if(!i&&!a||r.elements.filter(e=>e.type==j.Person&&e.team==t.team).length>2)return!1;let o=yr(M.Villager);return e.resourcesExistForPerson(o,t,n)?e.getTeamPersonCapacity(t.team,n)>e.getCurrentTeamPersons(t.team,n):!1}static personCanHeal(t,n){if(t.health>=7)return!1;let r=[{subType:M.Food,count:1}];if(!e.resourcesExistForPerson(r,t,n))return!1;let i=e.getElementParentCell(t,n);return!e.enemyExistsOnCell(t,i)}static personCanHoldItem(t,n){if(Jn.includes(n)&&t.heldElements.filter(e=>e.subType==n).length>0)return!1;let r=[M.IronArmor,M.LeatherArmor];if(t.heldElements.filter(e=>r.includes(e.subType)).length>0&&r.includes(n))return!1;if(Yn.includes(n)){for(var i of t.heldElements)if(Yn.includes(i.subType))return!1}if(e.getPersonRemainingCarryWeight(t)<1)return!1;let a=[M.Cart,M.Sword,M.Bow,M.Shield,M.Cow,M.Horse,M.Mace,M.Spear],o=0;for(var s of a){let e=t.heldElements.filter(e=>e.subType==s).length;e>0&&(o+=wr(s)*e)}let c=wr(n);return o+c<=2}static personCanTakeAnyItem(t,n){return e.getItemsPersonCanTake(t,n).length>0}static getItemsPersonCanTake(t,n){let r=e.getElementParentCell(t,n).elements.filter(e=>e.type==j.Item),i=[];for(var a of r)e.personCanHoldItem(t,a.subType)&&i.push(a);return i}static personCanTrade(t,n){let r=e.getElementParentCell(t,n);return r.elements.filter(e=>e.subType==M.Trader).length>0?r.elements.filter(e=>e.type==j.Item).length>0||t.heldElements.filter(e=>e.type==j.Item).length>0:!1}static itemsForTradeExistOnTile(t,n,r){for(var i of Gn){let a={subType:i,count:n};if(e.resourcesExistForPerson([a],t,r))return!0}return!1}static getTradeOfferings(t,n){let r=e.itemsForTradeExistOnTile(t,2,n),i=[];for(var a of Gn)i.push({type:j.Item,subType:a,count:1,disabled:!r});let o=e.itemsForTradeExistOnTile(t,Cr(M.Horse),n);i.push({type:j.Item,subType:M.Horse,count:1,disabled:!o});let s=e.itemsForTradeExistOnTile(t,Cr(M.Cow),n);return i.push({type:j.Item,subType:M.Cow,count:1,disabled:!s}),i}static getItemTypesPersonCanGive(t,n,r){if(!t)throw Error(`No personElem supplied to 'getItemsPersonCanGive'`);let i=[];for(var a of Gn){let o={subType:a,count:r};e.resourcesExistForPerson([o],t,n)&&i.push(a)}return i}static elWithHighestCount(e){if(e==null)throw Error(`Can't get count without person`);let t=null;for(var n of e.heldElements){if(t===null){t=n;continue}t.count<n.count&&(t=n)}if(!t)throw Error(`couldnt find element`);return t}static personCanShoot(t,n){return t.heldElements.filter(e=>e.subType==M.Bow).length>0?e.getPersonsThatCanBeShot(t,n).length>0:!1}static getPersonsThatCanBeShot(t,n){let r=e.getElementParentCell(t,n),i=e.getAdjacentCells(n,r),a=[];for(var o of i)e.enemyExistsOnCell(t,o)&&(a=[...a,...e.getEnemyPersons(t,o)]);return a}static personCanDestroy(t,n){let r=e.getElementParentCell(t,n);if(e.enemyExistsOnCell(t,r))return!1;let i=r.elements.filter(e=>e.type==j.Building);if(i.length<1)return!1;let a=i[0];return!(a.subType==M.Capital&&a.team==t.team)}static getPersonTotalArmorAmount(t,n,r){let i=0,a;if(r){let e=Qn.filter(e=>e!=M.Shield);a=t.heldElements.filter(t=>e.includes(t.subType))}else a=t.heldElements.filter(e=>Qn.includes(e.subType));for(var o of a)i+=Sr(o.subType);return e.getElementParentCell(t,n).elements.filter(e=>e.subType==M.Capital&&e.team==t.team).length>0&&(i+=1),i}static getPersonDamageAmount(e){let t=e.heldElements.filter(e=>Yn.includes(e.subType));return t.length==0?xr(null):xr(t[0].subType)}};function cr(){return An(or)}var lr=e=>[...Array(e)].map(()=>Math.floor(Math.random()*16).toString(16)).join(``);function ur(){return lr(10)}function dr(e){let t={...e};if((e.type==j.Item||!e.id)&&(t.id=ur()),t.type==j.Person){if(t.health>7&&(t.health=7),t.name||=cr(),!t.heldElements)t.heldElements=[];else{let n=[];for(let r=0;r<t.heldElements.length;r++){let i={...t.heldElements[r]};i.count||=1,e.id||(i.id=ur()),n.push(i)}t.heldElements=N.mergeItemElements(n)}(t.hasActionAvailable===null||t.hasActionAvailable===void 0)&&(t.hasActionAvailable=!0)}return t}function fr(e){let t=[],n=[],r=[],i=[];for(var a of e)a.type==j.Building&&n.push(a),a.type==j.Item&&r.push(a),a.subType==M.Villager&&t.push(a),a.subType==M.Trader&&i.push(a);let o=[];if(n.length>0){let e={...n[0]};e.position=0,o.push(e)}if(console.log(`updating positions`),i.length>0){let e={...i[0]};e.position=0,o.push(e)}for(let e=0;e<t.length;e++){let n={...t[e]};n.position=e+1,o.push(n)}return[...o,...N.mergeItemElements(r)]}function pr(e){let t=[...e.elements];t=t.map(e=>hr(e)),t=fr(t);let n=[];for(var r of t)n.push(dr(r));return n}function mr(e){let t=[];for(var n of e){let e={...n};typeof e.type==`string`&&(e.type=Number(e.type)),e.elements=pr(e),t.push(e)}return t}function hr(e){let t={...e};if(t.type==null||t.subType==null)throw Error(`objectToElement requires obj to have at least type and subtype.`);return t.team===void 0&&(t.team=null),t.position===void 0&&(t.position=null),t.id===void 0&&(t.id=``),t.count===void 0&&(t.count=1),t.heldElements===void 0&&(t.heldElements=[]),t.subType==17&&(t.hasActionAvailable===void 0||t.hasActionAvailable===null)&&(t.hasActionAvailable=!0),t.isWorking===void 0&&(t.isWorking=null),t.isScavenging===void 0&&(t.isScavenging=null),t.hasActionAvailable===void 0&&(t.hasActionAvailable=null),t.health===void 0&&(t.health=0),t}function gr(e){let t=Object.keys(M)[e],n=``;for(let e=0;e<t.length;e++){let r=t[e];e!=0&&r===r.toUpperCase()&&r!==r.toLowerCase()&&(n+=` `),n+=r}return n}function _r(e){return Object.keys(Un)[e]}function vr(e){if(e==A.Field)return M.Food;if(e==A.Forest)return M.Wood;if(e==A.Mountain)return M.Ore;if(e==A.ClayField)return M.Clay;throw Error(`unhandled cell type`)}function yr(e){if(!rr.includes(e))throw Error(`Unhandled subtype: ${e}`);let t=[];switch(e){case M.Farm:t.push({subType:M.Wood,count:3}),t.push({subType:M.Clay,count:2});break;case M.Quarry:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2});break;case M.BrickFactory:t.push({subType:M.Wood,count:3}),t.push({subType:M.Clay,count:2});break;case M.SawMill:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2});break;case M.Village:t.push({subType:M.Wood,count:2}),t.push({subType:M.Clay,count:2});break;case M.Forge:t.push({subType:M.Wood,count:2}),t.push({subType:M.Ore,count:2}),t.push({subType:M.Clay,count:2}),t.push({subType:M.Leather,count:2});break;case M.Sword:t.push({subType:M.Wood,count:1}),t.push({subType:M.Ore,count:3});break;case M.Bow:t.push({subType:M.Wood,count:3}),t.push({subType:M.Leather,count:1});break;case M.Shield:t.push({subType:M.Ore,count:4}),t.push({subType:M.Leather,count:1});break;case M.LeatherArmor:t.push({subType:M.Leather,count:3});break;case M.Mace:t.push({subType:M.Ore,count:4}),t.push({subType:M.Wood,count:2});break;case M.Spear:t.push({subType:M.Ore,count:1}),t.push({subType:M.Wood,count:3});break;case M.IronArmor:t.push({subType:M.Ore,count:4}),t.push({subType:M.Leather,count:2});break;case M.Cart:t.push({subType:M.Wood,count:4}),t.push({subType:M.Ore,count:2});break;case M.Villager:t.push({subType:M.Food,count:8});break;default:break}return t}function br(e,t){for(var n of yr(e))if(n.subType==t)return n.count;throw Error(`Ingredient requested not part of building cost.`)}var xr=e=>e===null?2:e===M.Sword||e===M.Spear?5:e===M.Mace?7:e===M.Bow?4:0,Sr=e=>e==M.Shield?2:e==M.LeatherArmor?1:e==M.IronArmor?2:e==M.Spear?1:0;function Cr(e){return e==M.Horse?7:e==M.Cow?6:2}function wr(e){switch(e){case M.Cart:return 2;case M.Horse:case M.Cow:case M.Bow:case M.Shield:case M.Sword:case M.Mace:case M.Spear:return 1;default:return 0}}function Tr(e,t){let n=[];for(var r of e){let e=r.elements.filter(e=>e.subType==M.Capital);e.length<1||n.push(e[0])}if(n.length>1)return!1;if(n[0].team==t)return!0;throw Error(`Somehow the only capital is one of a different player.`)}function Er(e,t){for(var n of t.filter(t=>t.elements.filter(t=>t.type==j.Person&&t.team==e).length>0))for(var r of n.elements.filter(t=>t.type==j.Person&&t.team==e)){if(r.health===null)throw Error(`Person had no health attribute.`);let e=n.elements.filter(e=>e.subType==M.Food);if(e.length>0){let t=e[0];t.count==1?n.elements=n.elements.filter(e=>e.id!=t.id):--t.count;continue}let t=r.heldElements.filter(e=>e.subType==M.Food);if(t.length>0){let e=t[0];e.count==1?r.heldElements=r.heldElements.filter(t=>t.id!=e.id):--e.count}else r.health-=2,r.health<1&&(n.elements=[...n.elements,...r.heldElements],n.elements=n.elements.filter(e=>e.id!=r.id))}return t}function Dr(e,t){for(var n of t.filter(t=>t.elements.filter(t=>t.type==j.Person&&t.team==e).length>0))for(var r of n.elements.filter(t=>t.type==j.Person&&t.team==e))r.hasActionAvailable&&=(n.type==A.Desert?r.isScavenging=!0:r.isWorking=!0,!1);return t}function Or(e,t,n){for(var r of e.filter(e=>e.elements.filter(e=>e.type==j.Person&&e.team==t).length>0)){let e=r.elements.filter(e=>e.type==j.Person&&e.team==t),c=e.filter(e=>e.isWorking),l=e.filter(e=>e.isScavenging);for(var i of e){i.hasActionAvailable=!0,i.isWorking=!1,i.isScavenging=!1;for(var a of i.heldElements.filter(e=>e.subType==M.Horse))a.hasActionAvailable=!0;for(var o of i.heldElements.filter(e=>e.subType==M.Sword))o.hasActionAvailable=!0}for(var a of r.elements.filter(e=>e.subType==M.Horse))a.hasActionAvailable=!0;let u=r.elements.filter(e=>e.subType==M.Cow);if(u.length>0&&c.length>0&&tr.includes(Number(r.type))){let e=Math.min(u[0].count,3),t={type:j.Item,subType:M.Leather,count:e};r.elements.push(hr(t))}for(var s of l){let e=N.getScavengedItem(s,n);r.elements.push(e)}if(c.length<1)continue;let d=r.elements.filter(e=>e.type==j.Building&&e.subType!=M.Capital&&e.subType!=M.Village).length>0,f;f=d?4*c.length:2*c.length,r.elements.push(hr({type:j.Item,subType:vr(r.type),count:f}))}return e=mr(e),e}var kr=hn({name:`game`,initialState:{cells:[],backupCells:[],playerCount:0,playerTurn:Un.White,gameId:-1,usernames:[],forfeitedUsernames:[],loggedInUsername:``,roundNumber:0,gameOver:!1},reducers:{setCells(e,t){let n=t.payload;e.cells=mr(n)},setBackupCells(e,t){e.backupCells=t.payload},setPlayerCount(e,t){e.playerCount=t.payload},setPlayerTurn(e,t){e.playerTurn=t.payload},setGameId(e,t){e.gameId=t.payload},setUsernames(e,t){e.usernames=t.payload},setForfeitedUsernames(e,t){e.forfeitedUsernames=t.payload},setLoggedInUsername(e,t){e.loggedInUsername=t.payload},setRoundNumber(e,t){e.roundNumber=t.payload},setGameOver(e,t){e.gameOver=t.payload},endTurn(e){for(;;){let t=e.playerTurn;t==e.playerCount-1?e.playerTurn=0:e.playerTurn+=1;let n=Er(t,e.cells);if(n=Dr(t,e.cells),Tr(n,t)){e.cells=n,e.gameOver=!0,Bn(e.cells,e.playerTurn,e.gameId,!1,e.loggedInUsername);break}else{let t=Or(n,e.playerTurn,e.roundNumber);e.cells=t,e.backupCells=t,e.playerTurn==0&&(e.roundNumber+=1),Bn(e.cells,e.playerTurn,e.gameId)}let r=e.usernames[e.playerTurn];if(e.forfeitedUsernames.includes(r))console.log(r,`forfeited, skipping their turn.`);else break}}}}),Ar=e=>e.game.cells,jr=e=>e.game.backupCells,Mr=e=>e.game.playerCount,Nr=e=>e.game.playerTurn,Pr=e=>e.game.gameId,Fr=e=>e.game.usernames,Ir=e=>e.game.loggedInUsername,Lr=e=>e.game.usernames[e.game.playerTurn],Rr=e=>e.game.roundNumber,zr=e=>e.game.gameOver,{setCells:P,setBackupCells:Br,setPlayerCount:Vr,setPlayerTurn:Hr,setGameId:Ur,setUsernames:Wr,setForfeitedUsernames:Gr,setLoggedInUsername:Kr,setRoundNumber:qr,setGameOver:Jr,endTurn:Yr}=kr.actions,Xr=kr.reducer,Zr=hn({name:`board`,initialState:{selectedCell:null,selectedElement:null,offset:{x:0,y:0},zoom:1,showMoveInfo:!1},reducers:{setSelectedCell(e,t){e.selectedCell=t.payload},setSelectedElement(e,t){e.selectedElement=t.payload},setBoardOffset(e,t){e.offset=t.payload},setBoardZoom(e,t){e.zoom=t.payload},setShowMoveInfo(e,t){e.showMoveInfo=t.payload},clearAll(e){e.selectedCell=null,e.selectedElement=null,e.showMoveInfo=!1}}}),Qr=e=>e.board.selectedCell,$r=e=>e.board.selectedElement,ei=e=>e.board.offset,ti=e=>e.board.zoom,ni=e=>e.board.showMoveInfo,{setSelectedCell:ri,setSelectedElement:ii,setBoardOffset:ai,setBoardZoom:oi,setShowMoveInfo:si,clearAll:ci}=Zr.actions,li=Zr.reducer,ui=hn({name:`menu `,initialState:{actionHandling:``,actionItemsToSelectFrom:[],viewOnly:!1,userSubscribed:!1},reducers:{setActionHandling(e,t){e.actionHandling=t.payload},setActionItemsToSelectFrom(e,t){e.actionItemsToSelectFrom=t.payload},setViewOnly(e,t){e.viewOnly=t.payload},setUserSubscribed(e,t){e.userSubscribed=t.payload}}}),di=e=>e.menu.actionHandling,fi=e=>e.menu.actionItemsToSelectFrom,pi=e=>e.menu.viewOnly,mi=e=>e.menu.userSubscribed,{setActionHandling:hi,setActionItemsToSelectFrom:gi,setViewOnly:_i,setUserSubscribed:vi}=ui.actions,yi=ui.reducer,bi=sn({reducer:{game:Xr,board:li,menu:yi}}),xi=fe.withTypes(),F=O.withTypes();function Si(e){return e===null?``:[`white`,`purple`,`red`,`yellow`,`blue`,`green`,`black`,`brown`][e]}var Ci=`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="40" height="40" fill="#3E563D"/>
+<rect x="7" y="17" width="2" height="2" fill="#5A8F4D"/>
+<rect x="6" y="16" width="1" height="2" fill="#5A8F4D"/>
+<rect x="8" y="15" width="1" height="2" fill="#5A8F4D"/>
+<rect x="6" y="12" width="2" height="3" fill="#5A8F4D"/>
+<rect x="5" y="14" width="1" height="2" fill="#5A8F4D"/>
+<rect x="4" y="13" width="1" height="1" fill="#5A8F4D"/>
+<rect x="9" y="13" width="1" height="1" fill="#5A8F4D"/>
+<rect x="6" y="11" width="1" height="1" fill="#5A8F4D"/>
+<rect x="9" y="16" width="1" height="3" fill="#5A8F4D"/>
+<rect x="10" y="14" width="2" height="3" fill="#5A8F4D"/>
+<rect x="11" y="13" width="1" height="4" fill="#3C7235"/>
+<rect x="12" y="12" width="1" height="1" fill="#3C7235"/>
+<rect x="5" y="12" width="1" height="1" fill="#3C7235"/>
+<rect x="6" y="13" width="1" height="3" fill="#3C7235"/>
+<rect x="7" y="15" width="1" height="4" fill="#3C7235"/>
+<rect x="8" y="11" width="1" height="4" fill="#3C7235"/>
+<rect x="10" y="17" width="1" height="1" fill="#3C7235"/>
+<rect x="9" y="15" width="1" height="4" fill="#3C7235"/>
+<rect x="37" y="37" width="2" height="2" fill="#5A8F4D"/>
+<rect x="36" y="36" width="1" height="2" fill="#5A8F4D"/>
+<rect x="38" y="35" width="1" height="2" fill="#5A8F4D"/>
+<rect x="36" y="32" width="2" height="3" fill="#5A8F4D"/>
+<rect x="35" y="34" width="1" height="2" fill="#5A8F4D"/>
+<rect x="34" y="33" width="1" height="1" fill="#5A8F4D"/>
+<rect x="39" y="33" width="1" height="1" fill="#5A8F4D"/>
+<rect x="36" y="31" width="1" height="1" fill="#5A8F4D"/>
+<rect x="39" y="36" width="1" height="3" fill="#5A8F4D"/>
+<rect x="35" y="32" width="1" height="1" fill="#3C7235"/>
+<rect x="36" y="33" width="1" height="3" fill="#3C7235"/>
+<rect x="37" y="35" width="1" height="4" fill="#3C7235"/>
+<rect x="38" y="31" width="1" height="4" fill="#3C7235"/>
+<rect x="39" y="35" width="1" height="4" fill="#3C7235"/>
+<rect y="34" width="2" height="3" fill="#5A8F4D"/>
+<rect x="1" y="33" width="1" height="4" fill="#3C7235"/>
+<rect x="2" y="32" width="1" height="1" fill="#3C7235"/>
+<rect y="37" width="1" height="1" fill="#3C7235"/>
+<rect width="2" height="2" transform="matrix(-1 0 0 1 20 33)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 21 32)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 17 32)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 19 31)" fill="#5A8F4D"/>
+<rect width="2" height="3" transform="matrix(-1 0 0 1 19 29)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 22 30)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 23 29)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 15 29)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 18 29)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 20 28)" fill="#5A8F4D"/>
+<rect width="1" height="3" transform="matrix(-1 0 0 1 18 32)" fill="#5A8F4D"/>
+<rect width="2" height="3" transform="matrix(-1 0 0 1 17 30)" fill="#5A8F4D"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 17 27)" fill="#3C7235"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 20 26)" fill="#3C7235"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 22 28)" fill="#3C7235"/>
+<rect width="1" height="3" transform="matrix(-1 0 0 1 21 29)" fill="#3C7235"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 20 31)" fill="#3C7235"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 19 27)" fill="#3C7235"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 19 33)" fill="#3C7235"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 18 31)" fill="#3C7235"/>
+<rect width="2" height="2" transform="matrix(-1 0 0 1 31 22)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 32 21)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 28 21)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 30 20)" fill="#5A8F4D"/>
+<rect width="2" height="3" transform="matrix(-1 0 0 1 30 18)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 33 20)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 32 16)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 29 18)" fill="#5A8F4D"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 31 17)" fill="#5A8F4D"/>
+<rect width="1" height="3" transform="matrix(-1 0 0 1 29 21)" fill="#5A8F4D"/>
+<rect width="2" height="3" transform="matrix(-1 0 0 1 30 21)" fill="#5A8F4D"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 26 19)" fill="#3C7235"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 29 17)" fill="#3C7235"/>
+<rect width="1" height="1" transform="matrix(-1 0 0 1 28 16)" fill="#3C7235"/>
+<rect width="1" height="3" transform="matrix(-1 0 0 1 32 18)" fill="#3C7235"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 31 20)" fill="#3C7235"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 30 18)" fill="#3C7235"/>
+<rect width="1" height="2" transform="matrix(-1 0 0 1 27 20)" fill="#3C7235"/>
+<rect width="1" height="4" transform="matrix(-1 0 0 1 29 20)" fill="#3C7235"/>
+<rect x="22" y="7" width="2" height="2" fill="#5A8F4D"/>
+<rect x="21" y="6" width="1" height="2" fill="#5A8F4D"/>
+<rect x="25" y="6" width="1" height="2" fill="#5A8F4D"/>
+<rect x="23" y="5" width="1" height="2" fill="#5A8F4D"/>
+<rect x="23" y="3" width="2" height="3" fill="#5A8F4D"/>
+<rect x="20" y="5" width="1" height="1" fill="#5A8F4D"/>
+<rect x="21" y="1" width="1" height="1" fill="#5A8F4D"/>
+<rect x="24" y="3" width="1" height="1" fill="#5A8F4D"/>
+<rect x="22" y="2" width="1" height="2" fill="#5A8F4D"/>
+<rect x="24" y="6" width="1" height="3" fill="#5A8F4D"/>
+<rect x="23" y="6" width="2" height="3" fill="#5A8F4D"/>
+<rect x="27" y="4" width="1" height="1" fill="#3C7235"/>
+<rect x="24" y="2" width="1" height="1" fill="#3C7235"/>
+<rect x="25" y="1" width="1" height="1" fill="#3C7235"/>
+<rect x="21" y="3" width="1" height="3" fill="#3C7235"/>
+<rect x="22" y="5" width="1" height="4" fill="#3C7235"/>
+<rect x="23" y="3" width="1" height="2" fill="#3C7235"/>
+<rect x="26" y="5" width="1" height="2" fill="#3C7235"/>
+<rect x="24" y="5" width="1" height="4" fill="#3C7235"/>
 </svg>
 `,wi=`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="40" height="40" fill="#44290A"/>
-<rect x="9" y="17" width="2" height="6" fill="#835119"/>
-<rect x="8" y="21" width="1" height="2" fill="#835119"/>
-<rect x="8" y="15" width="5" height="2" fill="#653F12"/>
-<rect x="6" y="15" width="1" height="1" fill="#6D8737"/>
-<rect x="5" y="8" width="11" height="8" fill="#6D8737"/>
-<rect x="16" y="9" width="1" height="5" fill="#6D8737"/>
-<rect x="4" y="9" width="1" height="6" fill="#6D8737"/>
-<rect x="3" y="11" width="1" height="4" fill="#6D8737"/>
-<rect x="10" y="7" width="4" height="1" fill="#6D8737"/>
-<rect x="5" y="16" width="3" height="1" fill="#374618"/>
-<rect x="13" y="15" width="3" height="1" fill="#374618"/>
-<rect x="3" y="15" width="2" height="1" fill="#374618"/>
-<rect x="2" y="11" width="1" height="4" fill="#374618"/>
-<rect x="3" y="9" width="1" height="2" fill="#374618"/>
-<rect x="4" y="8" width="1" height="1" fill="#374618"/>
-<rect x="5" y="7" width="5" height="1" fill="#374618"/>
-<rect x="10" y="6" width="4" height="1" fill="#374618"/>
-<rect x="14" y="7" width="2" height="1" fill="#374618"/>
-<rect x="16" y="8" width="1" height="1" fill="#374618"/>
-<rect x="11" y="17" width="2" height="6" fill="#653F12"/>
-<rect x="13" y="21" width="1" height="2" fill="#653F12"/>
-<rect x="17" y="9" width="1" height="5" fill="#374618"/>
-<rect x="16" y="14" width="1" height="1" fill="#374618"/>
-<rect x="31" y="21" width="2" height="6" fill="#835119"/>
-<rect x="30" y="25" width="1" height="2" fill="#835119"/>
-<rect x="30" y="19" width="5" height="2" fill="#653F12"/>
-<rect x="28" y="19" width="1" height="1" fill="#6D8737"/>
-<rect x="27" y="12" width="11" height="8" fill="#6D8737"/>
-<rect x="38" y="13" width="1" height="5" fill="#6D8737"/>
-<rect x="26" y="13" width="1" height="6" fill="#6D8737"/>
-<rect x="25" y="15" width="1" height="4" fill="#6D8737"/>
-<rect x="32" y="11" width="4" height="1" fill="#6D8737"/>
-<rect x="27" y="20" width="3" height="1" fill="#374618"/>
-<rect x="35" y="19" width="3" height="1" fill="#374618"/>
-<rect x="25" y="19" width="2" height="1" fill="#374618"/>
-<rect x="24" y="15" width="1" height="4" fill="#374618"/>
-<rect x="25" y="13" width="1" height="2" fill="#374618"/>
-<rect x="26" y="12" width="1" height="1" fill="#374618"/>
-<rect x="27" y="11" width="5" height="1" fill="#374618"/>
-<rect x="32" y="10" width="4" height="1" fill="#374618"/>
-<rect x="36" y="11" width="2" height="1" fill="#374618"/>
-<rect x="38" y="12" width="1" height="1" fill="#374618"/>
-<rect x="33" y="21" width="2" height="6" fill="#653F12"/>
-<rect x="35" y="25" width="1" height="2" fill="#653F12"/>
-<rect x="39" y="13" width="1" height="5" fill="#374618"/>
-<rect x="38" y="18" width="1" height="1" fill="#374618"/>
-<rect x="16" y="38" width="2" height="2" fill="#835119"/>
-<rect x="15" y="36" width="5" height="2" fill="#653F12"/>
-<rect x="13" y="36" width="1" height="1" fill="#6D8737"/>
-<rect x="12" y="29" width="11" height="8" fill="#6D8737"/>
-<rect x="23" y="30" width="1" height="5" fill="#6D8737"/>
-<rect x="11" y="30" width="1" height="6" fill="#6D8737"/>
-<rect x="10" y="32" width="1" height="4" fill="#6D8737"/>
-<rect x="17" y="28" width="4" height="1" fill="#6D8737"/>
-<rect x="12" y="37" width="3" height="1" fill="#374618"/>
-<rect x="20" y="36" width="3" height="1" fill="#374618"/>
-<rect x="10" y="36" width="2" height="1" fill="#374618"/>
-<rect x="9" y="32" width="1" height="4" fill="#374618"/>
-<rect x="10" y="30" width="1" height="2" fill="#374618"/>
-<rect x="11" y="29" width="1" height="1" fill="#374618"/>
-<rect x="12" y="28" width="5" height="1" fill="#374618"/>
-<rect x="17" y="27" width="4" height="1" fill="#374618"/>
-<rect x="21" y="28" width="2" height="1" fill="#374618"/>
-<rect x="23" y="29" width="1" height="1" fill="#374618"/>
-<rect x="18" y="38" width="2" height="2" fill="#653F12"/>
-<rect x="24" y="30" width="1" height="5" fill="#374618"/>
-<rect x="23" y="35" width="1" height="1" fill="#374618"/>
-<rect x="15" y="2" width="1" height="2" fill="#835119"/>
-<rect x="16" width="2" height="4" fill="#835119"/>
-<rect x="18" width="2" height="4" fill="#653F12"/>
-<rect x="20" y="2" width="1" height="2" fill="#653F12"/>
+<rect width="40" height="40" fill="#402D13"/>
+<rect x="9" y="17" width="2" height="6" fill="#694010"/>
+<rect x="8" y="21" width="1" height="2" fill="#694010"/>
+<rect x="8" y="15" width="5" height="2" fill="#5E3C15"/>
+<rect x="6" y="15" width="1" height="1" fill="#536923"/>
+<rect x="5" y="8" width="11" height="8" fill="#536923"/>
+<rect x="16" y="9" width="1" height="5" fill="#536923"/>
+<rect x="4" y="9" width="1" height="6" fill="#536923"/>
+<rect x="3" y="11" width="1" height="4" fill="#536923"/>
+<rect x="10" y="7" width="4" height="1" fill="#536923"/>
+<rect x="5" y="16" width="3" height="1" fill="#3E5314"/>
+<rect x="13" y="15" width="3" height="1" fill="#3E5314"/>
+<rect x="3" y="15" width="2" height="1" fill="#3E5314"/>
+<rect x="2" y="11" width="1" height="4" fill="#3E5314"/>
+<rect x="3" y="9" width="1" height="2" fill="#3E5314"/>
+<rect x="4" y="8" width="1" height="1" fill="#3E5314"/>
+<rect x="5" y="7" width="5" height="1" fill="#3E5314"/>
+<rect x="10" y="6" width="4" height="1" fill="#3E5314"/>
+<rect x="14" y="7" width="2" height="1" fill="#3E5314"/>
+<rect x="16" y="8" width="1" height="1" fill="#3E5314"/>
+<rect x="11" y="17" width="2" height="6" fill="#5E3C15"/>
+<rect x="13" y="21" width="1" height="2" fill="#5E3C15"/>
+<rect x="17" y="9" width="1" height="5" fill="#3E5314"/>
+<rect x="16" y="14" width="1" height="1" fill="#3E5314"/>
+<rect x="31" y="21" width="2" height="6" fill="#694010"/>
+<rect x="30" y="25" width="1" height="2" fill="#694010"/>
+<rect x="30" y="19" width="5" height="2" fill="#5E3C15"/>
+<rect x="28" y="19" width="1" height="1" fill="#536923"/>
+<rect x="27" y="12" width="11" height="8" fill="#536923"/>
+<rect x="38" y="13" width="1" height="5" fill="#536923"/>
+<rect x="26" y="13" width="1" height="6" fill="#536923"/>
+<rect x="25" y="15" width="1" height="4" fill="#536923"/>
+<rect x="32" y="11" width="4" height="1" fill="#536923"/>
+<rect x="27" y="20" width="3" height="1" fill="#3E5314"/>
+<rect x="35" y="19" width="3" height="1" fill="#3E5314"/>
+<rect x="25" y="19" width="2" height="1" fill="#3E5314"/>
+<rect x="24" y="15" width="1" height="4" fill="#3E5314"/>
+<rect x="25" y="13" width="1" height="2" fill="#3E5314"/>
+<rect x="26" y="12" width="1" height="1" fill="#3E5314"/>
+<rect x="27" y="11" width="5" height="1" fill="#3E5314"/>
+<rect x="32" y="10" width="4" height="1" fill="#3E5314"/>
+<rect x="36" y="11" width="2" height="1" fill="#3E5314"/>
+<rect x="38" y="12" width="1" height="1" fill="#3E5314"/>
+<rect x="33" y="21" width="2" height="6" fill="#5E3C15"/>
+<rect x="35" y="25" width="1" height="2" fill="#5E3C15"/>
+<rect x="39" y="13" width="1" height="5" fill="#3E5314"/>
+<rect x="38" y="18" width="1" height="1" fill="#3E5314"/>
+<rect x="16" y="38" width="2" height="2" fill="#694010"/>
+<rect x="15" y="36" width="5" height="2" fill="#5E3C15"/>
+<rect x="13" y="36" width="1" height="1" fill="#536923"/>
+<rect x="12" y="29" width="11" height="8" fill="#536923"/>
+<rect x="23" y="30" width="1" height="5" fill="#536923"/>
+<rect x="11" y="30" width="1" height="6" fill="#536923"/>
+<rect x="10" y="32" width="1" height="4" fill="#536923"/>
+<rect x="17" y="28" width="4" height="1" fill="#536923"/>
+<rect x="12" y="37" width="3" height="1" fill="#3E5314"/>
+<rect x="20" y="36" width="3" height="1" fill="#3E5314"/>
+<rect x="10" y="36" width="2" height="1" fill="#3E5314"/>
+<rect x="9" y="32" width="1" height="4" fill="#3E5314"/>
+<rect x="10" y="30" width="1" height="2" fill="#3E5314"/>
+<rect x="11" y="29" width="1" height="1" fill="#3E5314"/>
+<rect x="12" y="28" width="5" height="1" fill="#3E5314"/>
+<rect x="17" y="27" width="4" height="1" fill="#3E5314"/>
+<rect x="21" y="28" width="2" height="1" fill="#3E5314"/>
+<rect x="23" y="29" width="1" height="1" fill="#3E5314"/>
+<rect x="18" y="38" width="2" height="2" fill="#5E3C15"/>
+<rect x="24" y="30" width="1" height="5" fill="#3E5314"/>
+<rect x="23" y="35" width="1" height="1" fill="#3E5314"/>
+<rect x="15" y="2" width="1" height="2" fill="#694010"/>
+<rect x="16" width="2" height="4" fill="#694010"/>
+<rect x="18" width="2" height="4" fill="#5E3C15"/>
+<rect x="20" y="2" width="1" height="2" fill="#5E3C15"/>
 </svg>
-`,Ti=`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_29_956)">
-<rect width="20" height="20" transform="matrix(0 -1 1 0 0 20)" fill="#50483F"/>
-<rect x="13" y="16" width="1" height="2" transform="rotate(-90 13 16)" fill="#443B31"/>
-<rect x="12" y="15" width="1" height="1" transform="rotate(-90 12 15)" fill="#443B31"/>
-<rect x="12" y="10" width="1" height="2" transform="rotate(-90 12 10)" fill="#443B31"/>
-<rect x="11" y="11" width="1" height="1" transform="rotate(-90 11 11)" fill="#443B31"/>
-<rect x="8" y="6" width="1" height="2" transform="rotate(-90 8 6)" fill="#443B31"/>
-<rect x="7" y="7" width="1" height="1" transform="rotate(-90 7 7)" fill="#443B31"/>
-<rect y="11" width="1" height="2" transform="rotate(-90 0 11)" fill="#443B31"/>
-<rect x="19" y="12" width="1" height="1" transform="rotate(-90 19 12)" fill="#443B31"/>
-<rect x="17" y="7" width="1" height="2" transform="rotate(-90 17 7)" fill="#443B31"/>
-<rect x="16" y="8" width="1" height="1" transform="rotate(-90 16 8)" fill="#443B31"/>
-<rect x="5" y="15" width="1" height="2" transform="rotate(-90 5 15)" fill="#443B31"/>
-<rect x="4" y="16" width="1" height="1" transform="rotate(-90 4 16)" fill="#443B31"/>
-<rect x="2" y="2" width="1" height="2" transform="rotate(-90 2 2)" fill="#443B31"/>
-<rect x="1" y="1" width="1" height="1" transform="rotate(-90 1 1)" fill="#443B31"/>
-<rect x="1" y="1" width="1" height="1" transform="rotate(-90 1 1)" fill="#443B31"/>
-<rect x="12" y="20" width="1" height="2" transform="rotate(-90 12 20)" fill="#443B31"/>
+`,Ti=`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_76_285)">
+<rect width="40" height="40" transform="matrix(0 -1 1 0 0 40)" fill="#4B443C"/>
+<rect width="1" height="3" transform="matrix(0 1 1 0 13 33)" fill="#3A332C"/>
+<rect width="1" height="5" transform="matrix(0 1 1 0 12 34)" fill="#3A332C"/>
+<rect width="1" height="3" transform="matrix(0 1 1 0 13 35)" fill="#3A332C"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 13 35)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 15 34)" fill="#5B564F"/>
+<rect x="29" y="8" width="1" height="3" transform="rotate(90 29 8)" fill="#3A332C"/>
+<rect x="30" y="9" width="1" height="5" transform="rotate(90 30 9)" fill="#3A332C"/>
+<rect x="29" y="10" width="1" height="3" transform="rotate(90 29 10)" fill="#3A332C"/>
+<rect x="29" y="10" width="1" height="1" transform="rotate(90 29 10)" fill="#5B564F"/>
+<rect x="27" y="9" width="1" height="1" transform="rotate(90 27 9)" fill="#5B564F"/>
+<rect width="1" height="3" transform="matrix(0 -1 -1 0 40 23)" fill="#3A332C"/>
+<rect width="1" height="4" transform="matrix(0 -1 -1 0 40 22)" fill="#3A332C"/>
+<rect width="1" height="4" transform="matrix(0 -1 -1 0 40 21)" fill="#3A332C"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 1 21)" fill="#3A332C"/>
+<rect width="1" height="3" transform="matrix(0 -1 -1 0 40 20)" fill="#3A332C"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 40 20)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 38 21)" fill="#5B564F"/>
+<rect x="12" y="22" width="1" height="4" transform="rotate(-90 12 22)" fill="#3A332C"/>
+<rect x="12" y="22" width="1" height="6" transform="rotate(-90 12 22)" fill="#3A332C"/>
+<rect x="11" y="21" width="1" height="9" transform="rotate(-90 11 21)" fill="#3A332C"/>
+<rect x="11" y="20" width="1" height="9" transform="rotate(-90 11 20)" fill="#3A332C"/>
+<rect x="13" y="19" width="1" height="6" transform="rotate(-90 13 19)" fill="#3A332C"/>
+<rect x="14" y="18" width="1" height="2" transform="rotate(-90 14 18)" fill="#3A332C"/>
+<rect x="14" y="18" width="1" height="2" transform="rotate(-90 14 18)" fill="#5B564F"/>
+<rect x="12" y="20" width="1" height="1" transform="rotate(-90 12 20)" fill="#5B564F"/>
+<rect x="16" y="20" width="1" height="2" transform="rotate(-90 16 20)" fill="#5B564F"/>
+<rect x="13" y="22" width="1" height="2" transform="rotate(-90 13 22)" fill="#5B564F"/>
+<rect x="25" y="2" width="1" height="4" transform="rotate(-90 25 2)" fill="#3A332C"/>
+<rect x="25" y="2" width="1" height="6" transform="rotate(-90 25 2)" fill="#3A332C"/>
+<rect x="24" y="1" width="1" height="9" transform="rotate(-90 24 1)" fill="#3A332C"/>
+<rect x="26" y="2" width="1" height="2" transform="rotate(-90 26 2)" fill="#5B564F"/>
+<rect x="24" y="40" width="1" height="9" transform="rotate(-90 24 40)" fill="#3A332C"/>
+<rect x="26" y="39" width="1" height="6" transform="rotate(-90 26 39)" fill="#3A332C"/>
+<rect x="27" y="38" width="1" height="2" transform="rotate(-90 27 38)" fill="#5B564F"/>
+<rect x="25" y="40" width="1" height="1" transform="rotate(-90 25 40)" fill="#5B564F"/>
+<rect x="29" y="40" width="1" height="2" transform="rotate(-90 29 40)" fill="#5B564F"/>
+<rect width="1" height="4" transform="matrix(0 -1 -1 0 13 11)" fill="#3A332C"/>
+<rect width="1" height="7" transform="matrix(0 -1 -1 0 13 11)" fill="#3A332C"/>
+<rect width="1" height="9" transform="matrix(0 -1 -1 0 14 10)" fill="#3A332C"/>
+<rect width="1" height="9" transform="matrix(0 -1 -1 0 14 9)" fill="#3A332C"/>
+<rect width="1" height="8" transform="matrix(0 -1 -1 0 14 8)" fill="#3A332C"/>
+<rect width="1" height="6" transform="matrix(0 -1 -1 0 13 7)" fill="#3A332C"/>
+<rect width="1" height="2" transform="matrix(0 -1 -1 0 11 7)" fill="#3A332C"/>
+<rect width="1" height="3" transform="matrix(0 -1 -1 0 12 6)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 11 8)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 7 10)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 8 8)" fill="#5B564F"/>
+<rect width="1" height="1" transform="matrix(0 -1 -1 0 12 9)" fill="#5B564F"/>
+<rect width="1" height="2" transform="matrix(0 -1 -1 0 12 11)" fill="#5B564F"/>
+<rect x="28" y="32" width="1" height="4" transform="rotate(-90 28 32)" fill="#3A332C"/>
+<rect x="28" y="32" width="1" height="7" transform="rotate(-90 28 32)" fill="#3A332C"/>
+<rect x="27" y="31" width="1" height="9" transform="rotate(-90 27 31)" fill="#3A332C"/>
+<rect x="27" y="30" width="1" height="9" transform="rotate(-90 27 30)" fill="#3A332C"/>
+<rect x="27" y="29" width="1" height="8" transform="rotate(-90 27 29)" fill="#3A332C"/>
+<rect x="28" y="28" width="1" height="6" transform="rotate(-90 28 28)" fill="#3A332C"/>
+<rect x="30" y="28" width="1" height="2" transform="rotate(-90 30 28)" fill="#3A332C"/>
+<rect x="29" y="27" width="1" height="3" transform="rotate(-90 29 27)" fill="#5B564F"/>
+<rect x="30" y="29" width="1" height="1" transform="rotate(-90 30 29)" fill="#5B564F"/>
+<rect x="34" y="31" width="1" height="1" transform="rotate(-90 34 31)" fill="#5B564F"/>
+<rect x="33" y="29" width="1" height="1" transform="rotate(-90 33 29)" fill="#5B564F"/>
+<rect x="29" y="30" width="1" height="1" transform="rotate(-90 29 30)" fill="#5B564F"/>
+<rect x="29" y="32" width="1" height="2" transform="rotate(-90 29 32)" fill="#5B564F"/>
 </g>
 <defs>
-<clipPath id="clip0_29_956">
-<rect width="20" height="20" fill="white" transform="matrix(0 -1 1 0 0 20)"/>
+<clipPath id="clip0_76_285">
+<rect width="40" height="40" fill="white" transform="matrix(0 -1 1 0 0 40)"/>
 </clipPath>
 </defs>
 </svg>
-`,Ei=`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_29_974)">
-<rect width="20" height="20" transform="matrix(0 1 -1 0 20 0)" fill="#C6AE74"/>
-<rect x="7" y="4" width="1" height="2" transform="rotate(90 7 4)" fill="#F7E0B3"/>
-<rect x="8" y="5" width="1" height="1" transform="rotate(90 8 5)" fill="#F7E0B3"/>
-<rect x="8" y="10" width="1" height="2" transform="rotate(90 8 10)" fill="#F7E0B3"/>
-<rect x="9" y="9" width="1" height="1" transform="rotate(90 9 9)" fill="#F7E0B3"/>
-<rect x="12" y="14" width="1" height="2" transform="rotate(90 12 14)" fill="#F7E0B3"/>
-<rect x="13" y="13" width="1" height="1" transform="rotate(90 13 13)" fill="#F7E0B3"/>
-<rect x="20" y="9" width="1" height="2" transform="rotate(90 20 9)" fill="#F7E0B3"/>
-<rect x="1" y="8" width="1" height="1" transform="rotate(90 1 8)" fill="#F7E0B3"/>
-<rect x="3" y="13" width="1" height="2" transform="rotate(90 3 13)" fill="#F7E0B3"/>
-<rect x="4" y="12" width="1" height="1" transform="rotate(90 4 12)" fill="#F7E0B3"/>
-<rect x="15" y="5" width="1" height="2" transform="rotate(90 15 5)" fill="#F7E0B3"/>
-<rect x="16" y="4" width="1" height="1" transform="rotate(90 16 4)" fill="#F7E0B3"/>
-<rect x="18" y="18" width="1" height="2" transform="rotate(90 18 18)" fill="#F7E0B3"/>
-<rect x="19" y="19" width="1" height="1" transform="rotate(90 19 19)" fill="#F7E0B3"/>
-<rect x="19" y="19" width="1" height="1" transform="rotate(90 19 19)" fill="#F7E0B3"/>
-<rect x="8" width="1" height="2" transform="rotate(90 8 0)" fill="#F7E0B3"/>
+`,Ei=`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_76_396)">
+<rect width="40" height="40" transform="matrix(0 1 -1 0 40 0)" fill="#BAA87A"/>
+<rect x="29" y="3" width="1" height="2" transform="rotate(90 29 3)" fill="#D0C29D"/>
+<rect x="27" y="4" width="1" height="1" transform="rotate(90 27 4)" fill="#D0C29D"/>
+<rect x="26" y="5" width="1" height="1" transform="rotate(90 26 5)" fill="#D0C29D"/>
+<rect x="30" y="4" width="1" height="1" transform="rotate(90 30 4)" fill="#D0C29D"/>
+<rect x="31" y="5" width="1" height="1" transform="rotate(90 31 5)" fill="#D0C29D"/>
+<rect x="32" y="6" width="1" height="1" transform="rotate(90 32 6)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 9 11)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 11 12)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 12 13)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 8 12)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 7 13)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 6 14)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 29 36)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 31 37)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 32 38)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 28 37)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 27 38)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 26 39)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 27 17)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 29 18)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 30 19)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 26 18)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 25 19)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 24 20)" fill="#D0C29D"/>
+<rect x="6" y="19" width="1" height="1" transform="rotate(90 6 19)" fill="#D0C29D"/>
+<rect x="5" y="20" width="1" height="1" transform="rotate(90 5 20)" fill="#D0C29D"/>
+<rect x="4" y="21" width="1" height="1" transform="rotate(90 4 21)" fill="#D0C29D"/>
+<rect x="3" y="22" width="1" height="2" transform="rotate(90 3 22)" fill="#D0C29D"/>
+<rect x="1" y="23" width="1" height="1" transform="rotate(90 1 23)" fill="#D0C29D"/>
+<rect x="8" y="20" width="1" height="2" transform="rotate(90 8 20)" fill="#D0C29D"/>
+<rect x="9" y="21" width="1" height="1" transform="rotate(90 9 21)" fill="#D0C29D"/>
+<rect x="11" y="22" width="1" height="2" transform="rotate(90 11 22)" fill="#D0C29D"/>
+<rect x="12" y="23" width="1" height="1" transform="rotate(90 12 23)" fill="#D0C29D"/>
+<rect x="13" y="24" width="1" height="1" transform="rotate(90 13 24)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 34 26)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 35 27)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 36 28)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 37 29)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 39 30)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 32 27)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 31 28)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 29 29)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 28 30)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 27 31)" fill="#D0C29D"/>
+<rect x="6" y="1" width="1" height="1" transform="rotate(90 6 1)" fill="#D0C29D"/>
+<rect x="5" y="2" width="1" height="1" transform="rotate(90 5 2)" fill="#D0C29D"/>
+<rect x="4" y="3" width="1" height="1" transform="rotate(90 4 3)" fill="#D0C29D"/>
+<rect x="3" y="4" width="1" height="2" transform="rotate(90 3 4)" fill="#D0C29D"/>
+<rect x="1" y="5" width="1" height="1" transform="rotate(90 1 5)" fill="#D0C29D"/>
+<rect x="8" y="2" width="1" height="2" transform="rotate(90 8 2)" fill="#D0C29D"/>
+<rect x="9" y="3" width="1" height="1" transform="rotate(90 9 3)" fill="#D0C29D"/>
+<rect x="11" y="4" width="1" height="2" transform="rotate(90 11 4)" fill="#D0C29D"/>
+<rect x="12" y="5" width="1" height="1" transform="rotate(90 12 5)" fill="#D0C29D"/>
+<rect x="13" y="6" width="1" height="1" transform="rotate(90 13 6)" fill="#D0C29D"/>
+<rect x="28" y="10" width="1" height="2" transform="rotate(90 28 10)" fill="#D0C29D"/>
+<rect x="26" y="11" width="1" height="1" transform="rotate(90 26 11)" fill="#D0C29D"/>
+<rect x="25" y="12" width="1" height="1" transform="rotate(90 25 12)" fill="#D0C29D"/>
+<rect x="24" y="13" width="1" height="2" transform="rotate(90 24 13)" fill="#D0C29D"/>
+<rect x="22" y="14" width="1" height="1" transform="rotate(90 22 14)" fill="#D0C29D"/>
+<rect x="21" y="15" width="1" height="1" transform="rotate(90 21 15)" fill="#D0C29D"/>
+<rect x="20" y="16" width="1" height="1" transform="rotate(90 20 16)" fill="#D0C29D"/>
+<rect x="29" y="11" width="1" height="1" transform="rotate(90 29 11)" fill="#D0C29D"/>
+<rect x="31" y="12" width="1" height="2" transform="rotate(90 31 12)" fill="#D0C29D"/>
+<rect x="33" y="13" width="1" height="2" transform="rotate(90 33 13)" fill="#D0C29D"/>
+<rect x="34" y="14" width="1" height="1" transform="rotate(90 34 14)" fill="#D0C29D"/>
+<rect x="35" y="15" width="1" height="1" transform="rotate(90 35 15)" fill="#D0C29D"/>
+<rect x="37" y="16" width="1" height="2" transform="rotate(90 37 16)" fill="#D0C29D"/>
+<rect x="38" y="17" width="1" height="1" transform="rotate(90 38 17)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 15 29)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 17 30)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 18 31)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 19 32)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 21 33)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 22 34)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 23 35)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 14 30)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 12 31)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 10 32)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 9 33)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 8 34)" fill="#D0C29D"/>
+<rect width="1" height="2" transform="matrix(0 1 1 0 6 35)" fill="#D0C29D"/>
+<rect width="1" height="1" transform="matrix(0 1 1 0 5 36)" fill="#D0C29D"/>
 </g>
 <defs>
-<clipPath id="clip0_29_974">
-<rect width="20" height="20" fill="white" transform="matrix(0 1 -1 0 20 0)"/>
+<clipPath id="clip0_76_396">
+<rect width="40" height="40" fill="white" transform="matrix(0 1 -1 0 40 0)"/>
 </clipPath>
 </defs>
 </svg>
-`,Di=`<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_44_2)">
-<rect width="20" height="20" transform="matrix(-1 0 0 -1 20 20)" fill="#84522E"/>
-<rect x="16" y="7" width="1" height="2" transform="rotate(-180 16 7)" fill="#5A2F10"/>
-<rect x="15" y="8" width="1" height="1" transform="rotate(-180 15 8)" fill="#5A2F10"/>
-<rect x="10" y="8" width="1" height="2" transform="rotate(-180 10 8)" fill="#5A2F10"/>
-<rect x="11" y="9" width="1" height="1" transform="rotate(-180 11 9)" fill="#5A2F10"/>
-<rect x="6" y="12" width="1" height="2" transform="rotate(-180 6 12)" fill="#5A2F10"/>
-<rect x="7" y="13" width="1" height="1" transform="rotate(-180 7 13)" fill="#5A2F10"/>
-<rect x="11" y="20" width="1" height="2" transform="rotate(-180 11 20)" fill="#5A2F10"/>
-<rect x="12" y="1" width="1" height="1" transform="rotate(-180 12 1)" fill="#5A2F10"/>
-<rect x="7" y="3" width="1" height="2" transform="rotate(-180 7 3)" fill="#5A2F10"/>
-<rect x="8" y="4" width="1" height="1" transform="rotate(-180 8 4)" fill="#5A2F10"/>
-<rect x="15" y="15" width="1" height="2" transform="rotate(-180 15 15)" fill="#5A2F10"/>
-<rect x="16" y="16" width="1" height="1" transform="rotate(-180 16 16)" fill="#5A2F10"/>
-<rect x="2" y="18" width="1" height="2" transform="rotate(-180 2 18)" fill="#5A2F10"/>
-<rect x="1" y="19" width="1" height="1" transform="rotate(-180 1 19)" fill="#5A2F10"/>
-<rect x="1" y="19" width="1" height="1" transform="rotate(-180 1 19)" fill="#5A2F10"/>
-<rect x="20" y="8" width="1" height="2" transform="rotate(-180 20 8)" fill="#5A2F10"/>
+`,Di=`<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_76_545)">
+<rect width="40" height="40" transform="matrix(-1 0 0 -1 40 40)" fill="#875938"/>
+<rect x="20" y="10" width="2" height="2" transform="rotate(-180 20 10)" fill="#634835"/>
+<rect x="20" y="10" width="2" height="2" transform="rotate(-180 20 10)" fill="#634835"/>
+<rect x="20" y="10" width="2" height="2" transform="rotate(-180 20 10)" fill="#634835"/>
+<rect x="14" y="38" width="2" height="2" transform="rotate(-180 14 38)" fill="#634835"/>
+<rect x="14" y="38" width="2" height="2" transform="rotate(-180 14 38)" fill="#634835"/>
+<rect x="14" y="38" width="2" height="2" transform="rotate(-180 14 38)" fill="#634835"/>
+<rect x="8" y="14" width="2" height="2" transform="rotate(-180 8 14)" fill="#634835"/>
+<rect x="8" y="14" width="2" height="2" transform="rotate(-180 8 14)" fill="#634835"/>
+<rect x="8" y="14" width="2" height="2" transform="rotate(-180 8 14)" fill="#634835"/>
+<rect x="5" y="28" width="2" height="2" transform="rotate(-180 5 28)" fill="#634835"/>
+<rect x="5" y="28" width="2" height="2" transform="rotate(-180 5 28)" fill="#634835"/>
+<rect x="5" y="28" width="2" height="2" transform="rotate(-180 5 28)" fill="#634835"/>
+<rect x="36" y="32" width="2" height="2" transform="rotate(-180 36 32)" fill="#634835"/>
+<rect x="36" y="32" width="2" height="2" transform="rotate(-180 36 32)" fill="#634835"/>
+<rect x="36" y="32" width="2" height="2" transform="rotate(-180 36 32)" fill="#634835"/>
+<rect x="25" y="23" width="2" height="2" transform="rotate(-180 25 23)" fill="#634835"/>
+<rect x="25" y="23" width="2" height="2" transform="rotate(-180 25 23)" fill="#634835"/>
+<rect x="25" y="23" width="2" height="2" transform="rotate(-180 25 23)" fill="#634835"/>
+<rect x="32" y="2" width="2" height="2" transform="rotate(-180 32 2)" fill="#634835"/>
+<rect x="32" y="2" width="2" height="2" transform="rotate(-180 32 2)" fill="#634835"/>
+<rect x="32" y="2" width="2" height="2" transform="rotate(-180 32 2)" fill="#634835"/>
+<rect x="11" y="19" width="2" height="2" transform="rotate(-180 11 19)" fill="#744828"/>
+<rect x="14" y="18" width="2" height="2" transform="rotate(-180 14 18)" fill="#744828"/>
+<rect x="15" y="18" width="2" height="1" transform="rotate(-180 15 18)" fill="#744828"/>
+<rect x="12" y="18" width="2" height="2" transform="rotate(-180 12 18)" fill="#744828"/>
+<rect x="34" y="7" width="2" height="2" transform="rotate(-180 34 7)" fill="#744828"/>
+<rect x="37" y="6" width="2" height="2" transform="rotate(-180 37 6)" fill="#744828"/>
+<rect x="38" y="6" width="2" height="1" transform="rotate(-180 38 6)" fill="#744828"/>
+<rect x="39" y="8" width="2" height="2" transform="rotate(-180 39 8)" fill="#744828"/>
+<rect x="35" y="6" width="2" height="2" transform="rotate(-180 35 6)" fill="#744828"/>
+<rect x="11" y="27" width="1" height="1" transform="rotate(-180 11 27)" fill="#744828"/>
+<rect x="12" y="27" width="1" height="1" transform="rotate(-180 12 27)" fill="#744828"/>
+<rect x="11" y="28" width="1" height="1" transform="rotate(-180 11 28)" fill="#744828"/>
+<rect x="10" y="28" width="1" height="1" transform="rotate(-180 10 28)" fill="#744828"/>
+<rect x="10" y="29" width="1" height="1" transform="rotate(-180 10 29)" fill="#744828"/>
+<rect x="13" y="26" width="1" height="1" transform="rotate(-180 13 26)" fill="#744828"/>
+<rect x="15" y="27" width="2" height="1" transform="rotate(-180 15 27)" fill="#744828"/>
+<rect x="16" y="28" width="1" height="1" transform="rotate(-180 16 28)" fill="#744828"/>
+<rect x="30" y="17" width="1" height="1" transform="rotate(-180 30 17)" fill="#744828"/>
+<rect x="33" y="19" width="1" height="1" transform="rotate(-180 33 19)" fill="#744828"/>
+<rect x="32" y="18" width="2" height="1" transform="rotate(-180 32 18)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 16 2)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 13 4)" fill="#744828"/>
+<rect width="2" height="1" transform="matrix(1 0 0 -1 14 3)" fill="#744828"/>
+<rect x="4" y="36" width="1" height="1" transform="rotate(-180 4 36)" fill="#744828"/>
+<rect x="7" y="38" width="1" height="1" transform="rotate(-180 7 38)" fill="#744828"/>
+<rect x="6" y="37" width="2" height="1" transform="rotate(-180 6 37)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 5 6)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 4 6)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 5 7)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 6 7)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 6 8)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 3 5)" fill="#744828"/>
+<rect width="2" height="1" transform="matrix(1 0 0 -1 1 6)" fill="#744828"/>
+<rect width="1" height="1" transform="matrix(1 0 0 -1 0 7)" fill="#744828"/>
+<rect width="2" height="2" transform="matrix(1 0 0 -1 26 33)" fill="#744828"/>
+<rect width="2" height="2" transform="matrix(1 0 0 -1 23 32)" fill="#744828"/>
+<rect width="2" height="1" transform="matrix(1 0 0 -1 22 32)" fill="#744828"/>
+<rect width="2" height="2" transform="matrix(1 0 0 -1 21 34)" fill="#744828"/>
+<rect width="2" height="2" transform="matrix(1 0 0 -1 25 32)" fill="#744828"/>
+<rect x="27" y="11" width="1" height="1" transform="rotate(-180 27 11)" fill="#744828"/>
+<rect x="28" y="11" width="1" height="1" transform="rotate(-180 28 11)" fill="#744828"/>
+<rect x="27" y="12" width="1" height="1" transform="rotate(-180 27 12)" fill="#744828"/>
+<rect x="26" y="12" width="1" height="1" transform="rotate(-180 26 12)" fill="#744828"/>
+<rect x="26" y="13" width="1" height="1" transform="rotate(-180 26 13)" fill="#744828"/>
+<rect x="29" y="10" width="1" height="1" transform="rotate(-180 29 10)" fill="#744828"/>
+<rect x="31" y="11" width="2" height="1" transform="rotate(-180 31 11)" fill="#744828"/>
+<rect x="32" y="12" width="1" height="1" transform="rotate(-180 32 12)" fill="#744828"/>
+<rect x="34" y="36" width="1" height="1" transform="rotate(-180 34 36)" fill="#744828"/>
+<rect x="35" y="36" width="1" height="1" transform="rotate(-180 35 36)" fill="#744828"/>
+<rect x="34" y="37" width="1" height="1" transform="rotate(-180 34 37)" fill="#744828"/>
+<rect x="33" y="37" width="1" height="1" transform="rotate(-180 33 37)" fill="#744828"/>
+<rect x="33" y="38" width="1" height="1" transform="rotate(-180 33 38)" fill="#744828"/>
+<rect x="36" y="35" width="1" height="1" transform="rotate(-180 36 35)" fill="#744828"/>
+<rect x="38" y="36" width="2" height="1" transform="rotate(-180 38 36)" fill="#744828"/>
+<rect x="39" y="37" width="1" height="1" transform="rotate(-180 39 37)" fill="#744828"/>
 </g>
 <defs>
-<clipPath id="clip0_44_2">
-<rect width="20" height="20" fill="white" transform="matrix(-1 0 0 -1 20 20)"/>
+<clipPath id="clip0_76_545">
+<rect width="40" height="40" fill="white" transform="matrix(-1 0 0 -1 40 40)"/>
 </clipPath>
 </defs>
 </svg>
