@@ -12,7 +12,13 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--font-size-medium);
 
-  img {
+  hr {
+    grid-column: 1 / span 2;
+    /* height: var(--border-width); */
+    color: white;
+  }
+
+  svg, img {
     width: var(--font-size-large);
     height: var(--font-size-large);
   }
@@ -28,7 +34,10 @@
 
   .ingredients {
     display: flex;
-    gap: var(--font-size-xsmall);
+    max-width: calc(2 * calc(var(--font-size-large) + var(--font-size-small) + var(--font-size-xxsmall)));
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--font-size-xxsmall);
   }
 
   .ingredient {
@@ -47,8 +56,14 @@
     }
     p {
       font-size: var(--font-size-small);
-      line-height: var(--font-size-small);
+      line-height: calc(var(--font-size-small) * 1.2);
     }
+  }
+
+  .ingredient-cost {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--font-size-xxxsmall);
   }
 }
 
@@ -66,6 +81,16 @@
   p {
     margin: var(--border-width);
   }
+
+  i {
+    font-size: calc(var(--font-size-xsmall) * 0.8);
+    padding-bottom: calc(3 * var(--border-width));
+  }
+}
+
+.thing-img-and-stats {
+  display: flex;
+  align-items: center;
 }
 
 .scavengable-items {

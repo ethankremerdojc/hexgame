@@ -12,7 +12,9 @@ import {
 
 import {
   USABLE_ITEMS,
-  ELEMENTS_YOU_SEE_IN_PERSON_UI
+  ELEMENTS_YOU_SEE_IN_PERSON_UI,
+  THIN_RENDERED_ELEMENTS,
+  SHORT_RENDERED_ELEMENTS
 } from "@/features/game/gameVars"
 
 import BoardUtils from "./boardUtils.ts"
@@ -689,9 +691,23 @@ export default class BoardRenderer {
       let countStr = heldElement.count ? heldElement.count.toString() : "";
       this.ctx.fillText(countStr, matX, currentY + (tileWidth * 0.85));
 
+      // Duped Code
+      let itemWidth = tileWidth;
+      let itemHeight = tileWidth;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (THIN_RENDERED_ELEMENTS.includes(element.subType)) {
+        itemWidth = tileWidth * 0.5;
+        offsetX = tileWidth * 0.25;
+      } else if (SHORT_RENDERED_ELEMENTS.includes(element.subType)) {
+        itemHeight = tileWidth * 0.66;
+        offsetY = tileWidth * 0.22;
+      }
+
       drawSvgToCanvas(heldElemSvg, this.ctx,
-        matX + tileWidth * 0.8, currentY,
-        tileWidth, tileWidth,
+        matX + tileWidth * 0.8 + offsetX, currentY + offsetY,
+        itemWidth, itemHeight,
       );
 
       if (i == 2) {
@@ -863,9 +879,9 @@ export default class BoardRenderer {
 
       if (twoRows) {
         if (i<=4) {
-          elemPos.y -= itemSize*0.8;
+          elemPos.y -= itemSize*1.1;
         } else {
-          elemPos.y += itemSize*0.8;
+          elemPos.y += itemSize*1.1;
         }
       }
 
@@ -885,10 +901,23 @@ export default class BoardRenderer {
 
       let elemSvg = this.getSvgForElement(element);
 
+      let itemWidth = itemSize;
+      let itemHeight = itemSize;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (THIN_RENDERED_ELEMENTS.includes(element.subType)) {
+        itemWidth = itemSize * 0.5;
+        offsetX = itemSize * 0.25;
+      } else if (SHORT_RENDERED_ELEMENTS.includes(element.subType)) {
+        itemHeight = itemSize * 0.66;
+        offsetY = itemSize * 0.22;
+      }
+
       drawSvgToCanvas(elemSvg, 
         this.ctx,
-        elemPos.x, elemPos.y,
-        itemSize, itemSize
+        elemPos.x + offsetX, elemPos.y + offsetY,
+        itemWidth, itemHeight
       );
 
       this.ctx.fillStyle = "white";
@@ -896,7 +925,7 @@ export default class BoardRenderer {
       let countStr = element.count ? element.count.toString() : "";
       let digits = countStr.length;
 
-      this.ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.75)
+      this.ctx.fillText(countStr, elemPos.x + 0.25*itemSize-(0.25*(digits-1)*itemSize), elemPos.y + itemSize*1.85)
     }
   }
 

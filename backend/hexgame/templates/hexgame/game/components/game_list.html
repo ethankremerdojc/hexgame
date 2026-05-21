@@ -5,6 +5,7 @@
     padding: var(--font-size-small);
     border-radius: var(--font-size-xsmall);
     position: relative;
+    box-shadow: var(--bottom-right-border-shadow);
 
     h1 {
       color: white;
@@ -231,7 +232,8 @@
                       {{ game.id }}: unnamed 
                     {% endif %}
                   </span>
-                  {% if game.current_player_turn_user == user %}
+
+                  {% if not game.complete and game.current_player_turn_user == user %}
                     <span style="width: fit-content; color: white; font-weight: bold; display: block;">Your Turn</span>
                   {% endif %}
               </button>

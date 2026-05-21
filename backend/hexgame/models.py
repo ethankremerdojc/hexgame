@@ -65,7 +65,10 @@ class Game(models.Model):
         return PlayerEvent.objects.filter(player__game=self).exists()
 
     def player_has_made_at_least_one_move(self, user):
-        player = self.players.get(user=user)
+        try:
+            player = self.players.get(user=user)
+        except Player.DoesNotExist:
+            return False
         return PlayerEvent.objects.filter(player=player).exists()
 
     def get_non_forfeited_players(self):

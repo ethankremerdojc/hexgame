@@ -1,5 +1,5 @@
 p {
-  line-height: var(--font-size-xsmall);
+  line-height: calc(var(--font-size-xsmall) * 1.4);
 }
 
 .element-actions-menu,

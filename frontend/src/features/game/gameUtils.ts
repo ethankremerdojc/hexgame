@@ -16,7 +16,7 @@ import {
   WORKER_ITEM_GENERATION_AMOUNT,
   BUILDING_ITEM_GENERATION_AMOUNT,
   NO_FOOD_PENALTY,
-  PERSON_BASE_HEALTH
+  PERSON_BASE_HEALTH,
 }  from "@/features/game/gameVars"
 
 import { NAMES_LIST } from "@/features/game/randomNames"
@@ -196,7 +196,22 @@ export function objectToElement(_obj: any): Element {
 }
 
 export function nameForElementSubType(subType: number) {
-  return Object.keys(ElementSubTypes)[subType]
+  let name = Object.keys(ElementSubTypes)[subType];
+
+  let result = "";
+
+  for (let i = 0; i < name.length; i ++) {
+    let char = name[i];
+    if (i != 0) {
+      const isUpper = char === char.toUpperCase() && char !== char.toLowerCase();
+      if (isUpper) {
+        result += " ";
+      }
+    }
+    result += char;
+  }
+
+  return result
 }
 
 export function nameForTeamColor(teamColor: number) {
@@ -419,13 +434,12 @@ export const getDamageAmount = (weapon:number|null) => {
   if (weapon === ElementSubTypes.Spear) return 5;
   if (weapon === ElementSubTypes.Mace) return 7;
   if (weapon === ElementSubTypes.Bow) return 4;
-
-  throw new Error("Unhandled weapon type");
+  return 0
 }
 
 export const getArmorAmount = (item:number) => {
   if (item==ElementSubTypes.Shield) return 2;
-  if (item==ElementSubTypes.LeatherArmor) return 2;
+  if (item==ElementSubTypes.LeatherArmor) return 1;
   if (item==ElementSubTypes.IronArmor) return 2;
   if (item==ElementSubTypes.Spear) return 1;
   return 0

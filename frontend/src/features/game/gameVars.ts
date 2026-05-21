@@ -35,11 +35,29 @@ export const WEAPON_SUBTYPES: number[] = [
   ElementSubTypes.Bow,
 ]
 
+export const THIN_RENDERED_ELEMENTS: number[] = [
+  ...WEAPON_SUBTYPES, ElementSubTypes.Shield
+]
+
+export const SHORT_RENDERED_ELEMENTS: number[] = [
+  ElementSubTypes.LeatherArmor,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Food,
+  ElementSubTypes.Clay,
+]
+
 export const ARMOR_SUBTYPES: number[] = [
   ElementSubTypes.Shield,
   ElementSubTypes.LeatherArmor,
   ElementSubTypes.IronArmor,
   ElementSubTypes.Spear,
+]
+
+export const FORGE_REQUIRED_ITEMS: number[] = [
+  ElementSubTypes.Mace,
+  ElementSubTypes.Sword,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Shield,
 ]
 
 export const WORKER_ITEM_GENERATION_AMOUNT = 2;

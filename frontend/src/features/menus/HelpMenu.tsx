@@ -10,12 +10,13 @@ import {
 
 import { 
   MATERIAL_ELEMENT_SUBTYPES,
-  THINGS_THAT_CAN_BE_BUILT, 
+  // THINGS_THAT_CAN_BE_BUILT, 
   NO_FOOD_PENALTY,
   COMMON_SCAVENGABLE_ITEMS,
   RARE_SCAVENGABLE_ITEMS,
   SCAVENGE_CHANCES,
-  MACE_ARMOR_DEPLETION_AMOUNT
+  MACE_ARMOR_DEPLETION_AMOUNT,
+  FORGE_REQUIRED_ITEMS
 } from "@/features/game/gameVars"
 
 import { 
@@ -29,18 +30,68 @@ import { getSvgForSubType } from "../board/boardRenderer"
 
 import "./HelpMenu.css";
 
+const HELP_MENU_BUILD_ITEMS: number[] = [
+  ElementSubTypes.Villager,
+  ElementSubTypes.Village,
+
+  ElementSubTypes.Farm,
+  ElementSubTypes.BrickFactory,
+  ElementSubTypes.SawMill,
+  ElementSubTypes.Quarry,
+
+  ElementSubTypes.Forge,
+
+  -1, // Space
+
+  ElementSubTypes.Cart,
+
+  -1, // Space
+
+  ElementSubTypes.Spear,
+  ElementSubTypes.Bow,
+
+  ElementSubTypes.Sword,
+  ElementSubTypes.Mace,
+
+  -1, // Space
+
+  ElementSubTypes.LeatherArmor,
+  ElementSubTypes.IronArmor,
+  ElementSubTypes.Shield,
+];
+
 function Ingredients() {
 
   return (
     <div className="ingredients-menu">
       <div className="ingredients-list">
         {
-          THINGS_THAT_CAN_BE_BUILT.map(thing => {
+          HELP_MENU_BUILD_ITEMS.map(thing => {
+
+            if (thing === -1) {
+              return (<>
+                {/* <div key={thing}></div> */}
+                <hr />
+              </>
+              )
+            }
+
+            let defaultColor = "white";
+            let svgText = getSvgForSubType(thing, true);
+            svgText = svgText.replaceAll("$TEAMCOLOR$", defaultColor);
+
             return (
               <div key={thing} className="build-item">
                 <div className="thing-to-build">
                   <p>{nameForElementSubType(thing)}</p>
-                  <img src={getSvgForSubType(thing, false)} />
+                  { FORGE_REQUIRED_ITEMS.includes(thing) &&
+                    <i>Forge Required</i>
+                  }
+                  <div className="thing-img-and-stats">
+                    <div dangerouslySetInnerHTML={{ __html: svgText }} />
+                    { getDamageAmount(thing) !== 0 && <p>{getDamageAmount(thing)}D</p> }
+                    { getArmorAmount(thing) !== 0 && <p>{getArmorAmount(thing)}A</p> }
+                  </div>
                 </div>
                 <div className="ingredients">
                   {
@@ -48,8 +99,10 @@ function Ingredients() {
                       return (
                           <div className="ingredient" key={ing.subType}>
                             <i>{nameForElementSubType(ing.subType)}</i>
-                            <img src={getSvgForSubType(ing.subType, false)} />
-                            <p>{getSpecificItemBuildingCost(thing, ing.subType)}</p>
+                            <div className="ingredient-cost">
+                              <p>{getSpecificItemBuildingCost(thing, ing.subType)}</p>
+                              <img src={getSvgForSubType(ing.subType, false)} />
+                            </div>
                           </div>
                         )
                     })

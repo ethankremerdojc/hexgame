@@ -27,7 +27,8 @@ import {
   RARE_SCAVENGABLE_ITEMS,
   SCAVENGE_CHANCES,
   ARMOR_SUBTYPES,
-  CAPITAL_DEFENCE_BUFF
+  CAPITAL_DEFENCE_BUFF,
+  FORGE_REQUIRED_ITEMS
 } from "@/features/game/gameVars"
 
 import {
@@ -517,10 +518,9 @@ export default class BoardUtils {
     result.push([ElementTypes.Item, ElementSubTypes.Spear]);
 
     if (forgeExists) {
-      result.push([ElementTypes.Item, ElementSubTypes.Sword]);
-      result.push([ElementTypes.Item, ElementSubTypes.Shield]);
-      result.push([ElementTypes.Item, ElementSubTypes.Mace]);
-      result.push([ElementTypes.Item, ElementSubTypes.IronArmor]);
+      for (var subType of FORGE_REQUIRED_ITEMS) {
+        result.push([ElementTypes.Item, subType]);
+      }
     }
 
     return result
